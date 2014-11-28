@@ -39,8 +39,16 @@ $string['pluginadministration'] = 'resourcelib administration';
 $string['pluginname'] = 'resourcelib';
 
 $string['settings'] = 'Настройки Библиотеки Ресурсов';
+$string['administration'] = 'Администрирование Библиотеки Ресурсов';
 $string['manage_types'] = 'Управление Типами Ресурсов';
+$string['manage_items'] = 'Управление Экземплярами Ресурсов';
 
 $string['addtype'] = 'Добавить Тип Ресурса';
 $string['edittype'] = 'Изменить Тип Ресурса';
 $string['deletetype'] = 'Удалить Тип Ресурса';
+
+$string['additem'] = 'Добавить Ресурс';
+$string['edititem'] = 'Изменить Ресурс';
+$string['deleteitem'] = 'Удалить Ресурс';
+
+$string['type'] = 'Тип';

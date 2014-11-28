@@ -60,9 +60,10 @@
         <FIELD NAME="url" TYPE="char" LENGTH="512" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="author" TYPE="char" LENGTH="128" NOTNULL="false" DEFAULT="" SEQUENCE="false"/>
-        <FIELD NAME="organization" TYPE="char" LENGTH="128" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="source" TYPE="char" LENGTH="128" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="copyright" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="time_estimate" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="tags" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="embed_code" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="created_by" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="creation_date" TYPE="datetime" NOTNULL="false" SEQUENCE="false"/>

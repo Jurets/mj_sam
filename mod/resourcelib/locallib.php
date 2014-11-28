@@ -76,3 +76,22 @@ function deletete_resourcetype($data) {
     }
     return $DB->delete_records('resource_types', array('id' => $data->id));
 }
+
+function get_resourceitems() {
+    global $DB;
+    //return $DB->get_records('resource_items');
+    return $DB->get_records_sql('SELECT ri.*, rt.name AS type_name, rt.icon_path
+                          FROM {resource_items} ri LEFT JOIN {resource_types} rt ON rt.id = ri.type_id');
+}
+
+
+
+function add_resourceitem($data) {
+    global $DB;
+    return $DB->insert_record('resource_items', $data);
+}
+
+function edit_resourceitem($data) {
+    global $DB;
+    return $DB->update_record('resource_items', $data);
+}
