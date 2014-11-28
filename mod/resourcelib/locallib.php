@@ -51,13 +51,17 @@ function get_resourcetypes() {
 *  
 * @param mixed $data
 */
-function create_resourcetype($data) {
+function add_resourcetype($data) {
     global $DB;
     $id = $DB->insert_record('resource_types', $data);
     //$DB->insert_records('resource_types', array($data));
     return $id;
 }
 
+function edit_resourcetype($data) {
+    global $DB;
+    return $DB->update_record('resource_types', $data);
+}
 
 function deletete_resourcetype($data) {
     global $DB;
