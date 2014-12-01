@@ -27,7 +27,7 @@ class mod_resourcelib_form_edittype extends moodleform {
         
         $currentpicture = $mform->addElement('static', 'currentpicture', get_string('currentpicture'));
         
-        $filepicker = $mform->addElement('filepicker', 'icon_path', get_string('newpicture'), null, array('accepted_types' => 'gif,png,ico')); // Add elements to your form
+        $filepicker = $mform->addElement('filepicker', 'icon_path', get_string('newpicture'), null/*, array('accepted_types' => 'gif,png,ico')*/); // Add elements to your form
         $mform->setType('icon_path', PARAM_TEXT);                   //Set type of element
         $mform->setDefault('icon_path', 'Please select icon');        //Default value
         //DebugBreak();        

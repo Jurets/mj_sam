@@ -35,6 +35,7 @@
     require_capability('moodle/site:config', $systemcontext);
 
     /// Build page
+    $mainurl = $CFG->wwwroot.'/mod/resourcelib/admin.php';
     $returnurl = $CFG->wwwroot.'/mod/resourcelib/types.php';
     $PAGE->set_url($returnurl);
     $PAGE->set_context($systemcontext);
@@ -45,7 +46,7 @@
     //page layout
     $PAGE->set_pagelayout('admin');     
     //breadcrumbs
-    $PAGE->navbar->add(get_string('administration', 'resourcelib'), new moodle_url($CFG->wwwroot.'/mod/resourcelib/admin.php')); 
+    $PAGE->navbar->add(get_string('administration', 'resourcelib'), new moodle_url($mainurl));
 
     switch($action) {
         case $actionIndex:
@@ -97,9 +98,9 @@
             $editform = new mod_resourcelib_form_edittype($actionurl->out(false), array('data'=>$type)); //create form instance
 
             if ($editform->is_cancelled()) {  //in cancel form case - redirect to previous page
-                $url = new moodle_url($returnurl, array('action' => 'types'));
+                $url = new moodle_url($returnurl, array('action' => 'index'));
                 redirect($url);
-            } else if ($data = $editform->get_data()) {DebugBreak();
+            } else if ($data = $editform->get_data()) {
                 if ($file = $editform->get_file_content('icon_path')) {
                     $realfilename = $editform->get_new_filename('icon_path');
                     $importfile = $CFG->dirroot . '/mod/resourcelib/pix/' . $realfilename;
@@ -114,7 +115,7 @@
                     $success = edit_resourcetype($data);
                 }
                 if ($success){  //call create Resource Type function
-                    $url = new moodle_url($returnurl, array('action' => 'types'));
+                    $url = new moodle_url($returnurl, array('action' => 'index'));
                     redirect($url);
                 }
             }
@@ -141,7 +142,7 @@
                 } else if (data_submitted() /*&& !$data->deleted*/){
                     if (deletete_resourcetype($type)) {
                         //\core\session\manager::gc(); // Remove stale sessions.
-                        $url = new moodle_url($returnurl, array('action' => 'types'));
+                        $url = new moodle_url($returnurl, array('action' => 'index'));
                         redirect($url);
                     } else {
                         //\core\session\manager::gc(); // Remove stale sessions.

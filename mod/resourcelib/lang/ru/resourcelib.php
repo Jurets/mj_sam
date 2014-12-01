@@ -42,13 +42,25 @@ $string['settings'] = 'Настройки Библиотеки Ресурсов'
 $string['administration'] = 'Администрирование Библиотеки Ресурсов';
 $string['manage_types'] = 'Управление Типами Ресурсов';
 $string['manage_items'] = 'Управление Экземплярами Ресурсов';
+$string['manage_lists'] = 'Управление Списками Ресурсов';
 
 $string['addtype'] = 'Добавить Тип Ресурса';
 $string['edittype'] = 'Изменить Тип Ресурса';
 $string['deletetype'] = 'Удалить Тип Ресурса';
+
+$string['addlist'] = 'Добавить Список Ресурсов';
+$string['editlist'] = 'Изменить Список Ресурсов';
+$string['deletelist'] = 'Удалить Список Ресурсов';
 
 $string['additem'] = 'Добавить Ресурс';
 $string['edititem'] = 'Изменить Ресурс';
 $string['deleteitem'] = 'Удалить Ресурс';
 
 $string['type'] = 'Тип';
+$string['copyright'] = 'Копирайт';
+$string['author'] = 'Автор';
+$string['source'] = 'Источник';
+$string['time_estimate'] = 'Оценка Времени';
+$string['embed_code'] = 'Код для Вставки';
+
+$string['display_name'] = 'Отображаемое Имя';

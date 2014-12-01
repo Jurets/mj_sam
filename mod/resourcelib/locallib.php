@@ -84,8 +84,6 @@ function get_resourceitems() {
                           FROM {resource_items} ri LEFT JOIN {resource_types} rt ON rt.id = ri.type_id');
 }
 
-
-
 function add_resourceitem($data) {
     global $DB;
     return $DB->insert_record('resource_items', $data);
@@ -94,4 +92,34 @@ function add_resourceitem($data) {
 function edit_resourceitem($data) {
     global $DB;
     return $DB->update_record('resource_items', $data);
+}
+
+
+function get_resourcelists() {
+    global $DB;
+    return $DB->get_records('resource_lists');
+}
+
+function add_resourcelist($data) {
+    global $DB;
+    return $DB->insert_record('resource_lists', $data);
+}
+
+function edit_resourcelist($data) {
+    global $DB;
+    return $DB->update_record('resource_lists', $data);
+}
+
+function deletete_resourcelist($data) {
+    global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in deletete_resourcelist() detected');
+    }
+    // Better not trust the parameter and fetch the latest info this will be very expensive anyway.
+    if (!$type = $DB->get_record('resource_lists', array('id' => $data->id))) {
+        debugging('Attempt to delete unknown Resource List.');
+        return false;
+    }
+    return $DB->delete_records('resource_lists', array('id' => $data->id));
 }

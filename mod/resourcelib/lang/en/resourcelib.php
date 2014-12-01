@@ -42,6 +42,7 @@ $string['settings'] = 'Resource Library Settings';
 $string['administration'] = 'Resource Library Administration';
 $string['manage_types'] = 'Manage Resource Library Types';
 $string['manage_items'] = 'Manage Resource Library Items';
+$string['manage_lists'] = 'Manage Resource Library Lists';
 
 $string['addtype'] = 'Add Resource Type';
 $string['edittype'] = 'Edit Resource Type';
@@ -51,9 +52,15 @@ $string['additem'] = 'Add Resource Item';
 $string['edititem'] = 'Edit Resource Item';
 $string['deleteitem'] = 'Delete Resource Item';
 
+$string['addlist'] = 'Add Resource List';
+$string['editlist'] = 'Edit Resource List';
+$string['deletelist'] = 'Delete Resource List';
+
 $string['type'] = 'Type';
 $string['copyright'] = 'Copyright Info';
 $string['author'] = 'Author';
 $string['source'] = 'Source';
 $string['time_estimate'] = 'Time Estimate';
 $string['embed_code'] = 'Embed Code';
+
+$string['display_name'] = 'Display Name';
