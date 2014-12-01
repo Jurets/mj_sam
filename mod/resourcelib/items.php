@@ -106,13 +106,6 @@
                 $url = new moodle_url($returnurl, array('action' => 'types'));
                 redirect($url);
             } else if ($data = $editform->get_data()) {DebugBreak();
-                /*if ($file = $editform->get_file_content('icon_path')) {
-                    $realfilename = $editform->get_new_filename('icon_path');
-                    $importfile = $CFG->dirroot . '/mod/resourcelib/pix/' . $realfilename;
-                    if ($editform->save_file('icon_path', $importfile, true)) {
-                        $data->icon_path = $CFG->wwwroot . '/mod/resourcelib/pix/' . $realfilename;
-                    }
-                }*/
                 if ($action == $actionAdd) {
                     $inserted_id = add_resourceitem($data);
                     $success = isset($id);
