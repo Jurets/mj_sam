@@ -39,7 +39,8 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="resource_lists" COMMENT="resource_lists table retrofitted from MySQL">
+	
+    <TABLE NAME="resource_sections" COMMENT="Resource List Section">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
@@ -51,6 +52,20 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
+
+    <TABLE NAME="resource_lists" COMMENT="resource_list_collections table retrofitted from MySQL">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="display_name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="heading" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+		<FIELD NAME="icon_path" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+	
     <TABLE NAME="resource_items" COMMENT="Resource Definition">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="true"/>
@@ -75,6 +90,33 @@
         <KEY NAME="foreign-type_id" TYPE="foreign" FIELDS="type_id" REFTABLE="resource_types" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
+	
+    <TABLE NAME="resource_section_items" COMMENT="Relation between Resource and Section">
+      <FIELDS>
+        <FIELD NAME="resource_section_id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="resource_item_id" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="true"/>
+        <FIELD NAME="sort_order" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="foreign-resource_list_collection_item_collection_id" TYPE="foreign" FIELDS="collection_id" REFTABLE="resource_list_collections" REFFIELDS="id"/>
+        <KEY NAME="foreign-resource_list_collection_list_id" TYPE="foreign" FIELDS="resource_list_id" REFTABLE="resource_lists" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+	
+    <TABLE NAME="resource_list_sections" COMMENT="Relation between Section and List">
+      <FIELDS>
+        <FIELD NAME="resource_list_id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="resource_section_id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="sort_order" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="foreign-resource_list_items_resource_id" TYPE="foreign" FIELDS="resource_id" REFTABLE="resource_items" REFFIELDS="id"/>
+        <KEY NAME="foreign-resource_list_items_resource_list_id" TYPE="foreign" FIELDS="resource_list_id" REFTABLE="resource_lists" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+	
+
+	
     <TABLE NAME="resource_videos" COMMENT="resource_videos table retrofitted from MySQL">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="true"/>
@@ -90,6 +132,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
+	
     <TABLE NAME="resource_video_chapters" COMMENT="resource_video_chapters table retrofitted from MySQL">
       <FIELDS>
         <FIELD NAME="video_id" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
@@ -100,39 +143,7 @@
         <KEY NAME="foreign-resource_videos" TYPE="foreign" FIELDS="video_id" REFTABLE="resource_videos" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="resource_list_items" COMMENT="relation between resource items and resource list items">
-      <FIELDS>
-        <FIELD NAME="resource_list_id" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="resource_id" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="sort_order" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="foreign-resource_list_items_resource_id" TYPE="foreign" FIELDS="resource_id" REFTABLE="resource_items" REFFIELDS="id"/>
-        <KEY NAME="foreign-resource_list_items_resource_list_id" TYPE="foreign" FIELDS="resource_list_id" REFTABLE="resource_lists" REFFIELDS="id"/>
-      </KEYS>
-    </TABLE>
-    <TABLE NAME="resource_list_collections" COMMENT="resource_list_collections table retrofitted from MySQL">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="display_name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="heading" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-      </KEYS>
-    </TABLE>
-    <TABLE NAME="resource_collection_items" COMMENT="resource_list_collection_items table retrofitted from MySQL">
-      <FIELDS>
-        <FIELD NAME="resource_list_id" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="collection_id" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="sort_order" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="foreign-resource_list_collection_item_collection_id" TYPE="foreign" FIELDS="collection_id" REFTABLE="resource_list_collections" REFFIELDS="id"/>
-        <KEY NAME="foreign-resource_list_collection_list_id" TYPE="foreign" FIELDS="resource_list_id" REFTABLE="resource_lists" REFFIELDS="id"/>
-      </KEYS>
-    </TABLE>
+	
     <TABLE NAME="resource_item_tags" COMMENT="resource_item_tags table retrofitted from MySQL">
       <FIELDS>
         <FIELD NAME="resource_id" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
@@ -142,6 +153,7 @@
         <KEY NAME="foreign-resource_item_tags" TYPE="foreign" FIELDS="resource_id" REFTABLE="resource_items" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
+	
     <TABLE NAME="resource_ratings" COMMENT="resource_ratings table retrofitted from MySQL">
       <FIELDS>
         <FIELD NAME="course_id" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
@@ -158,6 +170,7 @@
         <KEY NAME="foreign-ratings_courses" TYPE="foreign" FIELDS="course_id" REFTABLE="course" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
+	
     <TABLE NAME="resource_access_log" COMMENT="resource_access_log table retrofitted from MySQL">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="true"/>
@@ -173,6 +186,7 @@
         <KEY NAME="foreign-access_log_resource_id" TYPE="foreign" FIELDS="resource_id" REFTABLE="resource_items" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
+	
     <TABLE NAME="resource_video_access_log" COMMENT="resource_video_access_log table retrofitted from MySQL">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="true"/>
@@ -188,6 +202,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
+	
     <TABLE NAME="resource_video_ratings" COMMENT="resource_video_ratings table retrofitted from MySQL">
       <FIELDS>
         <FIELD NAME="course_id" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
@@ -204,4 +219,5 @@
       </KEYS>
     </TABLE>
   </TABLES>
+  
 </XMLDB>

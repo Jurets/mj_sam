@@ -57,6 +57,11 @@
     echo html_writer::end_div();
     
     echo html_writer::start_tag('div');
+    $url = new moodle_url($CFG->wwwroot.'/mod/resourcelib/sections.php');
+    echo html_writer::tag('a', get_string('manage_sections', 'resourcelib'), array('href' => $url->out()));
+    echo html_writer::end_div();
+
+    echo html_writer::start_tag('div');
     $url = new moodle_url($CFG->wwwroot.'/mod/resourcelib/lists.php');
     echo html_writer::tag('a', get_string('manage_lists', 'resourcelib'), array('href' => $url->out()));
     echo html_writer::end_div();

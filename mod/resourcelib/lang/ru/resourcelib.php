@@ -43,14 +43,21 @@ $string['administration'] = 'Администрирование Библиоте
 $string['manage_types'] = 'Управление Типами Ресурсов';
 $string['manage_items'] = 'Управление Экземплярами Ресурсов';
 $string['manage_lists'] = 'Управление Списками Ресурсов';
+$string['manage_sections'] = 'Управление Секциями Ресурсов';
 
 $string['addtype'] = 'Добавить Тип Ресурса';
 $string['edittype'] = 'Изменить Тип Ресурса';
 $string['deletetype'] = 'Удалить Тип Ресурса';
 
+$string['addsection'] = 'Добавить Секцию Ресурсов';
+$string['editsection'] = 'Изменить Секцию Ресурсов';
+$string['deletesection'] = 'Удалить Секцию Ресурсов';
+$string['viewsection'] = 'Просмотр Секции Ресурсов';
+
 $string['addlist'] = 'Добавить Список Ресурсов';
 $string['editlist'] = 'Изменить Список Ресурсов';
 $string['deletelist'] = 'Удалить Список Ресурсов';
+$string['viewlist'] = 'Просмотр Списка Ресурсов';
 
 $string['additem'] = 'Добавить Ресурс';
 $string['edititem'] = 'Изменить Ресурс';
