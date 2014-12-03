@@ -41,7 +41,6 @@
     $PAGE->set_context($systemcontext);
     $PAGE->set_title($SITE->fullname);
     $PAGE->set_heading($SITE->fullname);
-    //$PAGE->set_focuscontrol(build_navigation(array()));
 
     //page layout
     $PAGE->set_pagelayout('admin');     
@@ -53,35 +52,10 @@
             $PAGE->navbar->add(get_string('manage_items', 'resourcelib')); //breadcrumbs
             echo $OUTPUT->header();
             echo $OUTPUT->heading(get_string('manage_items', 'resourcelib'));
-
-            $items = get_resourceitems();
-            /*$stredit   = get_string('edit');
-            $strdelete = get_string('delete');
-            $table = new html_table();
-            $table->head = array(get_string('name'), get_string('description'), get_string('type', 'resourcelib'));
-            
-            foreach ($items as $item) {
-                $buttons = array();
-                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionDelete, 'id'=>$item->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
-                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionEdit, 'id'=>$item->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$stredit));
-                $table->data[] = array(
-                    $item->title, 
-                    $item->description, 
-                    //$type->icon_path, 
-                    html_writer::empty_tag('img', array('src'=>$item->icon_path, 'alt'=>$item->icon_path, 'class'=>'iconsmall', 'title'=>$item->type_name)),
-                    implode(' ', $buttons) 
-                );
-            }*/
             //add type button
             show_addbutton(new moodle_url($returnurl, array('action' => $actionAdd)), get_string('additem', 'resourcelib'));
-            /*$url = new moodle_url($returnurl, array('action' => $actionAdd));
-            $icon = $OUTPUT->pix_icon('t/add', '');
-            echo html_writer::start_tag('div', array('class' => 'mdl-right'));
-            echo html_writer::tag('a', $icon . ' ' . get_string('additem', 'resourcelib'), array('href' => $url->out()));
-            echo html_writer::end_div();*/
             //show table with items data
-            show_resource_items($items, $returnurl);
-            //echo html_writer::table($table);
+            show_resource_items(get_resourceitems(), $returnurl);
             echo $OUTPUT->footer();
             break;
         case $actionAdd:
@@ -150,5 +124,4 @@
                 }
             }
             break;
-
     }

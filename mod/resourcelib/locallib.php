@@ -167,10 +167,10 @@ function get_section_items($data) {
         throw new coding_exception('Invalid $data parameter in get_section_items() detected');
     }
     // Better not trust the parameter and fetch the latest info this will be very expensive anyway.
-    if (!$count = $DB->count_records('resource_section_items', array('resource_section_id' => $data->id))) {
+    /*if (!$count = $DB->count_records('resource_section_items', array('resource_section_id' => $data->id))) {
         debugging('Attempt to get unknown Resource List Section.');
         return false;
-    }
+    }*/
     
     $sql = 'SELECT r.id, r.title, r.description, t.name AS type_name, t.icon_path
             FROM {resource_section_items} si 
@@ -178,7 +178,63 @@ function get_section_items($data) {
                 LEFT JOIN {resource_types} t ON t.id = r.type_id
             WHERE si.resource_section_id = ?
             ORDER BY si.sort_order';
-    return $DB->get_records_sql($sql, array($data->id));
+    $items = $DB->get_records_sql($sql, array($data->id));
+    if (!$items)
+        $items = array();
+    return $items;
+}
+
+/**
+* get resource items wich is not in section
+* 
+* @param mixed $data - section instance
+* @return array
+*/
+function get_notsection_items($data) {
+     global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in get_notsection_items() detected');
+    }
+    $sql = 'SELECT r.id, r.title
+            FROM {resource_items} r 
+              LEFT JOIN {resource_types} t ON t.id = r.type_id
+            WHERE r.id NOT IN 
+              (SELECT si.resource_item_id FROM {resource_section_items} si WHERE si.resource_section_id = ?)';
+    $items = $DB->get_records_sql_menu($sql, array($data->id));
+    if (!$items)
+        $items = array();
+    return $items;
+}
+
+/**
+* put your comment there...
+* 
+* @param mixed $section_id
+* @param mixed $resource_id
+* @param mixed $sort_order
+*/
+//function add_resource_to_section($section_id, $resource_id, $sort_order) {
+function add_resource_to_section($data) {
+    global $DB;
+    /*$section_item = new stdClass();
+    $section_item->resource_section_id = $section_id;
+    $section_item->resource_item_id = $resource_id;
+    $section_item->sort_order = $sort_order;*/
+    //$params = array();
+//    $params[] = $data->resource_section_id;
+//    $params[] = $data->resource_item_id;
+//    $params[] = $data->sort_order;
+    /*$result = $DB->insert_record_raw('resource_section_items', array(
+        'resource_section_id'=>$data->resource_section_id, 
+        'resource_item_id'=>$data->resource_item_id, 
+        'sort_order'=>$data->sort_order,
+        'id'=>0, //костыль
+    ), false, false, true);*/
+    //return $DB->insert_record_raw('resource_section_items', (array)$section_item, false, false, $customsequence=false);
+    $result = $DB->insert_record('resource_section_items', $data);
+    return $result;
+    //return $result;
 }
 
 /**
@@ -217,6 +273,6 @@ function show_addbutton($url, $label, /*$action = 'add', */$attributes = array('
     //$url = new moodle_url($returnurl, array('action' => $action));
     //$icon = $OUTPUT->pix_icon('t/add', '');
     echo html_writer::start_tag('div', $attributes);
-    echo html_writer::tag('a', $OUTPUT->pix_icon('t/add', '') . ' ' . $label/*get_string('addsection', 'resourcelib')*/, array('href' => $url->out()));
+    echo html_writer::tag('a', $OUTPUT->pix_icon('t/add', '') . ' ' . $label/*get_string('addsection', 'resourcelib')*/, array('href' => $url->out(false)));
     echo html_writer::end_tag('div');
 }

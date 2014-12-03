@@ -38,6 +38,8 @@ $string['resourcelib'] = 'resourcelib';
 $string['pluginadministration'] = 'resourcelib administration';
 $string['pluginname'] = 'resourcelib';
 
+$string['resource'] = 'Resource';
+
 $string['settings'] = 'Resource Library Settings';
 $string['administration'] = 'Resource Library Administration';
 $string['manage_types'] = 'Manage Resource Library Types';
@@ -49,10 +51,11 @@ $string['addtype'] = 'Add Resource Type';
 $string['edittype'] = 'Edit Resource Type';
 $string['deletetype'] = 'Delete Resource Type';
 
-$string['addsection'] = 'Add Resource Section';
-$string['editsection'] = 'Edit Resource Section';
-$string['deletesection'] = 'Delete Resource Section';
-$string['viewsection'] = 'View Resource Section';
+$string['addsection'] = 'Add Section';
+$string['editsection'] = 'Edit Section';
+$string['deletesection'] = 'Delete Section';
+$string['viewsection'] = 'View Section';
+$string['add_section_resource'] = 'Add Resource to Section';
 
 $string['addlist'] = 'Add Resource List';
 $string['editlist'] = 'Edit Resource List';
@@ -71,3 +74,5 @@ $string['time_estimate'] = 'Time Estimate';
 $string['embed_code'] = 'Embed Code';
 
 $string['display_name'] = 'Display Name';
+$string['missing_resource'] = 'Missing Resource';
+$string['no_resources'] = 'There is no Resources in this Section';

@@ -38,6 +38,8 @@ $string['resourcelib'] = 'resourcelib';
 $string['pluginadministration'] = 'resourcelib administration';
 $string['pluginname'] = 'resourcelib';
 
+$string['resource'] = 'Ресурс';
+
 $string['settings'] = 'Настройки Библиотеки Ресурсов';
 $string['administration'] = 'Администрирование Библиотеки Ресурсов';
 $string['manage_types'] = 'Управление Типами Ресурсов';
@@ -49,10 +51,11 @@ $string['addtype'] = 'Добавить Тип Ресурса';
 $string['edittype'] = 'Изменить Тип Ресурса';
 $string['deletetype'] = 'Удалить Тип Ресурса';
 
-$string['addsection'] = 'Добавить Секцию Ресурсов';
-$string['editsection'] = 'Изменить Секцию Ресурсов';
-$string['deletesection'] = 'Удалить Секцию Ресурсов';
-$string['viewsection'] = 'Просмотр Секции Ресурсов';
+$string['addsection'] = 'Добавить Секцию';
+$string['editsection'] = 'Изменить Секцию';
+$string['deletesection'] = 'Удалить Секцию';
+$string['viewsection'] = 'Просмотр Секции';
+$string['add_section_resource'] = 'Добавить Ресурс в Секцию';
 
 $string['addlist'] = 'Добавить Список Ресурсов';
 $string['editlist'] = 'Изменить Список Ресурсов';
@@ -71,3 +74,5 @@ $string['time_estimate'] = 'Оценка Времени';
 $string['embed_code'] = 'Код для Вставки';
 
 $string['display_name'] = 'Отображаемое Имя';
+$string['missing_resource'] = 'Пропущен ресурс';
+$string['no_resources'] = 'Нет Ресурсов в данной Секции';

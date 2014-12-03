@@ -30,6 +30,7 @@
     $actionEdit = 'edit';
     $actionDelete = 'delete';
     $actionView = 'view';
+    $actionAddResource = 'addres';
     //$actions = array('index');
     
     /// Security
@@ -49,10 +50,15 @@
     $PAGE->set_pagelayout('admin');     
     //breadcrumbs
     $PAGE->navbar->add(get_string('administration', 'resourcelib'), new moodle_url($mainurl)); 
+    if ($action == $actionIndex) {
+        $PAGE->navbar->add(get_string('manage_sections', 'resourcelib'));
+    } else {
+        $PAGE->navbar->add(get_string('manage_sections', 'resourcelib'), new moodle_url($returnurl));
+    }
 
     switch($action) {
         case $actionIndex:
-            $PAGE->navbar->add(get_string('manage_sections', 'resourcelib')); //breadcrumbs
+            //$PAGE->navbar->add(get_string('manage_sections', 'resourcelib')); //breadcrumbs
             echo $OUTPUT->header();
             echo $OUTPUT->heading(get_string('manage_sections', 'resourcelib'));
 
@@ -85,18 +91,14 @@
                 );
             }
             //add type button
-            show_addbutton($returnurl);
-            /*$url = new moodle_url($returnurl, array('action' => $actionAdd));
-            $icon = $OUTPUT->pix_icon('t/add', '');
-            echo html_writer::start_tag('div', array('class' => 'mdl-right'));
-            echo html_writer::tag('a', $icon . ' ' . get_string('addsection', 'resourcelib'), array('href' => $url->out()));
-            echo html_writer::end_tag('div');*/
+            show_addbutton(new moodle_url($returnurl, array('action' => $actionAdd)), get_string('addsection', 'resourcelib'));
             //table with types data
             echo html_writer::table($table);
             echo $OUTPUT->footer();
             break;
+            
         case $actionView:
-            $PAGE->navbar->add(get_string('manage_sections', 'resourcelib')); //breadcrumbs
+            //$PAGE->navbar->add(get_string('manage_sections', 'resourcelib'), new moodle_url($returnurl)); //breadcrumbs
             $PAGE->navbar->add(get_string('viewsection', 'resourcelib'));
             echo $OUTPUT->header();
             echo $OUTPUT->heading(get_string('viewsection', 'resourcelib'));
@@ -129,18 +131,23 @@
             echo html_writer::end_tag('dl');
             
             echo html_writer::tag('hr', '');
-            
+            //add resource button
+            show_addbutton(new moodle_url($returnurl, array('action' => $actionAddResource, 'section'=>$id)), get_string('add_section_resource', 'resourcelib'));
+            //resources in table format
             $items = get_section_items($section);
-            show_resource_items($items, $returnurl);
-            
+            if (!$items || empty($items)) {
+                echo $OUTPUT->box(get_string('no_resources', 'resourcelib'), 'generalbox', 'notice');
+            } else {
+                show_resource_items($items, $returnurl);
+            }
             //
             echo $OUTPUT->footer();
             break;
+            
         case $actionAdd:
         case $actionEdit:
-            $PAGE->navbar->add(get_string('manage_sections', 'resourcelib'), new moodle_url($returnurl)); //breadcrumbs
-
-            require_once($CFG->dirroot.'/mod/resourcelib/form_editlist.php'); //include form_edittype.php  
+            //$PAGE->navbar->add(get_string('manage_sections', 'resourcelib'), new moodle_url($returnurl)); //breadcrumbs
+            require_once($CFG->dirroot.'/mod/resourcelib/form_editlist.php'); //include form_edititem.php  
             
             if ($action == $actionAdd) { //add new type
                 $PAGE->navbar->add(get_string('addsection', 'resourcelib'));
@@ -151,8 +158,8 @@
                 $actionurl = new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$id));
                 $section = $DB->get_record('resource_sections', array('id'=>$id), '*', MUST_EXIST); //get data from DB
             }
+            //create and show form instance
             $editform = new mod_resourcelib_form_editlist($actionurl->out(false), array('data'=>$section)); //create form instance
-
             if ($editform->is_cancelled()) {  //in cancel form case - redirect to previous page
                 $url = new moodle_url($returnurl, array('action' => 'index'));
                 redirect($url);
@@ -181,9 +188,10 @@
             $editform->display();
             echo $OUTPUT->footer();
             break;
+            
         case $actionDelete: 
             //breadcrumbs
-            $PAGE->navbar->add(get_string('manage_sections', 'resourcelib'), new moodle_url($returnurl)); 
+            //$PAGE->navbar->add(get_string('manage_sections', 'resourcelib'), new moodle_url($returnurl)); 
             $PAGE->navbar->add(get_string('deletesection', 'resourcelib'));
             
             if (isset($id) && confirm_sesskey()) { // Delete a selected resource type, after confirmation
@@ -205,5 +213,39 @@
                 }
             }
             break;
-
+            
+        case $actionAddResource:
+            require_once($CFG->dirroot.'/mod/resourcelib/form_additemtosection.php'); //include form_edittype.php  
+            //arbitrary param: section_id
+            $section = optional_param('section', 0, PARAM_INT);
+            //build url's
+            $urlView = new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$section));
+            $urlAction = new moodle_url($returnurl, array('action'=>$actionAddResource, 'section'=>$section));
+            //breadcrumbs
+            //$PAGE->navbar->add(get_string('manage_sections', 'resourcelib'), new moodle_url($returnurl)); 
+            $PAGE->navbar->add(get_string('viewsection', 'resourcelib'), $urlView);
+            $PAGE->navbar->add(get_string('add_section_resource', 'resourcelib'));
+            //get Section
+            $section = $DB->get_record('resource_sections', array('id'=>$section), '*', MUST_EXIST);
+            //get Resources
+            $items = get_notsection_items($section);
+            //create and show form instance
+            $editform = new mod_resourcelib_form_additemtosection($urlAction->out(false), array('section'=>$section, 'items'=>$items)); 
+            
+            if ($editform->is_cancelled()) {  //in cancel form case - redirect to previous page
+                //$url = new moodle_url($returnurl, array('action' => 'index'));
+                redirect($urlView);
+            } else if ($data = $editform->get_data()) {
+                //$inserted_id = add_resource_to_section($section->id, $resource_id, $data->sort_order);
+                $inserted_id = add_resource_to_section($data);
+                //$success = isset($inserted_id);
+                redirect($urlView);
+            }
+            //show form page
+            echo $OUTPUT->header();
+            echo $OUTPUT->heading(get_string('add_section_resource', 'resourcelib'));
+            $editform->display();
+            
+            echo $OUTPUT->footer();
+            break;
     }
