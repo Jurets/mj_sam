@@ -166,7 +166,7 @@ function get_section_items($data) {
     if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
         throw new coding_exception('Invalid $data parameter in get_section_items() detected');
     }
-    $sql = 'SELECT r.id, r.title, r.description, t.name AS type_name, t.icon_path
+    $sql = 'SELECT si.id, r.title, r.description, t.name AS type_name, t.icon_path
             FROM {resource_section_items} si 
                 LEFT JOIN {resource_items} r ON r.id = si.resource_item_id
                 LEFT JOIN {resource_types} t ON t.id = r.type_id
@@ -216,35 +216,86 @@ function add_resource_to_section($data) {
 }
 
 /**
+* create a delete button for data table
+* 
+* @param mixed $url
+* @param mixed $action
+* @param mixed $id
+* @return string
+*/
+function create_deletebutton($url, $action, $id) {
+    global $OUTPUT;
+    
+    $strdelete = get_string('delete');
+    return html_writer::link(
+        new moodle_url($url, array('action'=>$action, 'id'=>$id, 'sesskey'=>sesskey())), 
+        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), 
+        array('title'=>$strdelete)
+    );
+}
+
+/**
+* create a edit button for data table
+* 
+* @param mixed $url
+* @param mixed $action
+* @param mixed $id
+* @return string
+*/
+function create_editbutton($url, $action, $id) {
+    global $OUTPUT;
+    
+    $stredit   = get_string('edit');
+    return html_writer::link(
+        new moodle_url($url, array('action'=>'edit', 'id'=>$id)), 
+        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), 
+        array('title'=>$stredit)
+    );
+}
+
+/**
 * show resource items in HTML table
 * 
 * @param mixed $items - array of resource instances
 */
-function show_resource_items($items, $returnurl) {
+function show_resource_items($items, $returnurl, $buttons = null) {
     global $OUTPUT;
-    
-    $strview   = get_string('view');
-    $stredit   = get_string('edit');
-    $strdelete = get_string('delete');
-    
-    $table = new html_table();
-    $table->head = array(get_string('name'), get_string('description'), get_string('type', 'resourcelib'));
-    
-    foreach ($items as $item) {
-        $buttons = array();
-        $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>'delete', 'id'=>$item->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
-        $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>'edit', 'id'=>$item->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$stredit));
-        $table->data[] = array(
-            $item->title, 
-            $item->description, 
-            //$type->icon_path, 
-            html_writer::empty_tag('img', array('src'=>$item->icon_path, 'alt'=>$item->icon_path, /*'class'=>'iconsmall', */'title'=>$item->type_name)),
-            implode(' ', $buttons) 
-        );
+    //$strview   = get_string('view');
+
+    if (!$items || empty($items)) {
+        echo $OUTPUT->box(get_string('no_resources', 'resourcelib'), 'generalbox', 'notice');
+    } else {
+        if (!isset($buttons)) //default buttons
+            $buttons = array('delete'=>'delete', 'edit'=>'edit');
+        
+        $table = new html_table();
+        $table->head = array(get_string('name'), get_string('description'), get_string('type', 'resourcelib'));
+        
+        foreach ($items as $item) {
+            $buttons_column = array();
+            if (key_exists('delete', $buttons))
+                $buttons_column[] = create_deletebutton($returnurl, $buttons['delete'], $item->id);
+            if (key_exists('edit', $buttons))
+                $buttons_column[] = create_editbutton($returnurl, $buttons['edit'], $item->id);
+            $table->data[] = array(
+                $item->title, 
+                $item->description, 
+                //$type->icon_path, 
+                html_writer::empty_tag('img', array('src'=>$item->icon_path, 'alt'=>$item->icon_path, /*'class'=>'iconsmall', */'title'=>$item->type_name)),
+                implode(' ', $buttons_column) 
+            );
+        }
+        echo html_writer::table($table);
     }
-    echo html_writer::table($table);
 }
 
+/**
+* Show add button (usually near data table)
+* 
+* @param mixed $url
+* @param mixed $label
+* @param mixed $attributes
+*/
 function show_addbutton($url, $label, $attributes = array('class' => 'mdl-right')) {
     global $OUTPUT;
     echo html_writer::start_tag('div', $attributes);

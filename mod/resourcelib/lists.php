@@ -93,12 +93,13 @@
         case $actionEdit:
             require_once($CFG->dirroot.'/mod/resourcelib/form_editlist.php'); //include form_edittype.php  
             
+            $head_str = ($action == $actionAdd) ? get_string('addlist', 'resourcelib') : get_string('editlist', 'resourcelib');
+            $PAGE->navbar->add($head_str);
+
             if ($action == $actionAdd) { //add new type
-                $PAGE->navbar->add(get_string('addlist', 'resourcelib'));
                 $actionurl = new moodle_url($returnurl, array('action' => $actionAdd));
                 $list = array();        //empty data
             } else if (isset($id)){     //edit existing type ($id parameter must be present in URL)
-                $PAGE->navbar->add(get_string('editlist', 'resourcelib'));
                 $actionurl = new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$id));
                 $list = $DB->get_record('resource_lists', array('id'=>$id), '*', MUST_EXIST); //get data from DB
             }
@@ -128,7 +129,7 @@
             }
             //show form page
             echo $OUTPUT->header();
-            echo $OUTPUT->heading(get_string('addlist', 'resourcelib'));
+            echo $OUTPUT->heading($head_str);
             $editform->display();
             echo $OUTPUT->footer();
             break;

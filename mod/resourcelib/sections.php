@@ -57,7 +57,6 @@
 
     switch($action) {
         case $actionIndex:
-            //$PAGE->navbar->add(get_string('manage_sections', 'resourcelib')); //breadcrumbs
             echo $OUTPUT->header();
             echo $OUTPUT->heading(get_string('manage_sections', 'resourcelib'));
 
@@ -97,7 +96,6 @@
             break;
             
         case $actionView:
-            //$PAGE->navbar->add(get_string('manage_sections', 'resourcelib'), new moodle_url($returnurl)); //breadcrumbs
             $PAGE->navbar->add(get_string('viewsection', 'resourcelib'));
             echo $OUTPUT->header();
             echo $OUTPUT->heading(get_string('viewsection', 'resourcelib'));
@@ -133,12 +131,7 @@
             //add resource button
             show_addbutton(new moodle_url($returnurl, array('action' => $actionAddResource, 'section'=>$id)), get_string('add_section_resource', 'resourcelib'));
             //resources in table format
-            $items = get_section_items($section);
-            if (!$items || empty($items)) {
-                echo $OUTPUT->box(get_string('no_resources', 'resourcelib'), 'generalbox', 'notice');
-            } else {
-                show_resource_items($items, $returnurl);
-            }
+            show_resource_items(get_section_items($section), $returnurl, array('delete'=>'delfromsection'));
             //
             echo $OUTPUT->footer();
             break;
@@ -147,12 +140,13 @@
         case $actionEdit:
             require_once($CFG->dirroot.'/mod/resourcelib/form_editlist.php'); //include form_edititem.php  
             
+            $head_str = ($action == $actionAdd) ? get_string('addsection', 'resourcelib') : get_string('editsection', 'resourcelib');
+            $PAGE->navbar->add($head_str);
+            
             if ($action == $actionAdd) { //add new type
-                $PAGE->navbar->add(get_string('addsection', 'resourcelib'));
                 $actionurl = new moodle_url($returnurl, array('action' => $actionAdd));
                 $section = array();        //empty data
             } else if (isset($id)){     //edit existing type ($id parameter must be present in URL)
-                $PAGE->navbar->add(get_string('editsection', 'resourcelib'));
                 $actionurl = new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$id));
                 $section = $DB->get_record('resource_sections', array('id'=>$id), '*', MUST_EXIST); //get data from DB
             }
@@ -182,7 +176,7 @@
             }
             //show form page
             echo $OUTPUT->header();
-            echo $OUTPUT->heading(get_string('addsection', 'resourcelib'));
+            echo $OUTPUT->heading($head_str);
             $editform->display();
             echo $OUTPUT->footer();
             break;
@@ -213,6 +207,7 @@
             
         case $actionAddResource:
             require_once($CFG->dirroot.'/mod/resourcelib/form_additemtosection.php'); //include form_edittype.php  
+            
             //arbitrary param: section_id
             $section = optional_param('section', 0, PARAM_INT);
             //build url's
