@@ -31,7 +31,6 @@
     $actionDelete = 'delete';
     $actionView = 'view';
     $actionAddResource = 'addres';
-    //$actions = array('index');
     
     /// Security
     $systemcontext = context_system::instance();
@@ -146,7 +145,6 @@
             
         case $actionAdd:
         case $actionEdit:
-            //$PAGE->navbar->add(get_string('manage_sections', 'resourcelib'), new moodle_url($returnurl)); //breadcrumbs
             require_once($CFG->dirroot.'/mod/resourcelib/form_editlist.php'); //include form_edititem.php  
             
             if ($action == $actionAdd) { //add new type
@@ -191,7 +189,6 @@
             
         case $actionDelete: 
             //breadcrumbs
-            //$PAGE->navbar->add(get_string('manage_sections', 'resourcelib'), new moodle_url($returnurl)); 
             $PAGE->navbar->add(get_string('deletesection', 'resourcelib'));
             
             if (isset($id) && confirm_sesskey()) { // Delete a selected resource type, after confirmation
@@ -222,7 +219,6 @@
             $urlView = new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$section));
             $urlAction = new moodle_url($returnurl, array('action'=>$actionAddResource, 'section'=>$section));
             //breadcrumbs
-            //$PAGE->navbar->add(get_string('manage_sections', 'resourcelib'), new moodle_url($returnurl)); 
             $PAGE->navbar->add(get_string('viewsection', 'resourcelib'), $urlView);
             $PAGE->navbar->add(get_string('add_section_resource', 'resourcelib'));
             //get Section
@@ -233,12 +229,9 @@
             $editform = new mod_resourcelib_form_additemtosection($urlAction->out(false), array('section'=>$section, 'items'=>$items)); 
             
             if ($editform->is_cancelled()) {  //in cancel form case - redirect to previous page
-                //$url = new moodle_url($returnurl, array('action' => 'index'));
                 redirect($urlView);
             } else if ($data = $editform->get_data()) {
-                //$inserted_id = add_resource_to_section($section->id, $resource_id, $data->sort_order);
                 $inserted_id = add_resource_to_section($data);
-                //$success = isset($inserted_id);
                 redirect($urlView);
             }
             //show form page

@@ -47,10 +47,14 @@
     $PAGE->set_pagelayout('admin');     
     //breadcrumbs
     $PAGE->navbar->add(get_string('administration', 'resourcelib'), new moodle_url($mainurl)); 
+    if ($action == $actionIndex) {
+        $PAGE->navbar->add(get_string('manage_lists', 'resourcelib'));
+    } else {
+        $PAGE->navbar->add(get_string('manage_lists', 'resourcelib'), new moodle_url($returnurl));
+    }
 
     switch($action) {
         case $actionIndex:
-            $PAGE->navbar->add(get_string('manage_lists', 'resourcelib')); //breadcrumbs
             echo $OUTPUT->header();
             echo $OUTPUT->heading(get_string('manage_lists', 'resourcelib'));
 
@@ -91,8 +95,6 @@
             break;
         case $actionAdd:
         case $actionEdit:
-            $PAGE->navbar->add(get_string('manage_lists', 'resourcelib'), new moodle_url($returnurl)); //breadcrumbs
-
             require_once($CFG->dirroot.'/mod/resourcelib/form_editlist.php'); //include form_edittype.php  
             
             if ($action == $actionAdd) { //add new type
@@ -136,7 +138,6 @@
             break;
         case $actionDelete: 
             //breadcrumbs
-            $PAGE->navbar->add(get_string('manage_lists', 'resourcelib'), new moodle_url($returnurl)); 
             $PAGE->navbar->add(get_string('deletelist', 'resourcelib'));
             
             if (isset($id) && confirm_sesskey()) { // Delete a selected resource type, after confirmation

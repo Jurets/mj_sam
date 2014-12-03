@@ -166,12 +166,6 @@ function get_section_items($data) {
     if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
         throw new coding_exception('Invalid $data parameter in get_section_items() detected');
     }
-    // Better not trust the parameter and fetch the latest info this will be very expensive anyway.
-    /*if (!$count = $DB->count_records('resource_section_items', array('resource_section_id' => $data->id))) {
-        debugging('Attempt to get unknown Resource List Section.');
-        return false;
-    }*/
-    
     $sql = 'SELECT r.id, r.title, r.description, t.name AS type_name, t.icon_path
             FROM {resource_section_items} si 
                 LEFT JOIN {resource_items} r ON r.id = si.resource_item_id
@@ -217,24 +211,8 @@ function get_notsection_items($data) {
 //function add_resource_to_section($section_id, $resource_id, $sort_order) {
 function add_resource_to_section($data) {
     global $DB;
-    /*$section_item = new stdClass();
-    $section_item->resource_section_id = $section_id;
-    $section_item->resource_item_id = $resource_id;
-    $section_item->sort_order = $sort_order;*/
-    //$params = array();
-//    $params[] = $data->resource_section_id;
-//    $params[] = $data->resource_item_id;
-//    $params[] = $data->sort_order;
-    /*$result = $DB->insert_record_raw('resource_section_items', array(
-        'resource_section_id'=>$data->resource_section_id, 
-        'resource_item_id'=>$data->resource_item_id, 
-        'sort_order'=>$data->sort_order,
-        'id'=>0, //костыль
-    ), false, false, true);*/
-    //return $DB->insert_record_raw('resource_section_items', (array)$section_item, false, false, $customsequence=false);
     $result = $DB->insert_record('resource_section_items', $data);
     return $result;
-    //return $result;
 }
 
 /**
@@ -252,7 +230,6 @@ function show_resource_items($items, $returnurl) {
     $table = new html_table();
     $table->head = array(get_string('name'), get_string('description'), get_string('type', 'resourcelib'));
     
-    //$items = get_resourceitems();
     foreach ($items as $item) {
         $buttons = array();
         $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>'delete', 'id'=>$item->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
@@ -268,11 +245,9 @@ function show_resource_items($items, $returnurl) {
     echo html_writer::table($table);
 }
 
-function show_addbutton($url, $label, /*$action = 'add', */$attributes = array('class' => 'mdl-right')) {
+function show_addbutton($url, $label, $attributes = array('class' => 'mdl-right')) {
     global $OUTPUT;
-    //$url = new moodle_url($returnurl, array('action' => $action));
-    //$icon = $OUTPUT->pix_icon('t/add', '');
     echo html_writer::start_tag('div', $attributes);
-    echo html_writer::tag('a', $OUTPUT->pix_icon('t/add', '') . ' ' . $label/*get_string('addsection', 'resourcelib')*/, array('href' => $url->out(false)));
+    echo html_writer::tag('a', $OUTPUT->pix_icon('t/add', '') . ' ' . $label, array('href' => $url->out(false)));
     echo html_writer::end_tag('div');
 }
