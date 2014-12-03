@@ -80,15 +80,15 @@ class mod_resourcelib_form_edititem extends moodleform {
         
         //DebugBreak();        
         //if (isset($this->_customdata['data']) && is_object($this->_customdata['data'])) {
-        if (isset($data)) {
+        /*if (isset($data)) {
             $this->set_data($data);
-            if (!empty($data->icon_path)/* && $hasuploadedpicture*/) {
+            if (!empty($data->icon_path) && $hasuploadedpicture) {
                 $imagevalue = html_writer::empty_tag('img', array('src'=>$data->icon_path, 'alt'=>$data->icon_path));
             } else {
                 $imagevalue = get_string('none');
             }
             $currentpicture->setValue($imagevalue);
-        }
+        }*/
         
         $this->add_action_buttons();
         

@@ -35,64 +35,43 @@
     require_capability('moodle/site:config', $systemcontext);
 
     /// Build page
+    $mainurl = $CFG->wwwroot.'/mod/resourcelib/admin.php';
     $returnurl = $CFG->wwwroot.'/mod/resourcelib/items.php';
     $PAGE->set_url($returnurl);
     $PAGE->set_context($systemcontext);
     $PAGE->set_title($SITE->fullname);
     $PAGE->set_heading($SITE->fullname);
-    //$PAGE->set_focuscontrol(build_navigation(array()));
 
     //page layout
     $PAGE->set_pagelayout('admin');     
     //breadcrumbs
-    $PAGE->navbar->add(get_string('administration', 'resourcelib'), new moodle_url($CFG->wwwroot.'/mod/resourcelib/admin.php')); 
+    $PAGE->navbar->add(get_string('administration', 'resourcelib'), new moodle_url($mainurl)); 
+    if ($action == $actionIndex) {
+        $PAGE->navbar->add(get_string('manage_items', 'resourcelib'));
+    } else {
+        $PAGE->navbar->add(get_string('manage_items', 'resourcelib'), new moodle_url($returnurl));
+    }
 
     switch($action) {
         case $actionIndex:
-            $PAGE->navbar->add(get_string('manage_items', 'resourcelib')); //breadcrumbs
             echo $OUTPUT->header();
             echo $OUTPUT->heading(get_string('manage_items', 'resourcelib'));
-
-            $stredit   = get_string('edit');
-            $strdelete = get_string('delete');
-            $table = new html_table();
-            $table->head = array(get_string('name'), get_string('description'), get_string('type', 'resourcelib'));
-            
-            $items = get_resourceitems();
-            foreach ($items as $item) {
-                $buttons = array();
-                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionDelete, 'id'=>$item->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
-                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionEdit, 'id'=>$item->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$stredit));
-                $table->data[] = array(
-                    $item->title, 
-                    $item->description, 
-                    //$type->icon_path, 
-                    html_writer::empty_tag('img', array('src'=>$item->icon_path, 'alt'=>$item->icon_path, /*'class'=>'iconsmall', */'title'=>$item->type_name)),
-                    implode(' ', $buttons) 
-                );
-            }
             //add type button
-            $url = new moodle_url($returnurl, array('action' => $actionAdd));
-            $icon = $OUTPUT->pix_icon('t/add', '');
-            echo html_writer::start_tag('div', array('class' => 'mdl-right'));
-            echo html_writer::tag('a', $icon . ' ' . get_string('additem', 'resourcelib'), array('href' => $url->out()));
-            echo html_writer::end_div();
-            //table with types data
-            echo html_writer::table($table);
+            show_addbutton(new moodle_url($returnurl, array('action' => $actionAdd)), get_string('additem', 'resourcelib'));
+            //show table with items data
+            show_resource_items(get_resourceitems(), $returnurl);
             echo $OUTPUT->footer();
             break;
         case $actionAdd:
         case $actionEdit:
-            $PAGE->navbar->add(get_string('manage_items', 'resourcelib'), new moodle_url($returnurl)); //breadcrumbs
-
             require_once($CFG->dirroot.'/mod/resourcelib/form_edititem.php'); //include form_edittype.php  
             
             if ($action == $actionAdd) { //add new type
-                $PAGE->navbar->add(get_string('addtype', 'resourcelib'));
+                $PAGE->navbar->add(get_string('additem', 'resourcelib'));
                 $actionurl = new moodle_url($returnurl, array('action' => $actionAdd));
                 $item = null;        //empty data
             } else if (isset($id)){     //edit existing type ($id parameter must be present in URL)
-                $PAGE->navbar->add(get_string('edittype', 'resourcelib'));
+                $PAGE->navbar->add(get_string('edititem', 'resourcelib'));
                 $actionurl = new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$id));
                 $item = $DB->get_record('resource_items', array('id'=>$id), '*', MUST_EXIST); //get data from DB
             }
@@ -103,9 +82,9 @@
             $editform = new mod_resourcelib_form_edititem($actionurl->out(false), array('item'=>$item, 'types'=>$types)); //create form instance
             //$editform->is_submitted()
             if ($editform->is_cancelled()) {  //in cancel form case - redirect to previous page
-                $url = new moodle_url($returnurl, array('action' => 'types'));
+                $url = new moodle_url($returnurl, array('action' => 'index'));
                 redirect($url);
-            } else if ($data = $editform->get_data()) {DebugBreak();
+            } else if ($data = $editform->get_data()) {
                 if ($action == $actionAdd) {
                     $inserted_id = add_resourceitem($data);
                     $success = isset($id);
@@ -125,29 +104,25 @@
             break;
         case $actionDelete: 
             //breadcrumbs
-            $PAGE->navbar->add(get_string('manage_items', 'resourcelib'), new moodle_url($returnurl)); 
-            $PAGE->navbar->add(get_string('deletetype', 'resourcelib'));
+            $PAGE->navbar->add(get_string('deleteitem', 'resourcelib'));
             
-            if (isset($id) && confirm_sesskey()) { // Delete a selected resource type, after confirmation
-                $type = $DB->get_record('resource_items', array('id'=>$id), '*', MUST_EXIST);
+            if (isset($id) && confirm_sesskey()) { // Delete a selected resource item, after confirmation
+                $item = $DB->get_record('resource_items', array('id'=>$id), '*', MUST_EXIST);
 
                 if ($confirm != md5($id)) {
                     echo $OUTPUT->header();
-                    echo $OUTPUT->heading(get_string('deletetype', 'resourcelib'));
+                    echo $OUTPUT->heading(get_string('deleteitem', 'resourcelib'));
                     $optionsyes = array('action'=>$actionDelete, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
-                    echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$type->name'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                    echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$item->title'"), new moodle_url($returnurl, $optionsyes), $returnurl);
                     echo $OUTPUT->footer();
                 } else if (data_submitted() /*&& !$data->deleted*/){
-                    if (deletete_resourcetype($type)) {
-                        //\core\session\manager::gc(); // Remove stale sessions.
+                    if (deletete_resourcetype($item)) {
                         $url = new moodle_url($returnurl, array('action' => 'types'));
                         redirect($url);
                     } else {
-                        //\core\session\manager::gc(); // Remove stale sessions.
-                        echo $OUTPUT->notification($returnurl, get_string('deletednot', '', $type->name));
+                        echo $OUTPUT->notification($returnurl, get_string('deletednot', '', $item->name));
                     }
                 }
             }
             break;
-
     }

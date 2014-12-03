@@ -84,8 +84,6 @@ function get_resourceitems() {
                           FROM {resource_items} ri LEFT JOIN {resource_types} rt ON rt.id = ri.type_id');
 }
 
-
-
 function add_resourceitem($data) {
     global $DB;
     return $DB->insert_record('resource_items', $data);
@@ -94,4 +92,213 @@ function add_resourceitem($data) {
 function edit_resourceitem($data) {
     global $DB;
     return $DB->update_record('resource_items', $data);
+}
+
+
+function get_resourcelists() {
+    global $DB;
+    return $DB->get_records('resource_lists');
+}
+
+function add_resourcelist($data) {
+    global $DB;
+    return $DB->insert_record('resource_lists', $data);
+}
+
+function edit_resourcelist($data) {
+    global $DB;
+    return $DB->update_record('resource_lists', $data);
+}
+
+function deletete_resourcelist($data) {
+    global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in deletete_resourcelist() detected');
+    }
+    // Better not trust the parameter and fetch the latest info this will be very expensive anyway.
+    if (!$type = $DB->get_record('resource_lists', array('id' => $data->id))) {
+        debugging('Attempt to delete unknown Resource List.');
+        return false;
+    }
+    return $DB->delete_records('resource_lists', array('id' => $data->id));
+}
+
+
+function get_resourcesections() {
+    global $DB;
+    return $DB->get_records('resource_sections');
+}
+
+function add_resourcesection($data) {
+    global $DB;
+    return $DB->insert_record('resource_sections', $data);
+}
+
+function edit_resourcesection($data) {
+    global $DB;
+    return $DB->update_record('resource_sections', $data);
+}
+
+function deletete_resourcesection($data) {
+    global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in deletete_resourcesection() detected');
+    }
+    // Better not trust the parameter and fetch the latest info this will be very expensive anyway.
+    if (!$type = $DB->get_record('resource_lists', array('id' => $data->id))) {
+        debugging('Attempt to delete unknown Resource Section.');
+        return false;
+    }
+    return $DB->delete_records('resource_sections', array('id' => $data->id));
+}
+
+/**
+* get resource items for section
+* 
+* @param mixed $data - section instance
+* @return array
+*/
+function get_section_items($data) {
+     global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in get_section_items() detected');
+    }
+    $sql = 'SELECT si.id, r.title, r.description, t.name AS type_name, t.icon_path
+            FROM {resource_section_items} si 
+                LEFT JOIN {resource_items} r ON r.id = si.resource_item_id
+                LEFT JOIN {resource_types} t ON t.id = r.type_id
+            WHERE si.resource_section_id = ?
+            ORDER BY si.sort_order';
+    $items = $DB->get_records_sql($sql, array($data->id));
+    if (!$items)
+        $items = array();
+    return $items;
+}
+
+/**
+* get resource items wich is not in section
+* 
+* @param mixed $data - section instance
+* @return array
+*/
+function get_notsection_items($data) {
+     global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in get_notsection_items() detected');
+    }
+    $sql = 'SELECT r.id, r.title
+            FROM {resource_items} r 
+              LEFT JOIN {resource_types} t ON t.id = r.type_id
+            WHERE r.id NOT IN 
+              (SELECT si.resource_item_id FROM {resource_section_items} si WHERE si.resource_section_id = ?)';
+    $items = $DB->get_records_sql_menu($sql, array($data->id));
+    if (!$items)
+        $items = array();
+    return $items;
+}
+
+/**
+* put your comment there...
+* 
+* @param mixed $section_id
+* @param mixed $resource_id
+* @param mixed $sort_order
+*/
+//function add_resource_to_section($section_id, $resource_id, $sort_order) {
+function add_resource_to_section($data) {
+    global $DB;
+    $result = $DB->insert_record('resource_section_items', $data);
+    return $result;
+}
+
+/**
+* create a delete button for data table
+* 
+* @param mixed $url
+* @param mixed $action
+* @param mixed $id
+* @return string
+*/
+function create_deletebutton($url, $action, $id) {
+    global $OUTPUT;
+    
+    $strdelete = get_string('delete');
+    return html_writer::link(
+        new moodle_url($url, array('action'=>$action, 'id'=>$id, 'sesskey'=>sesskey())), 
+        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), 
+        array('title'=>$strdelete)
+    );
+}
+
+/**
+* create a edit button for data table
+* 
+* @param mixed $url
+* @param mixed $action
+* @param mixed $id
+* @return string
+*/
+function create_editbutton($url, $action, $id) {
+    global $OUTPUT;
+    
+    $stredit   = get_string('edit');
+    return html_writer::link(
+        new moodle_url($url, array('action'=>'edit', 'id'=>$id)), 
+        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), 
+        array('title'=>$stredit)
+    );
+}
+
+/**
+* show resource items in HTML table
+* 
+* @param mixed $items - array of resource instances
+*/
+function show_resource_items($items, $returnurl, $buttons = null) {
+    global $OUTPUT;
+    //$strview   = get_string('view');
+
+    if (!$items || empty($items)) {
+        echo $OUTPUT->box(get_string('no_resources', 'resourcelib'), 'generalbox', 'notice');
+    } else {
+        if (!isset($buttons)) //default buttons
+            $buttons = array('delete'=>'delete', 'edit'=>'edit');
+        
+        $table = new html_table();
+        $table->head = array(get_string('name'), get_string('description'), get_string('type', 'resourcelib'));
+        
+        foreach ($items as $item) {
+            $buttons_column = array();
+            if (key_exists('delete', $buttons))
+                $buttons_column[] = create_deletebutton($returnurl, $buttons['delete'], $item->id);
+            if (key_exists('edit', $buttons))
+                $buttons_column[] = create_editbutton($returnurl, $buttons['edit'], $item->id);
+            $table->data[] = array(
+                $item->title, 
+                $item->description, 
+                //$type->icon_path, 
+                html_writer::empty_tag('img', array('src'=>$item->icon_path, 'alt'=>$item->icon_path, /*'class'=>'iconsmall', */'title'=>$item->type_name)),
+                implode(' ', $buttons_column) 
+            );
+        }
+        echo html_writer::table($table);
+    }
+}
+
+/**
+* Show add button (usually near data table)
+* 
+* @param mixed $url
+* @param mixed $label
+* @param mixed $attributes
+*/
+function show_addbutton($url, $label, $attributes = array('class' => 'mdl-right')) {
+    global $OUTPUT;
+    echo html_writer::start_tag('div', $attributes);
+    echo html_writer::tag('a', $OUTPUT->pix_icon('t/add', '') . ' ' . $label, array('href' => $url->out(false)));
+    echo html_writer::end_tag('div');
 }
