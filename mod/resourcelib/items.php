@@ -84,7 +84,7 @@
             if ($editform->is_cancelled()) {  //in cancel form case - redirect to previous page
                 $url = new moodle_url($returnurl, array('action' => 'index'));
                 redirect($url);
-            } else if ($data = $editform->get_data()) {DebugBreak();
+            } else if ($data = $editform->get_data()) {
                 if ($action == $actionAdd) {
                     $inserted_id = add_resourceitem($data);
                     $success = isset($id);

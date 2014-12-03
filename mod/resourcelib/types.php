@@ -47,10 +47,14 @@
     $PAGE->set_pagelayout('admin');     
     //breadcrumbs
     $PAGE->navbar->add(get_string('administration', 'resourcelib'), new moodle_url($mainurl));
+    if ($action == $actionIndex) {
+        $PAGE->navbar->add(get_string('manage_types', 'resourcelib'));
+    } else {
+        $PAGE->navbar->add(get_string('manage_types', 'resourcelib'), new moodle_url($returnurl));
+    }
 
     switch($action) {
         case $actionIndex:
-            $PAGE->navbar->add(get_string('manage_types', 'resourcelib')); //breadcrumbs
             echo $OUTPUT->header();
             echo $OUTPUT->heading(get_string('manage_types', 'resourcelib'));
 
@@ -71,19 +75,14 @@
                 );
             }
             //add type button
-            $url = new moodle_url($returnurl, array('action' => $actionAdd));
-            $icon = $OUTPUT->pix_icon('t/add', '');
-            echo html_writer::start_tag('div', array('class' => 'mdl-right'));
-            echo html_writer::tag('a', $icon . ' ' . get_string('addtype', 'resourcelib'), array('href' => $url->__toString()));
-            echo html_writer::end_tag('div');
+            show_addbutton(new moodle_url($returnurl, array('action' => $actionAdd)), get_string('addtype', 'resourcelib'));
             //table with types data
             echo html_writer::table($table);
             echo $OUTPUT->footer();
             break;
+            
         case $actionAdd:
         case $actionEdit:
-            $PAGE->navbar->add(get_string('manage_types', 'resourcelib'), new moodle_url($returnurl)); //breadcrumbs
-
             require_once($CFG->dirroot.'/mod/resourcelib/form_edittype.php'); //include form_edittype.php  
             
             if ($action == $actionAdd) { //add new type
@@ -125,9 +124,9 @@
             $editform->display();
             echo $OUTPUT->footer();
             break;
+            
         case $actionDelete: 
             //breadcrumbs
-            $PAGE->navbar->add(get_string('manage_types', 'resourcelib'), new moodle_url($returnurl)); 
             $PAGE->navbar->add(get_string('deletetype', 'resourcelib'));
             
             if (isset($id) && confirm_sesskey()) { // Delete a selected resource type, after confirmation

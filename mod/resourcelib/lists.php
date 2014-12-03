@@ -84,11 +84,7 @@
                 );
             }
             //add type button
-            $url = new moodle_url($returnurl, array('action' => $actionAdd));
-            $icon = $OUTPUT->pix_icon('t/add', '');
-            echo html_writer::start_tag('div', array('class' => 'mdl-right'));
-            echo html_writer::tag('a', $icon . ' ' . get_string('addlist', 'resourcelib'), array('href' => $url->out()));
-            echo html_writer::end_tag('div');
+            show_addbutton(new moodle_url($returnurl, array('action' => $actionAdd)), get_string('addlist', 'resourcelib'));
             //table with types data
             echo html_writer::table($table);
             echo $OUTPUT->footer();
