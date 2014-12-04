@@ -70,7 +70,12 @@
                 $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionEdit, 'id'=>$type->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$stredit));
                 $table->data[] = array(
                     $type->name, 
-                    html_writer::empty_tag('img', array('src'=>$type->icon_path, 'alt'=>$type->icon_path, 'class'=>'iconmedium')) . ' ' . $type->icon_path,
+                    html_writer::empty_tag('img', array(
+                        'src'=>$type->icon_path, 
+                        'alt'=>$type->icon_path, 
+                        'class'=>'iconsmall', 
+                        'style'=>'width: 30px; height: 30px;'
+                    )) . ' ' . $type->icon_path,
                     implode(' ', $buttons)
                 );
             }

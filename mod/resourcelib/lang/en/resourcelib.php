@@ -79,3 +79,4 @@ $string['missing_resource'] = 'Missing Resource';
 $string['no_resources'] = 'There is no Resources in this Section';
 $string['deletecheck_resurce_fromsection'] = 'Are you absolutely sure you want to delete resource {$a} from section?';
 $string['deletecheck_section_fromlist'] = 'Are you absolutely sure you want to delete section {$a} from list?';
+$string['enter_estimated_time'] = 'Enter estimated time to read this resource IN WHOLE MINUTES';

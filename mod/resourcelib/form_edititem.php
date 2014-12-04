@@ -29,13 +29,13 @@ class mod_resourcelib_form_edititem extends moodleform {
         $mform->addRule('type_id', get_string('missingname'), 'required', null, 'client');
 
         //resourceItem: Title
-        $mform->addElement('text', 'title', get_string('name')); // Add elements to your form
+        $mform->addElement('text', 'title', get_string('name'), array('style'=>'width: 400px')); // Add elements to your form
         $mform->setType('title', PARAM_TEXT);                   //Set type of element
         $mform->addRule('title', get_string('missingname'), 'required', null, 'client');
         $mform->addRule('title', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
         //resourceItem: URL
-        $mform->addElement('text', 'url', get_string('url')); // Add elements to your form
+        $mform->addElement('text', 'url', get_string('url'), array('style'=>'width: 100%')); // Add elements to your form
         $mform->setType('url', PARAM_TEXT);                   //Set type of element
         $mform->addRule('url', get_string('missingurl'), 'required', null, 'client');
         $mform->addRule('url', get_string('maximumchars', '', 512), 'maxlength', 512, 'client');
@@ -56,8 +56,10 @@ class mod_resourcelib_form_edititem extends moodleform {
         $mform->addRule('copyright', get_string('maximumchars', '', 64), 'maxlength', 64, 'client');
 
         //resourceItem: Time Estimate
-        $mform->addElement('text', 'time_estimate', get_string('time_estimate', 'resourcelib')); // Add elements to your form
-        $mform->setType('time_estimate', PARAM_INT);                   //Set type of element
+        $mform->addElement('text', 'time_estimate', get_string('time_estimate', 'resourcelib'), array(
+            'placeholder'=>get_string('enter_estimated_time', 'resourcelib') 
+        )); // Add elements to your form
+        $mform->setType('time_estimate', PARAM_TEXT);                   //Set type of element
 
         //resourceItem: Tags
         $mform->addElement('text', 'tags', get_string('tags')); // Add elements to your form
@@ -65,30 +67,23 @@ class mod_resourcelib_form_edititem extends moodleform {
         $mform->addRule('tags', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
         //resourceItem: Embed Code
-        $mform->addElement('textarea', 'embed_code', get_string('embed_code', 'resourcelib')); // Add elements to your form
+        $mform->addElement('textarea', 'embed_code', get_string('embed_code', 'resourcelib'), array(
+            'rows'=>3, 
+            'style'=>'width: 100%',
+        )); // Add elements to your form
         $mform->setType('embed_code', PARAM_TEXT);                   //Set type of element
 
         //resourceItem: description
-        $mform->addElement('textarea', 'description', get_string('description')); // Add elements to your form
+        $mform->addElement('textarea', 'description', get_string('description'), array(
+            'rows'=>5, 
+            'style'=>'width: 100%',
+        )); // Add elements to your form
         $mform->setType('description', PARAM_TEXT);                   //Set type of element
         $mform->addRule('description', get_string('missingdescription'), 'required', null, 'client');
 
-        //$currentpicture = $mform->addElement('static', 'currentpicture', get_string('currentpicture'));
-        //$filepicker = $mform->addElement('filepicker', 'icon_path', get_string('newpicture'), null, array('accepted_types' => 'gif,png,ico')); // Add elements to your form
-        //$mform->setType('icon_path', PARAM_TEXT);                   //Set type of element
-        //$mform->setDefault('icon_path', 'Please select icon');        //Default value
-        
-        //DebugBreak();        
-        //if (isset($this->_customdata['data']) && is_object($this->_customdata['data'])) {
-        /*if (isset($data)) {
+        if (isset($data)) {
             $this->set_data($data);
-            if (!empty($data->icon_path) && $hasuploadedpicture) {
-                $imagevalue = html_writer::empty_tag('img', array('src'=>$data->icon_path, 'alt'=>$data->icon_path));
-            } else {
-                $imagevalue = get_string('none');
-            }
-            $currentpicture->setValue($imagevalue);
-        }*/
+        }
         
         $this->add_action_buttons();
         

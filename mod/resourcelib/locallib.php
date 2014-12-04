@@ -41,7 +41,7 @@ defined('MOODLE_INTERNAL') || die();
 * put your comment there...
 * 
 */
-function get_resourcetypes() {
+function get_types() {
     global $DB;
     return $DB->get_records('resource_types');
 }
@@ -63,6 +63,12 @@ function edit_type($data) {
     return $DB->update_record('resource_types', $data);
 }
 
+/**
+* delete Resource Type
+* 
+* @param mixed $data - instance of Resource Type
+* @return bool
+*/
 function delete_type($data) {
     global $DB;
     // Make sure nobody sends bogus record type as parameter.
@@ -94,6 +100,25 @@ function edit_resource($data) {
     return $DB->update_record('resource_items', $data);
 }
 
+/**
+* delete Resource
+* 
+* @param mixed $data - instance of Resource
+* @return bool
+*/
+function delete_resource($data) {
+    global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in delete_resource() detected');
+    }
+    // Better not trust the parameter and fetch the latest info this will be very expensive anyway.
+    if (!$type = $DB->get_record('resource_items', array('id' => $data->id))) {
+        debugging('Attempt to delete unknown Resource.');
+        return false;
+    }
+    return $DB->delete_records('resource_items', array('id' => $data->id));
+}
 
 function get_lists() {
     global $DB;
