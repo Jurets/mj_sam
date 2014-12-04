@@ -67,7 +67,7 @@
                 get_string('icon')
             );
             //get list of data
-            $lists = get_resourcelists();
+            $lists = get_lists();
             foreach ($lists as $list) {
                 $buttons = array();
                 $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionDelete, 'id'=>$list->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
@@ -117,10 +117,10 @@
                     }
                 }
                 if ($action == $actionAdd) {
-                    $inserted_id = add_resourcelist($data);
+                    $inserted_id = add_list($data);
                     $success = isset($id);
                 } else if (isset($id)){
-                    $success = edit_resourcelist($data);
+                    $success = edit_list($data);
                 }
                 if ($success){  //call create Resource Type function
                     $url = new moodle_url($returnurl, array('action' => 'index'));
@@ -147,7 +147,7 @@
                     echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$list->name'"), new moodle_url($returnurl, $optionsyes), $returnurl);
                     echo $OUTPUT->footer();
                 } else if (data_submitted() /*&& !$data->deleted*/){
-                    if (deletete_resourcelist($list)) {
+                    if (delete_list($list)) {
                         $url = new moodle_url($returnurl, array('action' => 'index'));
                         redirect($url);
                     } else {

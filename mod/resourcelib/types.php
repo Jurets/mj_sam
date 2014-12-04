@@ -63,7 +63,7 @@
             $table = new html_table();
             $table->head = array(get_string('name'), get_string('icon'));
             //get list of types
-            $types = get_resourcetypes();
+            $types = get_types();
             foreach ($types as $type) {
                 $buttons = array();
                 $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionDelete, 'id'=>$type->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
@@ -108,10 +108,10 @@
                     }
                 }
                 if ($action == $actionAdd) {
-                    $inserted_id = add_resourcetype($data);
+                    $inserted_id = add_type($data);
                     $success = isset($id);
                 } else if (isset($id)){
-                    $success = edit_resourcetype($data);
+                    $success = edit_type($data);
                 }
                 if ($success){  //call create Resource Type function
                     $url = new moodle_url($returnurl, array('action' => 'index'));
@@ -139,7 +139,7 @@
                     echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$type->name'"), new moodle_url($returnurl, $optionsyes), $returnurl);
                     echo $OUTPUT->footer();
                 } else if (data_submitted() /*&& !$data->deleted*/){
-                    if (deletete_resourcetype($type)) {
+                    if (delete_type($type)) {
                         //\core\session\manager::gc(); // Remove stale sessions.
                         $url = new moodle_url($returnurl, array('action' => 'index'));
                         redirect($url);

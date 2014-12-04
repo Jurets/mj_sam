@@ -56,6 +56,7 @@ $string['editsection'] = 'Edit Section';
 $string['deletesection'] = 'Delete Section';
 $string['viewsection'] = 'View Section';
 $string['add_section_resource'] = 'Add Resource to Section';
+$string['del_section_resource'] = 'Delete Resource from Section';
 
 $string['addlist'] = 'Add Resource List';
 $string['editlist'] = 'Edit Resource List';
@@ -76,3 +77,5 @@ $string['embed_code'] = 'Embed Code';
 $string['display_name'] = 'Display Name';
 $string['missing_resource'] = 'Missing Resource';
 $string['no_resources'] = 'There is no Resources in this Section';
+$string['deletecheck_resurce_fromsection'] = 'Are you absolutely sure you want to delete resource {$a} from section?';
+$string['deletecheck_section_fromlist'] = 'Are you absolutely sure you want to delete section {$a} from list?';

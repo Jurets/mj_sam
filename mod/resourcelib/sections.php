@@ -15,7 +15,7 @@
     require_once('lib.php');
     require_once('locallib.php');
     require_once($CFG->libdir.'/outputcomponents.php');
-
+    
     /// Input params
     $id = optional_param('id', 0, PARAM_INT); //admin action for mooc-settings
     $confirm = optional_param('confirm', '', PARAM_ALPHANUM);   //md5 confirmation hash
@@ -30,7 +30,8 @@
     $actionEdit = 'edit';
     $actionDelete = 'delete';
     $actionView = 'view';
-    $actionAddResource = 'addres';
+    $actionAddResource = 'addtosection';
+    $actionDelResource = 'delfromsection';
     
     /// Security
     $systemcontext = context_system::instance();
@@ -70,7 +71,7 @@
                 get_string('icon')
             );
             //get list of data
-            $sections = get_resourcesections();
+            $sections = get_sections();
             foreach ($sections as $section) {
                 $buttons = array();
                 $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionView,  'id'=>$section->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/show'), 'alt'=>$strview, 'class'=>'iconsmall')), array('title'=>$strview));
@@ -131,7 +132,7 @@
             //add resource button
             show_addbutton(new moodle_url($returnurl, array('action' => $actionAddResource, 'section'=>$id)), get_string('add_section_resource', 'resourcelib'));
             //resources in table format
-            show_resource_items(get_section_items($section), $returnurl, array('delete'=>'delfromsection'));
+            show_resource_items(get_section_items($section), $returnurl, array('delete'=>$actionDelResource));
             //
             echo $OUTPUT->footer();
             break;
@@ -164,10 +165,10 @@
                     }
                 }
                 if ($action == $actionAdd) {
-                    $inserted_id = add_resourcesection($data);
+                    $inserted_id = add_section($data);
                     $success = isset($id);
                 } else if (isset($id)){
-                    $success = edit_resourcesection($data);
+                    $success = edit_section($data);
                 }
                 if ($success){  //call create Resource Type function
                     $url = new moodle_url($returnurl, array('action' => 'index'));
@@ -235,5 +236,32 @@
             $editform->display();
             
             echo $OUTPUT->footer();
+            break;  
+            
+        case $actionDelResource: 
+            //breadcrumbs
+            $head_str = get_string('del_section_resource', 'resourcelib');
+            $PAGE->navbar->add($head_str);
+            
+            if (isset($id) && confirm_sesskey()) { // Delete a selected resource from section, after confirmation
+                //$resource = $DB->get_record('resource_section_items', array('id'=>$id), '*', MUST_EXIST);
+                $resource = get_resource_fromsection($id);
+
+                if ($confirm != md5($id)) {
+                    echo $OUTPUT->header();
+                    echo $OUTPUT->heading($head_str);
+                    $optionsyes = array('action'=>$actionDelResource, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
+                    echo $OUTPUT->confirm(get_string('deletecheck_resurce_fromsection', 'resourcelib', "'$resource->title'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                    echo $OUTPUT->footer();
+                } else if (data_submitted() /*&& !$data->deleted*/){
+                    if (delete_resource_from_section($id)) {
+                        $url = new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$resource->resource_section_id));
+                        redirect($url);
+                    } else {
+                        echo $OUTPUT->notification($returnurl, get_string('deletednot', '', $resource->title));
+                    }
+                }
+            }
             break;
+         
     }

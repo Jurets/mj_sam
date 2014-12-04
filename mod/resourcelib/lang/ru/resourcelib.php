@@ -56,6 +56,7 @@ $string['editsection'] = 'Изменить Секцию';
 $string['deletesection'] = 'Удалить Секцию';
 $string['viewsection'] = 'Просмотр Секции';
 $string['add_section_resource'] = 'Добавить Ресурс в Секцию';
+$string['del_section_resource'] = 'Удалить Ресурс из Секции';
 
 $string['addlist'] = 'Добавить Список Ресурсов';
 $string['editlist'] = 'Изменить Список Ресурсов';
@@ -76,3 +77,5 @@ $string['embed_code'] = 'Код для Вставки';
 $string['display_name'] = 'Отображаемое Имя';
 $string['missing_resource'] = 'Пропущен ресурс';
 $string['no_resources'] = 'Нет Ресурсов в данной Секции';
+$string['deletecheck_resurce_fromsection'] = 'Вы действительно хотите удалить ресурс {$a} из секции?';
+$string['deletecheck_section_fromlist'] = 'Вы действительно хотите удалить секцию {$a} из списка?';

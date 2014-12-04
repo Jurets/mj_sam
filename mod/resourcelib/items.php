@@ -59,7 +59,7 @@
             //add type button
             show_addbutton(new moodle_url($returnurl, array('action' => $actionAdd)), get_string('additem', 'resourcelib'));
             //show table with items data
-            show_resource_items(get_resourceitems(), $returnurl);
+            show_resource_items(get_resources(), $returnurl);
             echo $OUTPUT->footer();
             break;
         case $actionAdd:
@@ -86,10 +86,10 @@
                 redirect($url);
             } else if ($data = $editform->get_data()) {
                 if ($action == $actionAdd) {
-                    $inserted_id = add_resourceitem($data);
+                    $inserted_id = add_resource($data);
                     $success = isset($id);
                 } else if (isset($id)){
-                    $success = edit_resourceitem($data);
+                    $success = edit_resource($data);
                 }
                 if ($success){  //call create Resource Type function
                     $url = new moodle_url($returnurl, array('action' => 'index'));
