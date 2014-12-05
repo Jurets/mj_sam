@@ -135,13 +135,20 @@
             $PAGE->navbar->add(get_string('deletetype', 'resourcelib'));
             
             if (isset($id) && confirm_sesskey()) { // Delete a selected resource type, after confirmation
-                $type = $DB->get_record('resource_types', array('id'=>$id), '*', MUST_EXIST);
+                //$type = $DB->get_record('resource_types', array('id'=>$id), '*', MUST_EXIST);
+                $type = get_type($id);
 
                 if ($confirm != md5($id)) {
                     echo $OUTPUT->header();
                     echo $OUTPUT->heading(get_string('deletetype', 'resourcelib'));
-                    $optionsyes = array('action'=>$actionDelete, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
-                    echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$type->name'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                    //before delete do check existing of resources of this type
+                    if ($type->resource_count > 0) {
+                        $str = get_string('deletednot', '', $type->name) . ' ' . get_string('resources_exists', 'resourcelib');
+                        echo $OUTPUT->notification($str);
+                    } else {
+                        $optionsyes = array('action'=>$actionDelete, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
+                        echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$type->name'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                    }
                     echo $OUTPUT->footer();
                 } else if (data_submitted() /*&& !$data->deleted*/){
                     if (delete_type($type)) {
@@ -150,7 +157,7 @@
                         redirect($url);
                     } else {
                         //\core\session\manager::gc(); // Remove stale sessions.
-                        echo $OUTPUT->notification($returnurl, get_string('deletednot', '', $type->name));
+                        echo $OUTPUT->notification(get_string('deletednot', '', $type->name));
                     }
                 }
             }

@@ -76,7 +76,8 @@
             } else if (isset($id)){     //edit existing type ($id parameter must be present in URL)
                 $PAGE->navbar->add(get_string('edititem', 'resourcelib'));
                 $actionurl = new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$id));
-                $item = $DB->get_record('resource_items', array('id'=>$id), '*', MUST_EXIST); //get data from DB
+                //$item = $DB->get_record('resource_items', array('id'=>$id), '*', MUST_EXIST); //get data from DB
+                $item = get_resource($id); //get data from DB
             }
             
             //get Resource Types List
@@ -111,16 +112,23 @@
             $PAGE->navbar->add(get_string('deleteitem', 'resourcelib'));
             
             if (isset($id) && confirm_sesskey()) { // Delete a selected resource item, after confirmation
-                $item = $DB->get_record('resource_items', array('id'=>$id), '*', MUST_EXIST);
+                //$item = $DB->get_record('resource_items', array('id'=>$id), '*', MUST_EXIST);
+                $item = get_resource($id); //get data from DB
 
                 if ($confirm != md5($id)) {
                     echo $OUTPUT->header();
                     echo $OUTPUT->heading(get_string('deleteitem', 'resourcelib'));
-                    $optionsyes = array('action'=>$actionDelete, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
-                    echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$item->title'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                    //before delete do check existing of resources in any section
+                    if ($item->rs_count > 0) {
+                        $str = get_string('deletednot', '', $item->title) . ' ' . get_string('resources_exists_in_section', 'resourcelib');
+                        echo $OUTPUT->notification($str);
+                    } else {
+                        $optionsyes = array('action'=>$actionDelete, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
+                        echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$item->title'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                    }
                     echo $OUTPUT->footer();
                 } else if (data_submitted() /*&& !$data->deleted*/){
-                    if (deletete_resource($item)) {
+                    if (delete_resource($item)) {
                         $url = new moodle_url($returnurl, array('action' => $actionIndex));
                         redirect($url);
                     } else {

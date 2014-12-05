@@ -38,12 +38,25 @@ defined('MOODLE_INTERNAL') || die();
 */
 
 /**
-* put your comment there...
+* get all Resource Types
 * 
 */
 function get_types() {
     global $DB;
     return $DB->get_records('resource_types');
+}
+
+/**
+* get instance of Resource Type
+* 
+*/
+function get_type($id) {
+    global $DB;
+    return $DB->get_record_sql('
+        SELECT t.*, (select count(*) from {resource_items} r where r.type_id = t.id) AS resource_count
+        FROM {resource_types} t
+        WHERE t.id = ?
+    ', array($id));
 }
 
 /**
@@ -83,25 +96,53 @@ function delete_type($data) {
     return $DB->delete_records('resource_types', array('id' => $data->id));
 }
 
+/**
+* get all Resources
+* 
+*/
 function get_resources() {
     global $DB;
-    //return $DB->get_records('resource_items');
     return $DB->get_records_sql('SELECT ri.*, rt.name AS type_name, rt.icon_path
                           FROM {resource_items} ri LEFT JOIN {resource_types} rt ON rt.id = ri.type_id');
 }
 
+/**
+* get Resource record from database
+* 
+* @param mixed $id - Resource ID
+*/
+function get_resource($id) {
+    global $DB;
+    return $DB->get_record_sql('
+        SELECT r.*, t.name AS type_name, t.icon_path,
+            (select count(*) from {resource_section_items} si where si.resource_item_id = r.id) AS rs_count
+        FROM {resource_items} r LEFT JOIN {resource_types} t ON t.id = r.type_id
+        WHERE r.id = ?
+    ', array($id));
+}
+
+/**
+* add new Resource to database
+* 
+* @param mixed $data - Resource Instance
+*/
 function add_resource($data) {
     global $DB;
     return $DB->insert_record('resource_items', $data);
 }
 
+/**
+* update Resource in database
+* 
+* @param mixed $data - Resource Instance
+*/
 function edit_resource($data) {
     global $DB;
     return $DB->update_record('resource_items', $data);
 }
 
 /**
-* delete Resource
+* delete Resource from database
 * 
 * @param mixed $data - instance of Resource
 * @return bool
@@ -317,6 +358,7 @@ function show_resource_items($items, $returnurl, $buttons = null) {
 
     if (!$items || empty($items)) {
         echo $OUTPUT->box(get_string('no_resources', 'resourcelib'), 'generalbox', 'notice');
+        //echo $OUTPUT->notification($returnurl, get_string('no_resources', 'resourcelib'));
     } else {
         if (!isset($buttons)) //default buttons
             $buttons = array('delete'=>'delete', 'edit'=>'edit');

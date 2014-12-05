@@ -80,3 +80,5 @@ $string['no_resources'] = 'Нет Ресурсов в данной Секции'
 $string['deletecheck_resurce_fromsection'] = 'Вы действительно хотите удалить ресурс {$a} из секции?';
 $string['deletecheck_section_fromlist'] = 'Вы действительно хотите удалить секцию {$a} из списка?';
 $string['enter_estimated_time'] = 'Введите расчетное время, чтобы прочитать этот ресурс (в минутах)';
+$string['resources_exists'] = 'Существуют ресурсы данного типа';
+$string['resources_exists_in_section'] = 'Этот ресурс присутствует в секциях';
