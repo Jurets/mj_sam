@@ -85,7 +85,7 @@
                         'src'=>$section->icon_path, 
                         'alt'=>$section->icon_path, 
                         'class'=>'iconsmall', 
-                        'style'=>'width: 30px; height: 30px;')) . ' ' . $section->icon_path,
+                        'style'=>'width: 30px; height: 30px;')),// . ' ' . $section->icon_path,
                     implode(' ', $buttons)
                 );
             }
