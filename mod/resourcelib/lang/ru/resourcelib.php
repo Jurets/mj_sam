@@ -39,6 +39,7 @@ $string['pluginadministration'] = 'resourcelib administration';
 $string['pluginname'] = 'resourcelib';
 
 $string['resource'] = 'Ресурс';
+$string['section'] = 'Секция';
 
 $string['settings'] = 'Настройки Библиотеки Ресурсов';
 $string['administration'] = 'Администрирование Библиотеки Ресурсов';
@@ -62,6 +63,8 @@ $string['addlist'] = 'Добавить Список Ресурсов';
 $string['editlist'] = 'Изменить Список Ресурсов';
 $string['deletelist'] = 'Удалить Список Ресурсов';
 $string['viewlist'] = 'Просмотр Списка Ресурсов';
+$string['add_list_section'] = 'Добавить Секцию в Список';
+$string['del_list_section'] = 'Удалить Секцию из Списка';
 
 $string['additem'] = 'Добавить Ресурс';
 $string['edititem'] = 'Изменить Ресурс';
@@ -76,9 +79,14 @@ $string['embed_code'] = 'Код для Вставки';
 
 $string['display_name'] = 'Отображаемое Имя';
 $string['missing_resource'] = 'Пропущен ресурс';
+$string['missing_section'] = 'Пропущена Секция';
 $string['no_resources'] = 'Нет Ресурсов в данной Секции';
+$string['no_sections'] = 'Нет Секций в данном Списке';
+
 $string['deletecheck_resurce_fromsection'] = 'Вы действительно хотите удалить ресурс {$a} из секции?';
 $string['deletecheck_section_fromlist'] = 'Вы действительно хотите удалить секцию {$a} из списка?';
 $string['enter_estimated_time'] = 'Введите расчетное время, чтобы прочитать этот ресурс (в минутах)';
 $string['resources_exists'] = 'Существуют ресурсы данного типа';
+$string['section_resource_exists'] = 'Существуют ресурсы в данном Секции';
+$string['section_exists'] = 'Существуют секции в данном списке';
 $string['resources_exists_in_section'] = 'Этот ресурс присутствует в секциях';

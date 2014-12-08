@@ -56,6 +56,7 @@
         $PAGE->navbar->add(get_string('manage_sections', 'resourcelib'), new moodle_url($returnurl));
     }
 
+    // ------ process actions --------
     switch($action) {
         case $actionIndex:
             echo $OUTPUT->header();
@@ -78,7 +79,6 @@
                 $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionEdit,  'id'=>$section->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$stredit));
                 $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionDelete,'id'=>$section->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
                 $table->data[] = array(
-                    //$section->name, 
                     html_writer::link(new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$section->id)), $section->name),
                     $section->display_name, 
                     html_writer::empty_tag('img', array(
@@ -187,17 +187,23 @@
             $PAGE->navbar->add(get_string('deletesection', 'resourcelib'));
             
             if (isset($id) && confirm_sesskey()) { // Delete a selected resource type, after confirmation
-                $section = $DB->get_record('resource_sections', array('id'=>$id), '*', MUST_EXIST);
-
+                $section = get_section($id);
+                
                 if ($confirm != md5($id)) {
                     echo $OUTPUT->header();
                     echo $OUTPUT->heading(get_string('deletesection', 'resourcelib'));
-                    $optionsyes = array('action'=>$actionDelete, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
-                    echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$section->name'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                    //before delete do check existing of sections in ane list
+                    if ($section->r_count > 0) {
+                        $str = get_string('deletednot', '', $section->name) . ' ' . get_string('section_resource_exists', 'resourcelib');
+                        echo $OUTPUT->notification($str);
+                    } else {
+                        $optionsyes = array('action'=>$actionDelete, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
+                        echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$section->name'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                    }
                     echo $OUTPUT->footer();
                 } else if (data_submitted() /*&& !$data->deleted*/){
-                    if (deletete_resourcelist($section)) {
-                        $url = new moodle_url($returnurl, array('action' => 'index'));
+                    if (delete_section($section)) {
+                        $url = new moodle_url($returnurl, array('action' => $actionIndex));
                         redirect($url);
                     } else {
                         echo $OUTPUT->notification($returnurl, get_string('deletednot', '', $section->name));
@@ -244,7 +250,6 @@
             $PAGE->navbar->add($head_str);
             
             if (isset($id) && confirm_sesskey()) { // Delete a selected resource from section, after confirmation
-                //$resource = $DB->get_record('resource_section_items', array('id'=>$id), '*', MUST_EXIST);
                 $resource = get_resource_fromsection($id);
 
                 if ($confirm != md5($id)) {
@@ -258,7 +263,7 @@
                         $url = new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$resource->resource_section_id));
                         redirect($url);
                     } else {
-                        echo $OUTPUT->notification($returnurl, get_string('deletednot', '', $resource->title));
+                        echo $OUTPUT->notification(get_string('deletednot', '', $resource->title));
                     }
                 }
             }

@@ -28,7 +28,10 @@ class mod_resourcelib_form_editlist extends moodleform {
         $mform->setType('display_name', PARAM_TEXT);                   //Set type of element
         $mform->addRule('display_name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         
-        $mform->addElement('textarea', 'heading', get_string('writingheader')); // Add elements to your form
+        $mform->addElement('textarea', 'heading', get_string('writingheader'), array(
+            'rows'=>3, 
+            'style'=>'width: 100%',
+        )); // Add elements to your form
         $mform->setType('heading', PARAM_TEXT);                   //Set type of element
 
         $currentpicture = $mform->addElement('static', 'currentpicture', get_string('currentpicture'));
@@ -37,7 +40,7 @@ class mod_resourcelib_form_editlist extends moodleform {
         $mform->addElement('text', 'icon_path', get_string('newpicture'), array('style'=>'width: 500px;')); // Add elements to your form
         $mform->setType('icon_path', PARAM_TEXT);                   //Set type of element
         $mform->setDefault('icon_path', 'Please select icon');        //Default value
-        //DebugBreak();        
+        
         //if (isset($this->_customdata['data']) && is_object($this->_customdata['data'])) {
         if (isset($data)) {
             $this->set_data($data);

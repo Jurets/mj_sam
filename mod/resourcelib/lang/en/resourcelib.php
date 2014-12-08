@@ -39,6 +39,7 @@ $string['pluginadministration'] = 'resourcelib administration';
 $string['pluginname'] = 'resourcelib';
 
 $string['resource'] = 'Resource';
+$string['section'] = 'Section';
 
 $string['settings'] = 'Resource Library Settings';
 $string['administration'] = 'Resource Library Administration';
@@ -58,10 +59,12 @@ $string['viewsection'] = 'View Section';
 $string['add_section_resource'] = 'Add Resource to Section';
 $string['del_section_resource'] = 'Delete Resource from Section';
 
-$string['addlist'] = 'Add Resource List';
-$string['editlist'] = 'Edit Resource List';
-$string['deletelist'] = 'Delete Resource List';
-$string['viewlist'] = 'View Resource List';
+$string['addlist'] = 'Add List';
+$string['editlist'] = 'Edit List';
+$string['deletelist'] = 'Delete List';
+$string['viewlist'] = 'View List';
+$string['add_list_section'] = 'Add Section to List';
+$string['del_list_section'] = 'Delete Section from List';
 
 $string['additem'] = 'Add Resource Item';
 $string['edititem'] = 'Edit Resource Item';
@@ -76,9 +79,14 @@ $string['embed_code'] = 'Embed Code';
 
 $string['display_name'] = 'Display Name';
 $string['missing_resource'] = 'Missing Resource';
+$string['missing_section'] = 'Missing Section';
 $string['no_resources'] = 'There is no Resources in this Section';
+$string['no_sections'] = 'There is no Sections in this List';
+
 $string['deletecheck_resurce_fromsection'] = 'Are you absolutely sure you want to delete resource {$a} from section?';
 $string['deletecheck_section_fromlist'] = 'Are you absolutely sure you want to delete section {$a} from list?';
 $string['enter_estimated_time'] = 'Enter estimated time to read this resource IN WHOLE MINUTES';
 $string['resources_exists'] = 'There are resources of this type';
+$string['section_resource_exists'] = 'There are resources in this section';
+$string['section_exists'] = 'There are sections in this list';
 $string['resources_exists_in_section'] = 'This resource is present in the sections';
