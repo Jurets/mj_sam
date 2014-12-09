@@ -54,7 +54,7 @@ $event = \mod_resourcelib\event\course_module_viewed::create(array(
 ));
 $event->add_record_snapshot('course', $PAGE->course);
 // In the next line you can use $PAGE->activityrecord if you have set it, or skip this line if you don't have a record.
-$event->add_record_snapshot($PAGE->cm->modname, $activityrecord);
+////////$event->add_record_snapshot($PAGE->cm->modname, $activityrecord);
 $event->trigger();
 
 // Print the page header.
@@ -80,7 +80,57 @@ if ($resourcelib->intro) {
 }
 
 // Replace the following lines with you own code.
-echo $OUTPUT->heading('Yay! It works!');
+//echo $OUTPUT->heading('Yay! It works!');
+
+require_once(dirname(__FILE__).'/locallib.php');
+
+$contents = $DB->get_records('resourcelib_content', array('resourcelib_id'=>$resourcelib->id));
+foreach($contents as $content) {
+    //echo $content->type . ' - '. $content->instance_id . '<br>';
+    if ($content->type == 'list') {
+        //get List instance
+        $list = get_list($content->instance_id);
+        echo html_writer::tag('h2', $list->display_name);
+        echo html_writer::start_div('collection');
+        echo html_writer::div($list->heading, 'collection_heading');
+        //get Sections of this List
+        if ($list->s_count > 0) {
+            $sections = get_list_sections($list);
+            foreach($sections as $section) {
+                echo html_writer::tag('h3', $section->display_name);
+                //get Resources of this Section
+                if ($section->r_count > 0) {
+                    $resources = get_section_items($section);
+                    foreach($resources as $resource) {
+                        echo html_writer::start_div('resource_item_title');
+                        echo html_writer::empty_tag('img', array(
+                            'src'=>$resource->icon_path, 
+                            'alt'=>$resource->icon_path, 
+                            'class'=>'iconsmall', 
+                            'style'=>'width: 30px; height: 30px;'));
+                        echo html_writer::link($resource->url, $resource->title, array('target'=>'__blank'));
+                        echo html_writer::end_div();
+
+                        if (!empty($resource->author)) {
+                            echo html_writer::start_div('resource_metadata');
+                            echo html_writer::tag('strong', 'Author');
+                            echo ': ' . $resource->author;
+                            echo html_writer::end_div();
+                        }
+                        if (!empty($resource->source)) {
+                            echo html_writer::start_div('resource_metadata');
+                            echo html_writer::tag('strong', 'Source');
+                            echo ': ' . $resource->source;
+                            echo html_writer::end_div();
+                        }
+                        echo html_writer::div($resource->description, 'resource_description');
+                    }
+                }
+            }
+        }
+        echo html_writer::end_div();
+    }
+}
 
 // Finish the page.
 echo $OUTPUT->footer();

@@ -68,14 +68,16 @@
             $table->head = array(
                 get_string('name'), 
                 get_string('display_name', 'resourcelib'), 
-                get_string('icon')
+                get_string('icon'),
+                get_string('section_count', 'resourcelib'),
             );
             //get list of data
             $lists = get_lists();
             foreach ($lists as $list) {
                 $buttons = array();
-                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionDelete, 'id'=>$list->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
                 $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionEdit, 'id'=>$list->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$stredit));
+                if (!$list->s_count)
+                    $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionDelete, 'id'=>$list->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
                 $table->data[] = array(
                     html_writer::link(new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$list->id)), $list->name),
                     $list->display_name, 
@@ -84,6 +86,7 @@
                         'alt'=>$list->icon_path, 
                         'class'=>'iconsmall', 
                         'style'=>'width: 30px; height: 30px;')),
+                    ($list->s_count ? $list->s_count : ''), 
                     implode(' ', $buttons)
                 );
             }

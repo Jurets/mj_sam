@@ -161,9 +161,17 @@ function delete_resource($data) {
     return $DB->delete_records('resource_items', array('id' => $data->id));
 }
 
+/**
+* get all List Instances
+* 
+*/
 function get_lists() {
     global $DB;
-    return $DB->get_records('resource_lists');
+    return $DB->get_records_sql('
+        SELECT l.*, (select count(*) from {resource_list_sections} ls where ls.resource_list_id = l.id) AS s_count
+        FROM {resource_lists} l
+    ');
+    //return $DB->get_records('resource_lists');
 }
 
 /**
@@ -224,7 +232,8 @@ function get_list_sections($data) {
     if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
         throw new coding_exception('Invalid $data parameter in get_list_sections() detected');
     }
-    $sql = 'SELECT ls.id, s.id AS section_id, s.name, s.display_name, s.icon_path, ls.sort_order
+    $sql = 'SELECT ls.id, s.id AS section_id, s.name, s.display_name, s.icon_path, ls.sort_order,
+                (select count(*) from {resource_section_items} si where si.resource_section_id = s.id) AS r_count
             FROM {resource_list_sections} ls 
                 LEFT JOIN {resource_sections} s ON s.id = ls.resource_section_id
             WHERE ls.resource_list_id = ?
@@ -255,7 +264,7 @@ function get_sections() {
 function get_section($id) {
     global $DB;
     return $DB->get_record_sql('
-        SELECT s.*, (select count(*) from {resource_section_items} si where si.resource_section_id = s.id) AS r_count
+        SELECT s.*, s.id AS section_id, (select count(*) from {resource_section_items} si where si.resource_section_id = s.id) AS r_count
         FROM {resource_sections} s
         WHERE s.id = ?
     ', array($id));
@@ -298,13 +307,13 @@ function get_section_items($data) {
     if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
         throw new coding_exception('Invalid $data parameter in get_section_items() detected');
     }
-    $sql = 'SELECT si.id, r.title, r.description, t.name AS type_name, t.icon_path
+    $sql = 'SELECT si.id, r.url, r.title, r.description, r.author, r.source, t.name AS type_name, t.icon_path
             FROM {resource_section_items} si 
                 LEFT JOIN {resource_items} r ON r.id = si.resource_item_id
                 LEFT JOIN {resource_types} t ON t.id = r.type_id
             WHERE si.resource_section_id = ?
             ORDER BY si.sort_order';
-    $items = $DB->get_records_sql($sql, array($data->id));
+    $items = $DB->get_records_sql($sql, array($data->section_id));
     if (!$items)
         $items = array();
     return $items;

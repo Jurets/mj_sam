@@ -101,7 +101,8 @@
             echo $OUTPUT->header();
             echo $OUTPUT->heading(get_string('viewsection', 'resourcelib'));
             
-            $section = $DB->get_record('resource_sections', array('id'=>$id), '*', MUST_EXIST); //get data from DB
+            //$section = $DB->get_record('resource_sections', array('id'=>$id), '*', MUST_EXIST); //get data from DB
+            $section = get_section($id); //get data from DB
 
             if (!empty($section->icon_path)/* && $hasuploadedpicture*/) {
                 $imagevalue = html_writer::empty_tag('img', array('src'=>$section->icon_path, 'alt'=>$section->icon_path));

@@ -76,8 +76,9 @@ $string['author'] = 'Автор';
 $string['source'] = 'Источник';
 $string['time_estimate'] = 'Оценка Времени';
 $string['embed_code'] = 'Код для Вставки';
-
 $string['display_name'] = 'Отображаемое Имя';
+$string['section_count'] = 'Кол-во секций';
+
 $string['missing_resource'] = 'Пропущен ресурс';
 $string['missing_section'] = 'Пропущена Секция';
 $string['no_resources'] = 'Нет Ресурсов в данной Секции';

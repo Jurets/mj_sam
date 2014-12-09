@@ -76,8 +76,9 @@ $string['author'] = 'Author';
 $string['source'] = 'Source';
 $string['time_estimate'] = 'Time Estimate';
 $string['embed_code'] = 'Embed Code';
-
 $string['display_name'] = 'Display Name';
+$string['section_count'] = 'Section count';
+
 $string['missing_resource'] = 'Missing Resource';
 $string['missing_section'] = 'Missing Section';
 $string['no_resources'] = 'There is no Resources in this Section';
