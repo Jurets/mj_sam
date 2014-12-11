@@ -12,8 +12,11 @@ class mod_resourcelib_form_edititem extends moodleform {
         } else
             $data = null;
         if (isset($this->_customdata['types']) && is_array($this->_customdata['types'])) {
-            $types = $this->_customdata['types'];
-            array_unshift($types, '');
+            $_items = $this->_customdata['types'];
+            //add empty item to the begin of options
+            $items = array('0'=>'');
+            foreach($_items as $key=>$value) {$items[$key] = $value;}
+            //array_unshift($types, '');
         } else
             $types = null;
 
@@ -24,12 +27,12 @@ class mod_resourcelib_form_edititem extends moodleform {
         $mform->setType('id', PARAM_INT);
         
         //resourceItem: Type
-        $mform->addElement('select', 'type_id', get_string('type', 'resourcelib'), $types);
+        $mform->addElement('select', 'type_id', get_string('type', 'resourcelib'), $items);
         $mform->setType('type_id', PARAM_TEXT);                   //Set type of element
         $mform->addRule('type_id', get_string('missingname'), 'required', null, 'client');
 
         //resourceItem: Title
-        $mform->addElement('text', 'title', get_string('name'), array('style'=>'width: 400px')); // Add elements to your form
+        $mform->addElement('text', 'title', get_string('name'), array('style'=>'width: 100%')); // Add elements to your form
         $mform->setType('title', PARAM_TEXT);                   //Set type of element
         $mform->addRule('title', get_string('missingname'), 'required', null, 'client');
         $mform->addRule('title', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
@@ -41,28 +44,29 @@ class mod_resourcelib_form_edititem extends moodleform {
         $mform->addRule('url', get_string('maximumchars', '', 512), 'maxlength', 512, 'client');
         
         //resourceItem: author
-        $mform->addElement('text', 'author', get_string('author', 'resourcelib')); // Add elements to your form
+        $mform->addElement('text', 'author', get_string('author', 'resourcelib'), array('style'=>'width: 100%')); // Add elements to your form
         $mform->setType('author', PARAM_TEXT);                   //Set type of element
         $mform->addRule('author', get_string('maximumchars', '', 128), 'maxlength', 128, 'client');
         
         //resourceItem: Source
-        $mform->addElement('text', 'source', get_string('source', 'resourcelib')); // Add elements to your form
+        $mform->addElement('text', 'source', get_string('source', 'resourcelib'), array('style'=>'width: 100%')); // Add elements to your form
         $mform->setType('source', PARAM_TEXT);                   //Set type of element
         $mform->addRule('source', get_string('maximumchars', '', 128), 'maxlength', 128, 'client');
         
         //resourceItem: Copyright
-        $mform->addElement('text', 'copyright', get_string('copyright', 'resourcelib')); // Add elements to your form
+        $mform->addElement('text', 'copyright', get_string('copyright', 'resourcelib'), array('style'=>'width: 100%')); // Add elements to your form
         $mform->setType('copyright', PARAM_TEXT);                   //Set type of element
         $mform->addRule('copyright', get_string('maximumchars', '', 64), 'maxlength', 64, 'client');
 
         //resourceItem: Time Estimate
         $mform->addElement('text', 'time_estimate', get_string('time_estimate', 'resourcelib'), array(
-            'placeholder'=>get_string('enter_estimated_time', 'resourcelib') 
+            'placeholder'=>get_string('enter_estimated_time', 'resourcelib'),
+            'style'=>'width: 100%',
         )); // Add elements to your form
         $mform->setType('time_estimate', PARAM_TEXT);                   //Set type of element
 
         //resourceItem: Tags
-        $mform->addElement('text', 'tags', get_string('tags')); // Add elements to your form
+        $mform->addElement('text', 'tags', get_string('tags'), array('style'=>'width: 100%')); // Add elements to your form
         $mform->setType('tags', PARAM_TAGLIST);                   //Set type of element
         $mform->addRule('tags', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 

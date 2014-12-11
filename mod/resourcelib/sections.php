@@ -69,14 +69,16 @@
             $table->head = array(
                 get_string('name'), 
                 get_string('display_name', 'resourcelib'), 
-                get_string('icon')
+                get_string('icon'),
+                get_string('resource_count', 'resourcelib'),
             );
+            $table->size[4] = '80px';
             //get list of data
             $sections = get_sections();
             foreach ($sections as $section) {
                 $buttons = array();
-                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionView,  'id'=>$section->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/show'), 'alt'=>$strview, 'class'=>'iconsmall')), array('title'=>$strview));
-                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionEdit,  'id'=>$section->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$stredit));
+                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionEdit,  'id'=>$section->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/editstring'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$stredit));
+                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionView,  'id'=>$section->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$strview, 'class'=>'iconsmall')), array('title'=>$strview));
                 $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionDelete,'id'=>$section->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
                 $table->data[] = array(
                     html_writer::link(new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$section->id)), $section->name),
@@ -86,6 +88,7 @@
                         'alt'=>$section->icon_path, 
                         'class'=>'iconsmall', 
                         'style'=>'width: 30px; height: 30px;')),// . ' ' . $section->icon_path,
+                    $section->r_count, 
                     implode(' ', $buttons)
                 );
             }
@@ -97,13 +100,14 @@
             break;
             
         case $actionView:
-            $PAGE->navbar->add(get_string('viewsection', 'resourcelib'));
-            echo $OUTPUT->header();
-            echo $OUTPUT->heading(get_string('viewsection', 'resourcelib'));
-            
             //$section = $DB->get_record('resource_sections', array('id'=>$id), '*', MUST_EXIST); //get data from DB
             $section = get_section($id); //get data from DB
+            $head_str = !empty($section->display_name) ? $section->display_name : $section->name;
 
+            $PAGE->navbar->add($head_str /*get_string('viewsection', 'resourcelib')*/);
+            echo $OUTPUT->header();
+            echo $OUTPUT->heading($head_str /*get_string('viewsection', 'resourcelib')*/);
+            
             if (!empty($section->icon_path)/* && $hasuploadedpicture*/) {
                 $imagevalue = html_writer::empty_tag('img', array('src'=>$section->icon_path, 'alt'=>$section->icon_path));
             } else {
@@ -128,6 +132,8 @@
             echo html_writer::tag('dt', get_string('currentpicture'));
             echo html_writer::tag('dd', $imagevalue);
             echo html_writer::end_tag('dl');
+            //show edit button
+            show_editbutton(new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$section->id)), get_string('editsection', 'resourcelib'));
             
             echo html_writer::tag('hr', '');
             //add resource button

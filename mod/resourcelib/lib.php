@@ -73,12 +73,26 @@ function resourcelib_supports($feature) {
  */
 function resourcelib_add_instance(stdClass $resourcelib, mod_resourcelib_mod_form $mform = null) {
     global $DB;
-
-    $resourcelib->timecreated = time();
-
-    // You may have to add extra stuff in here.
-
-    return $DB->insert_record('resourcelib', $resourcelib);
+    
+    try {
+        $transaction = $DB->start_delegated_transaction();
+        //firstly, insert record
+        $resourcelib->timecreated = time();
+        $resourcelib->id = $DB->insert_record('resourcelib', $resourcelib, true);
+        //process form data
+        $form_content = $mform->get_data();
+        if (isset($form_content->list_id)) {
+            $items = prepare_items($form_content->list_id, $resourcelib->id);
+            $DB->insert_records('resourcelib_content', $items);
+        }
+         // Assuming the both inserts work, we get to the following line.
+        $transaction->allow_commit();
+        $success = true;
+    } catch(Exception $e) {
+        $transaction->rollback($e);
+        $success = false;
+    }
+    return $resourcelib->id;
 }
 
 /**
@@ -94,13 +108,51 @@ function resourcelib_add_instance(stdClass $resourcelib, mod_resourcelib_mod_for
  */
 function resourcelib_update_instance(stdClass $resourcelib, mod_resourcelib_mod_form $mform = null) {
     global $DB;
-
+    //set module fields
     $resourcelib->timemodified = time();
     $resourcelib->id = $resourcelib->instance;
 
-    // You may have to add extra stuff in here.
+    try {
+        $transaction = $DB->start_delegated_transaction();
+        //process form data
+        $form_content = $mform->get_data();
+        if (isset($form_content->list_id)) {
+            //firstly, delete the current elements
+            $DB->delete_records('resourcelib_content', array('resourcelib_id'=>$resourcelib->id));
+            $items = prepare_items($form_content->list_id, $resourcelib->id);
+            /*foreach($form_content->list_id as $item) {
+                $content = new stdClass();
+                $content->resourcelib_id = $resourcelib->id;
+                $content->type = 'list';
+                $content->instance_id = $item; //$form_content->list_id;
+                $DB->insert_record('resourcelib_content', $content);
+            }*/
+            $DB->insert_records('resourcelib_content', $items);
+        }
+        // You may have to add extra stuff in here.
+        $DB->update_record('resourcelib', $resourcelib);
+         // Assuming the both inserts work, we get to the following line.
+        $transaction->allow_commit();
+        $success = true;
+    } catch(Exception $e) {
+        $transaction->rollback($e);
+        $success = false;
+    }
+    return $success;
+}
 
-    return $DB->update_record('resourcelib', $resourcelib);
+//
+function prepare_items($list_ids, $rlib_id) {
+    $items = array();
+    foreach($list_ids as $list_id) {
+        $item = new stdClass();
+        $item->resourcelib_id = $rlib_id;
+        $item->type = 'list';
+        $item->instance_id = $list_id;
+        //$DB->insert_record('resourcelib_content', $content);
+        $items[] = $item;
+    }
+    return $items;
 }
 
 /**

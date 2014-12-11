@@ -232,13 +232,32 @@ function get_list_sections($data) {
     if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
         throw new coding_exception('Invalid $data parameter in get_list_sections() detected');
     }
-    $sql = 'SELECT ls.id, s.id AS section_id, s.name, s.display_name, s.icon_path, ls.sort_order,
+    $sql = 'SELECT ls.id, s.id AS section_id, s.name, s.display_name, s.heading, s.icon_path, ls.sort_order,
                 (select count(*) from {resource_section_items} si where si.resource_section_id = s.id) AS r_count
             FROM {resource_list_sections} ls 
                 LEFT JOIN {resource_sections} s ON s.id = ls.resource_section_id
             WHERE ls.resource_list_id = ?
             ORDER BY ls.sort_order';
     $items = $DB->get_records_sql($sql, array($data->id));
+    if (!$items)
+        $items = array();
+    return $items;
+}
+
+
+/**
+* get resource items wich is not in section
+* 
+* @param mixed $data - section instance
+* @return array
+*/
+function get__lists() {
+    global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    $sql = 'SELECT l.id, l.name
+            FROM {resource_lists} l
+    ';
+    $items = $DB->get_records_sql_menu($sql);
     if (!$items)
         $items = array();
     return $items;
@@ -252,7 +271,15 @@ function get_list_sections($data) {
 */
 function get_sections() {
     global $DB;
-    return $DB->get_records('resource_sections');
+    //return $DB->get_records('resource_sections');
+    $sql = 'SELECT s.*,
+                (select count(*) from {resource_section_items} si where si.resource_section_id = s.id) AS r_count
+            FROM {resource_sections} s
+    ';
+    $items = $DB->get_records_sql($sql);
+    if (!$items)
+        $items = array();
+    return $items;
 }
 
 /**
@@ -370,7 +397,7 @@ function get_notsection_items($data) {
 }
 
 /**
-* get sections wich is not in list
+* get Sections wich is not in List
 * 
 * @param mixed $data - section instance
 * @return array
@@ -388,6 +415,51 @@ function get_notlist_sections($data) {
     $items = $DB->get_records_sql_menu($sql, array($data->id));
     if (!$items)
         $items = array();
+    return $items;
+}
+
+/**
+* get Lists wich is not in Cource
+* 
+* @param mixed $data - resourcelib instance
+* @return array
+*/
+function get_notcource_lists($data) {
+     global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in get_notlist_sections() detected');
+    }
+    $sql = 'SELECT l.id, l.name
+            FROM {resource_lists} l 
+            WHERE l.id NOT IN 
+              (SELECT rlc.instance_id FROM {resourcelib_content} rlc WHERE rlc.type = ? AND rlc.resourcelib_id = ?)';
+    $items = $DB->get_records_sql_menu($sql, array('list', $data->id));
+    if (!$items)
+        $items = array();
+    return $items;
+}
+
+/**
+* get Lists wich is in Cource
+* 
+* @param mixed $data - resourcelib instance
+* @return array
+*/
+function get_cource_lists($data) {
+     global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in get_notlist_sections() detected');
+    }
+    $sql = 'SELECT l.id
+            FROM {resource_lists} l 
+            WHERE l.id IN 
+              (SELECT rlc.instance_id FROM {resourcelib_content} rlc WHERE rlc.type = ? AND rlc.resourcelib_id = ?)';
+    $_items = $DB->get_records_sql_menu($sql, array('list', $data->id));
+    $items = array();
+    foreach ($_items as $key=>$value) 
+        $items[] = $key;
     return $items;
 }
 
@@ -468,7 +540,7 @@ function create_editbutton($url, $action, $id) {
     $stredit   = get_string('edit');
     return html_writer::link(
         new moodle_url($url, array('action'=>'edit', 'id'=>$id)), 
-        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), 
+        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/editstring'), 'alt'=>$stredit, 'class'=>'iconsmall')), 
         array('title'=>$stredit)
     );
 }
@@ -485,13 +557,17 @@ function show_list_sections($items, $returnurl, $buttons = null) {
     
     if (!$items || empty($items)) {
         echo $OUTPUT->notification(get_string('no_sections', 'resourcelib'), 'redirectmessage');
-        //echo '<div class="alert alert-warning">' . get_string('no_resources', 'resourcelib') . '</div>';
     } else {
         if (!isset($buttons)) //default buttons
             $buttons = array('delete'=>'delete', 'edit'=>'edit');
         
         $table = new html_table();
-        $table->head = array(get_string('name'), get_string('description'), get_string('type', 'resourcelib'));
+        $table->head = array(
+            get_string('name'), 
+            get_string('description'), 
+            get_string('type', 'resourcelib'),
+            get_string('resource_count', 'resourcelib'),
+        );
         
         foreach ($items as $item) {
             $buttons_column = array();
@@ -510,6 +586,7 @@ function show_list_sections($items, $returnurl, $buttons = null) {
                     'title'=>get_string('icon'),
                     'class'=>'iconsmall', 
                     'style'=>'width: 30px; height: 30px;')),
+                ($item->r_count ? $item->r_count : ''), 
                 implode(' ', $buttons_column) 
             );
         }
@@ -573,5 +650,19 @@ function show_addbutton($url, $label, $attributes = array('class' => 'mdl-right'
     global $OUTPUT;
     echo html_writer::start_tag('div', $attributes);
     echo html_writer::tag('a', $OUTPUT->pix_icon('t/add', '') . ' ' . $label, array('href' => $url->out(false)));
+    echo html_writer::end_tag('div');
+}
+
+/**
+* Show edit button (usually near data table)
+* 
+* @param mixed $url
+* @param mixed $label
+* @param mixed $attributes
+*/
+function show_editbutton($url, $label, $attributes = array('class' => 'mdl-right')) {
+    global $OUTPUT;
+    echo html_writer::start_tag('div', $attributes);
+    echo html_writer::tag('a', $OUTPUT->pix_icon('t/editstring', '') . ' ' . $label, array('href' => $url->out(false)));
     echo html_writer::end_tag('div');
 }

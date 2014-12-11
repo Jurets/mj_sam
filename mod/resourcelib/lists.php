@@ -64,6 +64,7 @@
 
             $stredit   = get_string('edit');
             $strdelete = get_string('delete');
+            $strview = get_string('settings');
             $table = new html_table();
             $table->head = array(
                 get_string('name'), 
@@ -75,7 +76,8 @@
             $lists = get_lists();
             foreach ($lists as $list) {
                 $buttons = array();
-                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionEdit, 'id'=>$list->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$stredit));
+                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionEdit, 'id'=>$list->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/editstring'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$stredit));
+                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$list->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$strview));
                 if (!$list->s_count)
                     $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionDelete, 'id'=>$list->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
                 $table->data[] = array(
@@ -98,12 +100,14 @@
             break;
             
         case $actionView:
-            $head_str = get_string('viewlist', 'resourcelib');
+            $list = $DB->get_record('resource_lists', array('id'=>$id), '*', MUST_EXIST); //get data from DB
+
+            //$head_str = get_string('viewlist', 'resourcelib');
+            $head_str = !empty($list->display_name) ? $list->display_name : $list->name;
             $PAGE->navbar->add($head_str);
             echo $OUTPUT->header();
             echo $OUTPUT->heading($head_str);
             
-            $list = $DB->get_record('resource_lists', array('id'=>$id), '*', MUST_EXIST); //get data from DB
 
             if (!empty($list->icon_path)/* && $hasuploadedpicture*/) {
                 $imagevalue = html_writer::empty_tag('img', array('src'=>$list->icon_path, 'alt'=>$list->icon_path));
@@ -129,7 +133,9 @@
             echo html_writer::tag('dt', get_string('currentpicture'));
             echo html_writer::tag('dd', $imagevalue);
             echo html_writer::end_tag('dl');
-            
+            //show edit button
+            show_editbutton(new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$list->id)), get_string('editlist', 'resourcelib'));
+            //
             echo html_writer::tag('hr', '');
             //add section button
             show_addbutton(new moodle_url($returnurl, array('action' => $actionAddSection, 'list'=>$id)), get_string('add_list_section', 'resourcelib'));
@@ -218,15 +224,20 @@
             require_once($CFG->dirroot.'/mod/resourcelib/form_addsectiontolist.php'); //include form_edittype.php  
             
             //arbitrary param: section_id
-            $list = optional_param('list', 0, PARAM_INT);
-            //build url's
-            $urlView = new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$list));
-            $urlAction = new moodle_url($returnurl, array('action'=>$actionAddSection, 'list'=>$list));
-            //breadcrumbs
-            $PAGE->navbar->add(get_string('viewlist', 'resourcelib'), $urlView);
-            $PAGE->navbar->add(get_string('add_list_section', 'resourcelib'));
+            $list_id = optional_param('list', 0, PARAM_INT);
+            //get List
+            $list = $DB->get_record('resource_lists', array('id'=>$list_id), '*', MUST_EXIST);
             //get Section
-            $list = $DB->get_record('resource_sections', array('id'=>$list), '*', MUST_EXIST);
+            //$section = $DB->get_record('resource_sections', array('id'=>$list_id), '*', MUST_EXIST);
+
+            $head_str = !empty($list->display_name) ? $list->display_name : $list->name;
+            
+            //build url's
+            $urlView = new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$list_id));
+            $urlAction = new moodle_url($returnurl, array('action'=>$actionAddSection, 'list'=>$list_id));
+            //breadcrumbs
+            $PAGE->navbar->add($head_str /*get_string('viewlist', 'resourcelib')*/, $urlView);
+            $PAGE->navbar->add(get_string('add_list_section', 'resourcelib'));
             //get Resources
             $sections = get_notlist_sections($list);
             //create and show form instance

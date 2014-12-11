@@ -98,6 +98,7 @@ foreach($contents as $content) {
             $sections = get_list_sections($list);
             foreach($sections as $section) {
                 echo html_writer::tag('h3', $section->display_name);
+                echo html_writer::div($section->heading, 'list_heading');
                 //get Resources of this Section
                 if ($section->r_count > 0) {
                     $resources = get_section_items($section);
