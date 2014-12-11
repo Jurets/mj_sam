@@ -29,6 +29,9 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/course/moodleform_mod.php');
 
+require_once('locallib.php');
+
+
 /**
  * Module instance settings form
  */
@@ -58,12 +61,19 @@ class mod_resourcelib_mod_form extends moodleform_mod {
         // Adding the standard "intro" and "introformat" fields.
         $this->add_intro_editor();
 
-        // Adding the rest of resourcelib settings, spreeading all them into this fieldset
-        // ... or adding more fieldsets ('header' elements) if needed for better logic.
-        $mform->addElement('static', 'label1', 'resourcelibsetting1', 'Your resourcelib fields go here. Replace me!');
-
+        //group of resourcelib elements
         $mform->addElement('header', 'resourcelibfieldset', get_string('resourcelibfieldset', 'resourcelib'));
-        $mform->addElement('static', 'label2', 'resourcelibsetting2', 'Your resourcelib fields go here. Replace me!');
+        $items = get__lists();
+        $_items = get_cource_lists($this->current);
+        $select = $mform->addElement('select', 'list_id', get_string('list'/*, 'resourcelib'*/), $items);
+        $select->setMultiple(true);
+        $select->setSelected($_items);
+        $mform->setType('list_id', PARAM_TEXT);                   //Set type of element
+        $mform->addHelpButton('list_id', 'listfield', 'resourcelib');
+        //$mform->addRule('list_id', get_string('missingname'), 'required', null, 'client');
+        $mform->setExpanded('resourcelibfieldset');
+        
+        //$mform->addElement('modgrade', 'scale', get_string('grade'), false);
 
         // Add standard elements, common to all modules.
         $this->standard_coursemodule_elements();

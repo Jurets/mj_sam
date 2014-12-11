@@ -30,8 +30,10 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['modulename'] = 'resourcelib';
 $string['modulenameplural'] = 'resourcelib';
-$string['modulename_help'] = 'Use the resourcelib module for... | The resourcelib module allows...';
-$string['resourcelibfieldset'] = 'Custom example fieldset';
+$string['modulename_help'] = 'The module will allow the creation on generic web links outside of the course. There are several fields of metadata that will be collected. This is done outside of the course to allow for reusability across courses. Resources will be organized into list subsections, and multiple subsections may be displayed at once.
+In the course, a user can insert one or more lists (with subsections) on a single page. If the number of lists is greater than one, the lists (with subsections) will be displayed in tabs (using the Bootstrap framework code). 
+Each resource will contain an icon, the title and link to a video, along with other metadata. The system will record clicks on each link in the event log. Users will also have the ability to rate each resource using a star rating system. They may select a rating one time per resource per course, and may not change it. Once a rating has been selected, the user will be able to see the average rating for the resource in that course.';
+$string['resourcelibfieldset'] = 'Resource Library Items';
 $string['resourcelibname'] = 'resourcelib name';
 $string['resourcelibname_help'] = 'This is the content of the help tooltip associated with the resourcelibname field. Markdown syntax is supported.';
 $string['resourcelib'] = 'resourcelib';
@@ -39,6 +41,7 @@ $string['pluginadministration'] = 'resourcelib administration';
 $string['pluginname'] = 'resourcelib';
 
 $string['resource'] = 'Resource';
+$string['section'] = 'Section';
 
 $string['settings'] = 'Resource Library Settings';
 $string['administration'] = 'Resource Library Administration';
@@ -56,11 +59,14 @@ $string['editsection'] = 'Edit Section';
 $string['deletesection'] = 'Delete Section';
 $string['viewsection'] = 'View Section';
 $string['add_section_resource'] = 'Add Resource to Section';
+$string['del_section_resource'] = 'Delete Resource from Section';
 
-$string['addlist'] = 'Add Resource List';
-$string['editlist'] = 'Edit Resource List';
-$string['deletelist'] = 'Delete Resource List';
-$string['viewlist'] = 'View Resource List';
+$string['addlist'] = 'Add List';
+$string['editlist'] = 'Edit List';
+$string['deletelist'] = 'Delete List';
+$string['viewlist'] = 'View List';
+$string['add_list_section'] = 'Add Section to List';
+$string['del_list_section'] = 'Delete Section from List';
 
 $string['additem'] = 'Add Resource Item';
 $string['edititem'] = 'Edit Resource Item';
@@ -72,7 +78,22 @@ $string['author'] = 'Author';
 $string['source'] = 'Source';
 $string['time_estimate'] = 'Time Estimate';
 $string['embed_code'] = 'Embed Code';
-
 $string['display_name'] = 'Display Name';
+$string['section_count'] = 'Section count';
+$string['resource_count'] = 'Resource count';
+
 $string['missing_resource'] = 'Missing Resource';
+$string['missing_section'] = 'Missing Section';
 $string['no_resources'] = 'There is no Resources in this Section';
+$string['no_sections'] = 'There is no Sections in this List';
+
+$string['deletecheck_resurce_fromsection'] = 'Are you absolutely sure you want to delete resource {$a} from section?';
+$string['deletecheck_section_fromlist'] = 'Are you absolutely sure you want to delete section {$a} from list?';
+$string['enter_estimated_time'] = 'Enter estimated time to read this resource IN WHOLE MINUTES';
+$string['resources_exists'] = 'There are resources of this type';
+$string['section_resource_exists'] = 'There are resources in this section';
+$string['section_exists'] = 'There are sections in this list';
+$string['resources_exists_in_section'] = 'This resource is present in the sections';
+
+$string['listfield'] = 'Resource Library Lists';
+$string['listfield_help'] = 'Select list from select element below. You can choose multiple items by pressing button <Ctrl> and mouse clicking';

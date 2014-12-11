@@ -14,10 +14,9 @@ class mod_resourcelib_form_additemtosection extends moodleform {
         
         if (isset($this->_customdata['items']) && is_array($this->_customdata['items'])) {
             $_items = $this->_customdata['items'];
+            //add empty item to the begin of options
             $items = array('0'=>'');
             foreach($_items as $key=>$value) {$items[$key] = $value;}
-            //$items = array_merge(array(0=>''), $items);
-            //array_unshift($items, );
         } else
             $items = array();
 

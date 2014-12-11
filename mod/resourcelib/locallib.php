@@ -38,12 +38,25 @@ defined('MOODLE_INTERNAL') || die();
 */
 
 /**
-* put your comment there...
+* get all Resource Types
 * 
 */
-function get_resourcetypes() {
+function get_types() {
     global $DB;
     return $DB->get_records('resource_types');
+}
+
+/**
+* get instance of Resource Type
+* 
+*/
+function get_type($id) {
+    global $DB;
+    return $DB->get_record_sql('
+        SELECT t.*, (select count(*) from {resource_items} r where r.type_id = t.id) AS resource_count
+        FROM {resource_types} t
+        WHERE t.id = ?
+    ', array($id));
 }
 
 /**
@@ -51,19 +64,24 @@ function get_resourcetypes() {
 *  
 * @param mixed $data
 */
-function add_resourcetype($data) {
+function add_type($data) {
     global $DB;
     $id = $DB->insert_record('resource_types', $data);
-    //$DB->insert_records('resource_types', array($data));
     return $id;
 }
 
-function edit_resourcetype($data) {
+function edit_type($data) {
     global $DB;
     return $DB->update_record('resource_types', $data);
 }
 
-function deletete_resourcetype($data) {
+/**
+* delete Resource Type
+* 
+* @param mixed $data - instance of Resource Type
+* @return bool
+*/
+function delete_type($data) {
     global $DB;
     // Make sure nobody sends bogus record type as parameter.
     if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
@@ -77,44 +95,120 @@ function deletete_resourcetype($data) {
     return $DB->delete_records('resource_types', array('id' => $data->id));
 }
 
-function get_resourceitems() {
+/**
+* get all Resources
+* 
+*/
+function get_resources() {
     global $DB;
-    //return $DB->get_records('resource_items');
     return $DB->get_records_sql('SELECT ri.*, rt.name AS type_name, rt.icon_path
                           FROM {resource_items} ri LEFT JOIN {resource_types} rt ON rt.id = ri.type_id');
 }
 
-function add_resourceitem($data) {
+/**
+* get Resource record from database
+* 
+* @param mixed $id - Resource ID
+*/
+function get_resource($id) {
+    global $DB;
+    return $DB->get_record_sql('
+        SELECT r.*, t.name AS type_name, t.icon_path,
+            (select count(*) from {resource_section_items} si where si.resource_item_id = r.id) AS rs_count
+        FROM {resource_items} r LEFT JOIN {resource_types} t ON t.id = r.type_id
+        WHERE r.id = ?
+    ', array($id));
+}
+
+/**
+* add new Resource to database
+* 
+* @param mixed $data - Resource Instance
+*/
+function add_resource($data) {
     global $DB;
     return $DB->insert_record('resource_items', $data);
 }
 
-function edit_resourceitem($data) {
+/**
+* update Resource in database
+* 
+* @param mixed $data - Resource Instance
+*/
+function edit_resource($data) {
     global $DB;
     return $DB->update_record('resource_items', $data);
 }
 
-
-function get_resourcelists() {
+/**
+* delete Resource from database
+* 
+* @param mixed $data - instance of Resource
+* @return bool
+*/
+function delete_resource($data) {
     global $DB;
-    return $DB->get_records('resource_lists');
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in delete_resource() detected');
+    }
+    // Better not trust the parameter and fetch the latest info this will be very expensive anyway.
+    if (!$type = $DB->get_record('resource_items', array('id' => $data->id))) {
+        debugging('Attempt to delete unknown Resource.');
+        return false;
+    }
+    return $DB->delete_records('resource_items', array('id' => $data->id));
 }
 
-function add_resourcelist($data) {
+/**
+* get all List Instances
+* 
+*/
+function get_lists() {
+    global $DB;
+    return $DB->get_records_sql('
+        SELECT l.*, (select count(*) from {resource_list_sections} ls where ls.resource_list_id = l.id) AS s_count
+        FROM {resource_lists} l
+    ');
+}
+
+/**
+* get one Section with other data
+* 
+* @param mixed $id
+* @return array
+*/
+function get_list($id) {
+    global $DB;
+    return $DB->get_record_sql('
+        SELECT l.*, (select count(*) from {resource_list_sections} ls where ls.resource_list_id = l.id) AS s_count
+        FROM {resource_lists} l
+        WHERE l.id = ?
+    ', array($id));
+    //return $DB->get_records('resource_sections');
+}
+
+function add_list($data) {
     global $DB;
     return $DB->insert_record('resource_lists', $data);
 }
 
-function edit_resourcelist($data) {
+function edit_list($data) {
     global $DB;
     return $DB->update_record('resource_lists', $data);
 }
 
-function deletete_resourcelist($data) {
+/**
+* delete Resource List
+* 
+* @param mixed $data - instance of List
+* @return bool
+*/
+function delete_list($data) {
     global $DB;
     // Make sure nobody sends bogus record type as parameter.
     if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
-        throw new coding_exception('Invalid $data parameter in deletete_resourcelist() detected');
+        throw new coding_exception('Invalid $data parameter in delete_list() detected');
     }
     // Better not trust the parameter and fetch the latest info this will be very expensive anyway.
     if (!$type = $DB->get_record('resource_lists', array('id' => $data->id))) {
@@ -124,30 +218,102 @@ function deletete_resourcelist($data) {
     return $DB->delete_records('resource_lists', array('id' => $data->id));
 }
 
-
-function get_resourcesections() {
+/**
+* get Sections for List
+* 
+* @param mixed $data - list instance
+* @return array
+*/
+function get_list_sections($data) {
     global $DB;
-    return $DB->get_records('resource_sections');
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in get_list_sections() detected');
+    }
+    $sql = 'SELECT ls.id, s.id AS section_id, s.name, s.display_name, s.heading, s.icon_path, ls.sort_order,
+                (select count(*) from {resource_section_items} si where si.resource_section_id = s.id) AS r_count
+            FROM {resource_list_sections} ls 
+                LEFT JOIN {resource_sections} s ON s.id = ls.resource_section_id
+            WHERE ls.resource_list_id = ?
+            ORDER BY ls.sort_order';
+    $items = $DB->get_records_sql($sql, array($data->id));
+    if (!$items)
+        $items = array();
+    return $items;
 }
 
-function add_resourcesection($data) {
+
+/**
+* get resource items wich is not in section
+* 
+* @param mixed $data - section instance
+* @return array
+*/
+function get__lists() {
+    global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    $sql = 'SELECT l.id, l.name
+            FROM {resource_lists} l
+    ';
+    $items = $DB->get_records_sql_menu($sql);
+    if (!$items)
+        $items = array();
+    return $items;
+}
+
+//--------------------------------------------------
+
+/**
+* get all Sections
+* 
+*/
+function get_sections() {
+    global $DB;
+    //return $DB->get_records('resource_sections');
+    $sql = 'SELECT s.*,
+                (select count(*) from {resource_section_items} si where si.resource_section_id = s.id) AS r_count
+            FROM {resource_sections} s
+    ';
+    $items = $DB->get_records_sql($sql);
+    if (!$items)
+        $items = array();
+    return $items;
+}
+
+/**
+* get one Section with other data
+* 
+* @param mixed $id
+* @return array
+*/
+function get_section($id) {
+    global $DB;
+    return $DB->get_record_sql('
+        SELECT s.*, s.id AS section_id, (select count(*) from {resource_section_items} si where si.resource_section_id = s.id) AS r_count
+        FROM {resource_sections} s
+        WHERE s.id = ?
+    ', array($id));
+    //return $DB->get_records('resource_sections');
+}
+
+function add_section($data) {
     global $DB;
     return $DB->insert_record('resource_sections', $data);
 }
 
-function edit_resourcesection($data) {
+function edit_section($data) {
     global $DB;
     return $DB->update_record('resource_sections', $data);
 }
 
-function deletete_resourcesection($data) {
+function delete_section($data) {
     global $DB;
     // Make sure nobody sends bogus record type as parameter.
     if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
-        throw new coding_exception('Invalid $data parameter in deletete_resourcesection() detected');
+        throw new coding_exception('Invalid $data parameter in delete_section() detected');
     }
     // Better not trust the parameter and fetch the latest info this will be very expensive anyway.
-    if (!$type = $DB->get_record('resource_lists', array('id' => $data->id))) {
+    if (!$type = $DB->get_record('resource_sections', array('id' => $data->id))) {
         debugging('Attempt to delete unknown Resource Section.');
         return false;
     }
@@ -161,21 +327,49 @@ function deletete_resourcesection($data) {
 * @return array
 */
 function get_section_items($data) {
-     global $DB;
+    global $DB;
     // Make sure nobody sends bogus record type as parameter.
     if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
         throw new coding_exception('Invalid $data parameter in get_section_items() detected');
     }
-    $sql = 'SELECT si.id, r.title, r.description, t.name AS type_name, t.icon_path
+    $sql = 'SELECT si.id, r.url, r.title, r.description, r.author, r.source, t.name AS type_name, t.icon_path
             FROM {resource_section_items} si 
                 LEFT JOIN {resource_items} r ON r.id = si.resource_item_id
                 LEFT JOIN {resource_types} t ON t.id = r.type_id
             WHERE si.resource_section_id = ?
             ORDER BY si.sort_order';
-    $items = $DB->get_records_sql($sql, array($data->id));
+    $items = $DB->get_records_sql($sql, array($data->section_id));
     if (!$items)
         $items = array();
     return $items;
+}
+
+/**
+* get Resource instance from Section
+* 
+* @param mixed $id - id of resource instance in section
+*/
+function get_resource_fromsection($id) {
+    global $DB;
+    $sql = 'SELECT r.*, si.resource_section_id
+            FROM {resource_section_items} si 
+                LEFT JOIN {resource_items} r ON r.id = si.resource_item_id
+            WHERE si.id = ?';
+    return $DB->get_record_sql($sql, array($id));
+}
+
+/**
+* get Section instance from List
+* 
+* @param mixed $id - id of resource instance in section
+*/
+function get_section_fromlist($id) {
+    global $DB;
+    $sql = 'SELECT s.*, ls.resource_list_id
+            FROM {resource_list_sections} ls 
+                LEFT JOIN {resource_sections} s ON s.id = ls.resource_section_id
+            WHERE ls.id = ?';
+    return $DB->get_record_sql($sql, array($id));
 }
 
 /**
@@ -192,7 +386,6 @@ function get_notsection_items($data) {
     }
     $sql = 'SELECT r.id, r.title
             FROM {resource_items} r 
-              LEFT JOIN {resource_types} t ON t.id = r.type_id
             WHERE r.id NOT IN 
               (SELECT si.resource_item_id FROM {resource_section_items} si WHERE si.resource_section_id = ?)';
     $items = $DB->get_records_sql_menu($sql, array($data->id));
@@ -202,17 +395,114 @@ function get_notsection_items($data) {
 }
 
 /**
-* put your comment there...
+* get Sections wich is not in List
 * 
-* @param mixed $section_id
-* @param mixed $resource_id
-* @param mixed $sort_order
+* @param mixed $data - section instance
+* @return array
 */
-//function add_resource_to_section($section_id, $resource_id, $sort_order) {
+function get_notlist_sections($data) {
+     global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in get_notlist_sections() detected');
+    }
+    $sql = 'SELECT s.id, s.name
+            FROM {resource_sections} s 
+            WHERE s.id NOT IN 
+              (SELECT ls.resource_section_id FROM {resource_list_sections} ls WHERE ls.resource_list_id = ?)';
+    $items = $DB->get_records_sql_menu($sql, array($data->id));
+    if (!$items)
+        $items = array();
+    return $items;
+}
+
+/**
+* get Lists wich is not in Cource
+* 
+* @param mixed $data - resourcelib instance
+* @return array
+*/
+function get_notcource_lists($data) {
+     global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in get_notlist_sections() detected');
+    }
+    $sql = 'SELECT l.id, l.name
+            FROM {resource_lists} l 
+            WHERE l.id NOT IN 
+              (SELECT rlc.instance_id FROM {resourcelib_content} rlc WHERE rlc.type = ? AND rlc.resourcelib_id = ?)';
+    $items = $DB->get_records_sql_menu($sql, array('list', $data->id));
+    if (!$items)
+        $items = array();
+    return $items;
+}
+
+/**
+* get Lists wich is in Cource
+* 
+* @param mixed $data - resourcelib instance
+* @return array
+*/
+function get_cource_lists($data) {
+     global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in get_notlist_sections() detected');
+    }
+    $sql = 'SELECT l.id
+            FROM {resource_lists} l 
+            WHERE l.id IN 
+              (SELECT rlc.instance_id FROM {resourcelib_content} rlc WHERE rlc.type = ? AND rlc.resourcelib_id = ?)';
+    $_items = $DB->get_records_sql_menu($sql, array('list', $data->id));
+    $items = array();
+    foreach ($_items as $key=>$value) 
+        $items[] = $key;
+    return $items;
+}
+
+/**
+* add Resource to Section
+* 
+* @param mixed $data - instance of Resource Item in Section
+*/
 function add_resource_to_section($data) {
     global $DB;
     $result = $DB->insert_record('resource_section_items', $data);
     return $result;
+}
+
+/**
+* add Section to List
+* 
+* @param mixed $data - instance of Section Item in List
+*/
+function add_section_to_list($data) {
+    global $DB;
+    $result = $DB->insert_record('resource_list_sections', $data);
+    return $result;
+}
+
+/**
+* delete Resource from Section
+* 
+* @param mixed $id - ID of Resource in Section
+* @return bool
+*/
+function delete_resource_from_section($id) {
+    global $DB;
+    return $DB->delete_records('resource_section_items', array('id' => $id));
+}
+
+/**
+* delete Section from List
+* 
+* @param mixed $id - ID of Section in List
+* @return bool
+*/
+function delete_section_from_list($id) {
+    global $DB;
+    return $DB->delete_records('resource_list_sections', array('id' => $id));
 }
 
 /**
@@ -248,28 +538,81 @@ function create_editbutton($url, $action, $id) {
     $stredit   = get_string('edit');
     return html_writer::link(
         new moodle_url($url, array('action'=>'edit', 'id'=>$id)), 
-        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), 
+        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/editstring'), 'alt'=>$stredit, 'class'=>'iconsmall')), 
         array('title'=>$stredit)
     );
 }
 
 /**
-* show resource items in HTML table
+* show Resource Lists in HTML table
 * 
-* @param mixed $items - array of resource instances
+* @param mixed $sections
+* @param mixed $returnurl
+* @param mixed $buttons
 */
-function show_resource_items($items, $returnurl, $buttons = null) {
-    global $OUTPUT;
-    //$strview   = get_string('view');
-
+function show_list_sections($items, $returnurl, $buttons = null) {
+    global $CFG, $OUTPUT;
+    
     if (!$items || empty($items)) {
-        echo $OUTPUT->box(get_string('no_resources', 'resourcelib'), 'generalbox', 'notice');
+        echo $OUTPUT->notification(get_string('no_sections', 'resourcelib'), 'redirectmessage');
     } else {
         if (!isset($buttons)) //default buttons
             $buttons = array('delete'=>'delete', 'edit'=>'edit');
         
         $table = new html_table();
-        $table->head = array(get_string('name'), get_string('description'), get_string('type', 'resourcelib'));
+        $table->head = array(
+            get_string('name'), 
+            get_string('description'), 
+            get_string('type', 'resourcelib'),
+            get_string('resource_count', 'resourcelib'),
+        );
+        
+        foreach ($items as $item) {
+            $buttons_column = array();
+            if (key_exists('delete', $buttons))
+                $buttons_column[] = create_deletebutton($returnurl, $buttons['delete'], $item->id);
+            if (key_exists('edit', $buttons))
+                $buttons_column[] = create_editbutton($returnurl, $buttons['edit'], $item->id);
+            $table->data[] = array(
+                //$item->name, 
+                html_writer::link(new moodle_url($CFG->wwwroot.'/mod/resourcelib/sections.php', array('action'=>'view', 'id'=>$item->section_id)), $item->name),
+                $item->display_name, 
+                //$type->icon_path, 
+                html_writer::empty_tag('img', array(
+                    'src'=>$item->icon_path, 
+                    'alt'=>$item->icon_path, 
+                    'title'=>get_string('icon'),
+                    'class'=>'iconsmall', 
+                    'style'=>'width: 30px; height: 30px;')),
+                ($item->r_count ? $item->r_count : ''), 
+                implode(' ', $buttons_column) 
+            );
+        }
+        echo html_writer::table($table);
+    }
+}
+    
+/**
+* show Resource items in HTML table
+* 
+* @param mixed $items - array of resource instances
+*/
+function show_resource_items($items, $returnurl, $buttons = null) {
+    global $OUTPUT;
+
+    if (!$items || empty($items)) {
+        echo $OUTPUT->notification(get_string('no_resources', 'resourcelib'), 'redirectmessage');
+        //echo '<div class="alert alert-warning">' . get_string('no_resources', 'resourcelib') . '</div>';
+    } else {
+        if (!isset($buttons)) //default buttons
+            $buttons = array('delete'=>'delete', 'edit'=>'edit');
+        
+        $table = new html_table();
+        $table->head = array(
+            get_string('name'), 
+            //get_string('description'), 
+            get_string('type', 'resourcelib')
+        );
         
         foreach ($items as $item) {
             $buttons_column = array();
@@ -279,9 +622,14 @@ function show_resource_items($items, $returnurl, $buttons = null) {
                 $buttons_column[] = create_editbutton($returnurl, $buttons['edit'], $item->id);
             $table->data[] = array(
                 $item->title, 
-                $item->description, 
+                //$item->description, 
                 //$type->icon_path, 
-                html_writer::empty_tag('img', array('src'=>$item->icon_path, 'alt'=>$item->icon_path, /*'class'=>'iconsmall', */'title'=>$item->type_name)),
+                html_writer::empty_tag('img', array(
+                    'src'=>$item->icon_path, 
+                    'alt'=>$item->icon_path, 
+                    'title'=>$item->type_name,
+                    'class'=>'iconsmall', 
+                    'style'=>'width: 30px; height: 30px;')),
                 implode(' ', $buttons_column) 
             );
         }
@@ -300,5 +648,19 @@ function show_addbutton($url, $label, $attributes = array('class' => 'mdl-right'
     global $OUTPUT;
     echo html_writer::start_tag('div', $attributes);
     echo html_writer::tag('a', $OUTPUT->pix_icon('t/add', '') . ' ' . $label, array('href' => $url->out(false)));
+    echo html_writer::end_tag('div');
+}
+
+/**
+* Show edit button (usually near data table)
+* 
+* @param mixed $url
+* @param mixed $label
+* @param mixed $attributes
+*/
+function show_editbutton($url, $label, $attributes = array('class' => 'mdl-right')) {
+    global $OUTPUT;
+    echo html_writer::start_tag('div', $attributes);
+    echo html_writer::tag('a', $OUTPUT->pix_icon('t/editstring', '') . ' ' . $label, array('href' => $url->out(false)));
     echo html_writer::end_tag('div');
 }

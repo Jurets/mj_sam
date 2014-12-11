@@ -28,6 +28,9 @@
     $actionAdd = 'add';
     $actionEdit = 'edit';
     $actionDelete = 'delete';
+    $actionView = 'view';
+    $actionAddSection = 'addtolist';
+    $actionDelSection = 'delfromlist';
     
     /// Security
     $systemcontext = context_system::instance();
@@ -53,6 +56,7 @@
         $PAGE->navbar->add(get_string('manage_lists', 'resourcelib'), new moodle_url($returnurl));
     }
 
+    // ------ process actions --------
     switch($action) {
         case $actionIndex:
             echo $OUTPUT->header();
@@ -60,26 +64,31 @@
 
             $stredit   = get_string('edit');
             $strdelete = get_string('delete');
+            $strview = get_string('settings');
             $table = new html_table();
             $table->head = array(
                 get_string('name'), 
                 get_string('display_name', 'resourcelib'), 
-                get_string('icon')
+                get_string('icon'),
+                get_string('section_count', 'resourcelib'),
             );
             //get list of data
-            $lists = get_resourcelists();
+            $lists = get_lists();
             foreach ($lists as $list) {
                 $buttons = array();
-                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionDelete, 'id'=>$list->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
-                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionEdit, 'id'=>$list->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$stredit));
+                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionEdit, 'id'=>$list->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/editstring'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$stredit));
+                $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$list->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$strview));
+                if (!$list->s_count)
+                    $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionDelete, 'id'=>$list->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
                 $table->data[] = array(
-                    $list->name, 
+                    html_writer::link(new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$list->id)), $list->name),
                     $list->display_name, 
                     html_writer::empty_tag('img', array(
                         'src'=>$list->icon_path, 
                         'alt'=>$list->icon_path, 
                         'class'=>'iconsmall', 
-                        'style'=>'width: 30px; height: 30px;')) . ' ' . $list->icon_path,
+                        'style'=>'width: 30px; height: 30px;')),
+                    ($list->s_count ? $list->s_count : ''), 
                     implode(' ', $buttons)
                 );
             }
@@ -89,6 +98,51 @@
             echo html_writer::table($table);
             echo $OUTPUT->footer();
             break;
+            
+        case $actionView:
+            $list = $DB->get_record('resource_lists', array('id'=>$id), '*', MUST_EXIST); //get data from DB
+
+            $head_str = !empty($list->display_name) ? $list->display_name : $list->name;
+            $PAGE->navbar->add($head_str);
+            echo $OUTPUT->header();
+            echo $OUTPUT->heading($head_str);
+            
+            if (!empty($list->icon_path)/* && $hasuploadedpicture*/) {
+                $imagevalue = html_writer::empty_tag('img', array('src'=>$list->icon_path, 'alt'=>$list->icon_path));
+            } else {
+                $imagevalue = get_string('none');
+            }
+            echo html_writer::start_tag('dl', array('class' => 'list'));
+            echo html_writer::tag('dt', get_string('name'));
+            echo html_writer::tag('dd', $list->name);
+            echo html_writer::end_tag('dl');
+            
+            echo html_writer::start_tag('dl', array('class' => 'list'));
+            echo html_writer::tag('dt', get_string('display_name', 'resourcelib'));
+            echo html_writer::tag('dd', $list->display_name);
+            echo html_writer::end_tag('dl');
+
+            echo html_writer::start_tag('dl', array('class' => 'list'));
+            echo html_writer::tag('dt', get_string('writingheader'));
+            echo html_writer::tag('dd', $list->heading);
+            echo html_writer::end_tag('dl');
+
+            echo html_writer::start_tag('dl', array('class' => 'list'));
+            echo html_writer::tag('dt', get_string('currentpicture'));
+            echo html_writer::tag('dd', $imagevalue);
+            echo html_writer::end_tag('dl');
+            //show edit button
+            show_editbutton(new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$list->id)), get_string('editlist', 'resourcelib'));
+            //
+            echo html_writer::tag('hr', '');
+            //add section button
+            show_addbutton(new moodle_url($returnurl, array('action' => $actionAddSection, 'list'=>$id)), get_string('add_list_section', 'resourcelib'));
+            //sections in table format
+            show_list_sections(get_list_sections($list), $returnurl, array('delete'=>$actionDelSection));
+            
+            echo $OUTPUT->footer();
+            break;
+            
         case $actionAdd:
         case $actionEdit:
             require_once($CFG->dirroot.'/mod/resourcelib/form_editlist.php'); //include form_edittype.php  
@@ -117,10 +171,10 @@
                     }
                 }
                 if ($action == $actionAdd) {
-                    $inserted_id = add_resourcelist($data);
+                    $inserted_id = add_list($data);
                     $success = isset($id);
                 } else if (isset($id)){
-                    $success = edit_resourcelist($data);
+                    $success = edit_list($data);
                 }
                 if ($success){  //call create Resource Type function
                     $url = new moodle_url($returnurl, array('action' => 'index'));
@@ -133,22 +187,29 @@
             $editform->display();
             echo $OUTPUT->footer();
             break;
+            
         case $actionDelete: 
             //breadcrumbs
             $PAGE->navbar->add(get_string('deletelist', 'resourcelib'));
             
             if (isset($id) && confirm_sesskey()) { // Delete a selected resource type, after confirmation
-                $list = $DB->get_record('resource_lists', array('id'=>$id), '*', MUST_EXIST);
+                $list = get_list($id);
 
                 if ($confirm != md5($id)) {
                     echo $OUTPUT->header();
                     echo $OUTPUT->heading(get_string('deletelist', 'resourcelib'));
-                    $optionsyes = array('action'=>$actionDelete, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
-                    echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$list->name'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                    //before delete do check existing of resources of this type
+                    if ($list->s_count > 0) {
+                        $str = get_string('deletednot', '', $list->name) . ' ' . get_string('section_exists', 'resourcelib');
+                        echo $OUTPUT->notification($str);
+                    } else {
+                        $optionsyes = array('action'=>$actionDelete, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
+                        echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$list->name'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                    }
                     echo $OUTPUT->footer();
                 } else if (data_submitted() /*&& !$data->deleted*/){
-                    if (deletete_resourcelist($list)) {
-                        $url = new moodle_url($returnurl, array('action' => 'index'));
+                    if (delete_list($list)) {
+                        $url = new moodle_url($returnurl, array('action' => $actionIndex));
                         redirect($url);
                     } else {
                         echo $OUTPUT->notification($returnurl, get_string('deletednot', '', $list->name));
@@ -156,5 +217,62 @@
                 }
             }
             break;
+            
+        case $actionAddSection:
+            require_once($CFG->dirroot.'/mod/resourcelib/form_addsectiontolist.php'); //include form_edittype.php  
+            //arbitrary param: section_id
+            $list_id = optional_param('list', 0, PARAM_INT);
+            //get List
+            $list = $DB->get_record('resource_lists', array('id'=>$list_id), '*', MUST_EXIST);
+            
+            $head_str = !empty($list->display_name) ? $list->display_name : $list->name;
+            //build url's
+            $urlView = new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$list_id));
+            $urlAction = new moodle_url($returnurl, array('action'=>$actionAddSection, 'list'=>$list_id));
+            //breadcrumbs
+            $PAGE->navbar->add($head_str /*get_string('viewlist', 'resourcelib')*/, $urlView);
+            $PAGE->navbar->add(get_string('add_list_section', 'resourcelib'));
+            //get Resources
+            $sections = get_notlist_sections($list);
+            //create and show form instance
+            $editform = new mod_resourcelib_form_addsectiontolist($urlAction->out(false), array('list'=>$list, 'sections'=>$sections)); 
+            
+            if ($editform->is_cancelled()) {  //in cancel form case - redirect to previous page
+                redirect($urlView);
+            } else if ($data = $editform->get_data()) {
+                $inserted_id = add_section_to_list($data);
+                redirect($urlView);
+            }
+            //show form page
+            echo $OUTPUT->header();
+            echo $OUTPUT->heading(get_string('add_list_section', 'resourcelib'));
+            $editform->display();
+            
+            echo $OUTPUT->footer();
+            break;  
+            
+        case $actionDelSection: 
+            //breadcrumbs
+            $head_str = get_string('del_list_section', 'resourcelib');
+            $PAGE->navbar->add($head_str);
+            
+            if (isset($id) && confirm_sesskey()) { // Delete a selected resource from section, after confirmation
+                $section = get_section_fromlist($id);
 
+                if ($confirm != md5($id)) {
+                    echo $OUTPUT->header();
+                    echo $OUTPUT->heading($head_str);
+                    $optionsyes = array('action'=>$actionDelSection, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
+                    echo $OUTPUT->confirm(get_string('deletecheck_section_fromlist', 'resourcelib', "'$section->name'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                    echo $OUTPUT->footer();
+                } else if (data_submitted() /*&& !$data->deleted*/){
+                    if (delete_section_from_list($id)) {
+                        $url = new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$section->resource_list_id));
+                        redirect($url);
+                    } else {
+                        echo $OUTPUT->notification(get_string('deletednot', '', $section->name));
+                    }
+                }
+            }
+            break;
     }

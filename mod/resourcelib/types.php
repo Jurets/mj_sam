@@ -63,14 +63,19 @@
             $table = new html_table();
             $table->head = array(get_string('name'), get_string('icon'));
             //get list of types
-            $types = get_resourcetypes();
+            $types = get_types();
             foreach ($types as $type) {
                 $buttons = array();
                 $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionDelete, 'id'=>$type->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
                 $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionEdit, 'id'=>$type->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$stredit));
                 $table->data[] = array(
                     $type->name, 
-                    html_writer::empty_tag('img', array('src'=>$type->icon_path, 'alt'=>$type->icon_path, 'class'=>'iconmedium')) . ' ' . $type->icon_path,
+                    html_writer::empty_tag('img', array(
+                        'src'=>$type->icon_path, 
+                        'alt'=>$type->icon_path, 
+                        'class'=>'iconsmall', 
+                        'style'=>'width: 30px; height: 30px;'
+                    )) . ' ' . $type->icon_path,
                     implode(' ', $buttons)
                 );
             }
@@ -108,10 +113,10 @@
                     }
                 }
                 if ($action == $actionAdd) {
-                    $inserted_id = add_resourcetype($data);
+                    $inserted_id = add_type($data);
                     $success = isset($id);
                 } else if (isset($id)){
-                    $success = edit_resourcetype($data);
+                    $success = edit_type($data);
                 }
                 if ($success){  //call create Resource Type function
                     $url = new moodle_url($returnurl, array('action' => 'index'));
@@ -130,22 +135,29 @@
             $PAGE->navbar->add(get_string('deletetype', 'resourcelib'));
             
             if (isset($id) && confirm_sesskey()) { // Delete a selected resource type, after confirmation
-                $type = $DB->get_record('resource_types', array('id'=>$id), '*', MUST_EXIST);
+                //$type = $DB->get_record('resource_types', array('id'=>$id), '*', MUST_EXIST);
+                $type = get_type($id);
 
                 if ($confirm != md5($id)) {
                     echo $OUTPUT->header();
                     echo $OUTPUT->heading(get_string('deletetype', 'resourcelib'));
-                    $optionsyes = array('action'=>$actionDelete, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
-                    echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$type->name'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                    //before delete do check existing of resources of this type
+                    if ($type->resource_count > 0) {
+                        $str = get_string('deletednot', '', $type->name) . ' ' . get_string('resources_exists', 'resourcelib');
+                        echo $OUTPUT->notification($str);
+                    } else {
+                        $optionsyes = array('action'=>$actionDelete, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
+                        echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$type->name'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                    }
                     echo $OUTPUT->footer();
                 } else if (data_submitted() /*&& !$data->deleted*/){
-                    if (deletete_resourcetype($type)) {
+                    if (delete_type($type)) {
                         //\core\session\manager::gc(); // Remove stale sessions.
                         $url = new moodle_url($returnurl, array('action' => 'index'));
                         redirect($url);
                     } else {
                         //\core\session\manager::gc(); // Remove stale sessions.
-                        echo $OUTPUT->notification($returnurl, get_string('deletednot', '', $type->name));
+                        echo $OUTPUT->notification(get_string('deletednot', '', $type->name));
                     }
                 }
             }
