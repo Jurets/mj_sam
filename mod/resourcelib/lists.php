@@ -102,13 +102,11 @@
         case $actionView:
             $list = $DB->get_record('resource_lists', array('id'=>$id), '*', MUST_EXIST); //get data from DB
 
-            //$head_str = get_string('viewlist', 'resourcelib');
             $head_str = !empty($list->display_name) ? $list->display_name : $list->name;
             $PAGE->navbar->add($head_str);
             echo $OUTPUT->header();
             echo $OUTPUT->heading($head_str);
             
-
             if (!empty($list->icon_path)/* && $hasuploadedpicture*/) {
                 $imagevalue = html_writer::empty_tag('img', array('src'=>$list->icon_path, 'alt'=>$list->icon_path));
             } else {
@@ -222,16 +220,12 @@
             
         case $actionAddSection:
             require_once($CFG->dirroot.'/mod/resourcelib/form_addsectiontolist.php'); //include form_edittype.php  
-            
             //arbitrary param: section_id
             $list_id = optional_param('list', 0, PARAM_INT);
             //get List
             $list = $DB->get_record('resource_lists', array('id'=>$list_id), '*', MUST_EXIST);
-            //get Section
-            //$section = $DB->get_record('resource_sections', array('id'=>$list_id), '*', MUST_EXIST);
-
-            $head_str = !empty($list->display_name) ? $list->display_name : $list->name;
             
+            $head_str = !empty($list->display_name) ? $list->display_name : $list->name;
             //build url's
             $urlView = new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$list_id));
             $urlAction = new moodle_url($returnurl, array('action'=>$actionAddSection, 'list'=>$list_id));

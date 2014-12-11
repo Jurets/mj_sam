@@ -87,7 +87,7 @@
                         'src'=>$section->icon_path, 
                         'alt'=>$section->icon_path, 
                         'class'=>'iconsmall', 
-                        'style'=>'width: 30px; height: 30px;')),// . ' ' . $section->icon_path,
+                        'style'=>'width: 30px; height: 30px;')),
                     $section->r_count, 
                     implode(' ', $buttons)
                 );
@@ -100,13 +100,13 @@
             break;
             
         case $actionView:
-            //$section = $DB->get_record('resource_sections', array('id'=>$id), '*', MUST_EXIST); //get data from DB
-            $section = get_section($id); //get data from DB
+            //get section
+            $section = get_section($id);
             $head_str = !empty($section->display_name) ? $section->display_name : $section->name;
 
-            $PAGE->navbar->add($head_str /*get_string('viewsection', 'resourcelib')*/);
+            $PAGE->navbar->add($head_str);
             echo $OUTPUT->header();
-            echo $OUTPUT->heading($head_str /*get_string('viewsection', 'resourcelib')*/);
+            echo $OUTPUT->heading($head_str);
             
             if (!empty($section->icon_path)/* && $hasuploadedpicture*/) {
                 $imagevalue = html_writer::empty_tag('img', array('src'=>$section->icon_path, 'alt'=>$section->icon_path));

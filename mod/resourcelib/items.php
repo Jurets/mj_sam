@@ -76,7 +76,6 @@
             } else if (isset($id)){     //edit existing type ($id parameter must be present in URL)
                 $PAGE->navbar->add(get_string('edititem', 'resourcelib'));
                 $actionurl = new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$id));
-                //$item = $DB->get_record('resource_items', array('id'=>$id), '*', MUST_EXIST); //get data from DB
                 $item = get_resource($id); //get data from DB
             }
             
@@ -112,7 +111,6 @@
             $PAGE->navbar->add(get_string('deleteitem', 'resourcelib'));
             
             if (isset($id) && confirm_sesskey()) { // Delete a selected resource item, after confirmation
-                //$item = $DB->get_record('resource_items', array('id'=>$id), '*', MUST_EXIST);
                 $item = get_resource($id); //get data from DB
 
                 if ($confirm != md5($id)) {

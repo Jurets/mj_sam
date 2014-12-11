@@ -67,7 +67,6 @@ function get_type($id) {
 function add_type($data) {
     global $DB;
     $id = $DB->insert_record('resource_types', $data);
-    //$DB->insert_records('resource_types', array($data));
     return $id;
 }
 
@@ -171,7 +170,6 @@ function get_lists() {
         SELECT l.*, (select count(*) from {resource_list_sections} ls where ls.resource_list_id = l.id) AS s_count
         FROM {resource_lists} l
     ');
-    //return $DB->get_records('resource_lists');
 }
 
 /**

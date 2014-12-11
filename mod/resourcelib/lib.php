@@ -120,13 +120,6 @@ function resourcelib_update_instance(stdClass $resourcelib, mod_resourcelib_mod_
             //firstly, delete the current elements
             $DB->delete_records('resourcelib_content', array('resourcelib_id'=>$resourcelib->id));
             $items = prepare_items($form_content->list_id, $resourcelib->id);
-            /*foreach($form_content->list_id as $item) {
-                $content = new stdClass();
-                $content->resourcelib_id = $resourcelib->id;
-                $content->type = 'list';
-                $content->instance_id = $item; //$form_content->list_id;
-                $DB->insert_record('resourcelib_content', $content);
-            }*/
             $DB->insert_records('resourcelib_content', $items);
         }
         // You may have to add extra stuff in here.
@@ -141,7 +134,7 @@ function resourcelib_update_instance(stdClass $resourcelib, mod_resourcelib_mod_
     return $success;
 }
 
-//
+//prepare data from form for inserting to DB
 function prepare_items($list_ids, $rlib_id) {
     $items = array();
     foreach($list_ids as $list_id) {
@@ -167,16 +160,23 @@ function prepare_items($list_ids, $rlib_id) {
  */
 function resourcelib_delete_instance($id) {
     global $DB;
-
     if (! $resourcelib = $DB->get_record('resourcelib', array('id' => $id))) {
         return false;
     }
-
-    // Delete any dependent records here.
-
-    $DB->delete_records('resourcelib', array('id' => $resourcelib->id));
-
-    return true;
+    try {
+        $transaction = $DB->start_delegated_transaction();
+        //firstly, delete the elements of module
+        $DB->delete_records('resourcelib_content', array('resourcelib_id'=>$resourcelib->id));
+        //delete module instance from course
+        $DB->delete_records('resourcelib', array('id' => $resourcelib->id));
+         // Assuming the both inserts work, we get to the following line.
+        $transaction->allow_commit();
+        $success = true;
+    } catch(Exception $e) {
+        $transaction->rollback($e);
+        $success = false;
+    }
+    return $success;
 }
 
 /**
