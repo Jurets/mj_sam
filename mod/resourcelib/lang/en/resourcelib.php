@@ -37,6 +37,13 @@ $string['resourcelibfieldset'] = 'Resource Library Items';
 $string['resourcelibname'] = 'resourcelib name';
 $string['resourcelibname_help'] = 'This is the content of the help tooltip associated with the resourcelibname field. Markdown syntax is supported.';
 $string['resourcelib'] = 'resourcelib';
+
+$string['configuration'] = 'Configuration';
+$string['manage_types_desc'] = '<a href="{$a}">Resource Types Page</a> allows to configure types of Resources.<br/>';
+$string['manage_items_desc'] = '<a href="{$a}">Resources Page</a> allows to add, change and delete Resource Items.<br/>';
+$string['manage_sections_desc'] = '<a href="{$a}">Sections Page</a> allows to configure Resource Sections.<br/>';
+$string['manage_lists_desc'] = '<a href="{$a}">Lists Page</a> allows to configure Resource Sections.<br/>';
+
 $string['pluginadministration'] = 'resourcelib administration';
 $string['pluginname'] = 'resourcelib';
 
