@@ -62,7 +62,7 @@
             </KEYS>
         </TABLE>
 
-        <TABLE NAME="resource_lists" COMMENT="resource_list_collections table retrofitted from MySQL">
+        <TABLE NAME="resource_lists" COMMENT="Resource List">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
@@ -96,7 +96,6 @@
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-                <KEY NAME="foreign-type_id" TYPE="foreign" FIELDS="type_id" REFTABLE="resource_types" REFFIELDS="id"/>
             </KEYS>
         </TABLE>
 
@@ -104,14 +103,12 @@
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="resource_section_id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="resource_item_id" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="true"/>
+                <FIELD NAME="resource_item_id" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="sort_order" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
                 <KEY NAME="UNQ_resource_section" TYPE="unique" FIELDS="resource_section_id, resource_item_id"/>
-                <KEY NAME="foreign-resource_list_collection_item_collection_id" TYPE="foreign" FIELDS="collection_id" REFTABLE="resource_list_collections" REFFIELDS="id"/>
-                <KEY NAME="foreign-resource_list_collection_list_id" TYPE="foreign" FIELDS="resource_list_id" REFTABLE="resource_lists" REFFIELDS="id"/>
             </KEYS>
         </TABLE>
 
@@ -124,23 +121,12 @@
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-                <KEY NAME="foreign-resource_list_items_resource_id" TYPE="foreign" FIELDS="resource_id" REFTABLE="resource_items" REFFIELDS="id"/>
-                <KEY NAME="foreign-resource_list_items_resource_list_id" TYPE="foreign" FIELDS="resource_list_id" REFTABLE="resource_lists" REFFIELDS="id"/>
-            </KEYS>
-        </TABLE>
-
-        <TABLE NAME="resource_item_tags" COMMENT="resource_item_tags table retrofitted from MySQL">
-            <FIELDS>
-                <FIELD NAME="resource_id" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="tag" TYPE="char" LENGTH="16" NOTNULL="false" SEQUENCE="false"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="foreign-resource_item_tags" TYPE="foreign" FIELDS="resource_id" REFTABLE="resource_items" REFFIELDS="id"/>
             </KEYS>
         </TABLE>
 
         <TABLE NAME="resource_ratings" COMMENT="resource_ratings table retrofitted from MySQL">
             <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="course_id" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="lesson_id" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="resource_id" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
@@ -150,9 +136,7 @@
                 <FIELD NAME="deleted" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
-                <KEY NAME="foreign-ratings_resources" TYPE="foreign" FIELDS="resource_id" REFTABLE="resource_items" REFFIELDS="id"/>
-                <KEY NAME="foreign-ratings_users" TYPE="foreign" FIELDS="user_id" REFTABLE="user" REFFIELDS="id"/>
-                <KEY NAME="foreign-ratings_courses" TYPE="foreign" FIELDS="course_id" REFTABLE="course" REFFIELDS="id"/>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
         </TABLE>
 
@@ -167,12 +151,8 @@
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-                <KEY NAME="foreign-access_log_course" TYPE="foreign" FIELDS="course_id" REFTABLE="course" REFFIELDS="id"/>
-                <KEY NAME="foreign-access_log_resource_id" TYPE="foreign" FIELDS="resource_id" REFTABLE="resource_items" REFFIELDS="id"/>
             </KEYS>
         </TABLE>
-
-
 
     </TABLES>
 
