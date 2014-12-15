@@ -21,10 +21,10 @@ if ($ADMIN->fulltree) {
                                   );
                                   
                                   
-    $settings->add(new admin_setting_heading('typeconfig', get_string('manage_types', 'resourcelib'), get_string('manage_types_desc', 'resourcelib', '/mod/resourcelib/types.php')));
-    $settings->add(new admin_setting_heading('itemconfig', get_string('manage_items', 'resourcelib'), get_string('manage_items_desc', 'resourcelib', '/mod/resourcelib/items.php')));
-    $settings->add(new admin_setting_heading('sectionconfig', get_string('manage_sections', 'resourcelib'), get_string('manage_sections_desc', 'resourcelib', '/mod/resourcelib/sections.php')));
-    $settings->add(new admin_setting_heading('listconfig', get_string('manage_lists', 'resourcelib'), get_string('manage_lists_desc', 'resourcelib', '/mod/resourcelib/lists.php')));
+    $settings->add(new admin_setting_heading('typeconfig', get_string('manage_types', 'resourcelib'), get_string('manage_types_desc', 'resourcelib', $CFG->wwwroot.'/mod/resourcelib/types.php')));
+    $settings->add(new admin_setting_heading('itemconfig', get_string('manage_items', 'resourcelib'), get_string('manage_items_desc', 'resourcelib', $CFG->wwwroot.'/mod/resourcelib/items.php')));
+    $settings->add(new admin_setting_heading('sectionconfig', get_string('manage_sections', 'resourcelib'), get_string('manage_sections_desc', 'resourcelib', $CFG->wwwroot.'/mod/resourcelib/sections.php')));
+    $settings->add(new admin_setting_heading('listconfig', get_string('manage_lists', 'resourcelib'), get_string('manage_lists_desc', 'resourcelib', $CFG->wwwroot.'/mod/resourcelib/lists.php')));
 
 }  
 ?>
