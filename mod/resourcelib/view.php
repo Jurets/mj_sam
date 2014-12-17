@@ -91,21 +91,38 @@ foreach($contents as $content) {
     if ($content->type == 'list') {
         //get List instance
         $list = get_list($content->instance_id);
+        //list head
+        echo html_writer::start_div('list_title');
+        echo html_writer::empty_tag('img', array(
+            'src'=>$list->icon_path, 
+            'alt'=>$list->icon_path, 
+            'class'=>'iconsmall', 
+            'style'=>'width: 30px; height: 30px; float: left;'));
         echo html_writer::tag('h2', $list->display_name);
-        echo html_writer::start_div('collection');
-        echo html_writer::div($list->heading, 'collection_heading');
+        echo html_writer::end_div();
+        //
+        echo html_writer::start_div('list_content');
+        echo html_writer::div($list->heading, 'list_heading');
         //get Sections of this List
         if ($list->s_count > 0) {
             $sections = get_list_sections($list);
             foreach($sections as $section) {
+                echo html_writer::start_div('section_title');
+                echo html_writer::empty_tag('img', array(
+                    'src'=>$section->icon_path, 
+                    'alt'=>$section->icon_path, 
+                    'class'=>'iconsmall', 
+                    'style'=>'width: 30px; height: 30px; float: left;'));
                 echo html_writer::tag('h3', $section->display_name);
+                echo html_writer::end_div();
+                
                 echo html_writer::div($section->heading, 'list_heading');
                 //get Resources of this Section
                 if ($section->r_count > 0) {
                     $resources = get_section_items($section);
                     
                     foreach($resources as $resource) {
-                        echo html_writer::start_div('resource_item_title');
+                        echo html_writer::start_div('resource_title');
                         echo html_writer::empty_tag('img', array(
                             'src'=>$resource->icon_path, 
                             'alt'=>$resource->icon_path, 
