@@ -40,6 +40,10 @@ $string['resourcelib'] = 'resourcelib';
 $string['pluginadministration'] = 'resourcelib administration';
 $string['pluginname'] = 'resourcelib';
 
+$string['resourcelib:addinstance'] = 'Добавить Библиотеку Ресурсов';
+$string['resourcelib:submit'] = 'Submit resourcelib';
+$string['resourcelib:view'] = 'View resourcelib';
+
 $string['resource'] = 'Ресурс';
 $string['section'] = 'Секция';
 

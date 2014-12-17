@@ -39,6 +39,8 @@ defined('MOODLE_INTERNAL') || die();
  * Moodle core API
  */
 
+require_once($CFG->dirroot.'/rating/lib.php'); 
+ 
 /**
  * Returns the information on whether the module supports a feature
  *
@@ -78,6 +80,12 @@ function resourcelib_add_instance(stdClass $resourcelib, mod_resourcelib_mod_for
         $transaction = $DB->start_delegated_transaction();
         //firstly, insert record
         $resourcelib->timecreated = time();
+        //rating params
+        $resourcelib->assessed = (int)RATING_AGGREGATE_AVERAGE;
+        $resourcelib->assesstimestart = 0;
+        $resourcelib->assesstimefinish = 0;
+        $resourcelib->scale = (int)RATING_AGGREGATE_SUM;
+        //insert record
         $resourcelib->id = $DB->insert_record('resourcelib', $resourcelib, true);
         //process form data
         $form_content = $mform->get_data();
@@ -448,4 +456,29 @@ function resourcelib_extend_navigation(navigation_node $navref, stdclass $course
  * @param navigation_node $resourcelibnode {@link navigation_node}
  */
 function resourcelib_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $resourcelibnode=null) {
+}
+
+
+
+
+function resourcelib_rating_validate($params) {
+    if (!array_key_exists('itemid', $params) || !array_key_exists('context', $params) || !array_key_exists('rateduserid', $params)) {
+        throw new rating_exception('missingparameter');
+    }
+    return true;
+}
+
+function resourcelib_rating_permissions($contextid, $component, $ratingarea) {
+    $context = context::instance_by_id($contextid, MUST_EXIST);
+    if ($component != 'mod_resourcelib' || $ratingarea != 'resource') {
+        // We don't know about this component/ratingarea so just return null to get the
+        // default restrictive permissions.
+        return null;
+    }
+    return array(
+        'view'    => true, //has_capability('mod/resourcelib:viewrating', $context),
+        'viewany' => true, //has_capability('mod/resourcelib:viewanyrating', $context),
+        'viewall' => true, //has_capability('mod/resourcelib:viewallratings', $context),
+        'rate'    => true, //has_capability('mod/resourcelib:rate', $context)
+    );
 }

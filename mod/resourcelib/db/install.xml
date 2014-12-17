@@ -16,6 +16,10 @@
                 <FIELD NAME="displayoptions" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
                 <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="assessed" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="assesstimestart" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="assesstimefinish" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="scale" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -118,22 +122,6 @@
                 <FIELD NAME="resource_list_id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="resource_section_id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="sort_order" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-        </TABLE>
-
-        <TABLE NAME="resource_ratings" COMMENT="resource_ratings table retrofitted from MySQL">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="course_id" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="lesson_id" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="resource_id" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="user_id" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="rating" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="timestamp" TYPE="datetime" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="deleted" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

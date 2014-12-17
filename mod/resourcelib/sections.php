@@ -49,7 +49,8 @@
     //page layout
     $PAGE->set_pagelayout('admin');     
     //breadcrumbs
-    $PAGE->navbar->add(get_string('administration', 'resourcelib'), new moodle_url($mainurl)); 
+    $PAGE->navbar->add(get_string('administration', 'resourcelib'), new moodle_url($CFG->wwwroot.'/admin/settings.php', array('section'=>'modsettingresourcelib'))); 
+    //$PAGE->navbar->add(get_string('administration', 'resourcelib'), new moodle_url($mainurl));
     if ($action == $actionIndex) {
         $PAGE->navbar->add(get_string('manage_sections', 'resourcelib'));
     } else {

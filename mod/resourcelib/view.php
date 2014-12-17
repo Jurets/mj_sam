@@ -26,9 +26,10 @@
  */
 
 // Replace resourcelib with the name of your module and remove this line.
-
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
+
+require_once($CFG->dirroot.'/rating/lib.php');
 
 $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
 $n  = optional_param('n', 0, PARAM_INT);  // ... resourcelib instance ID - it should be named as the first character of the module.
@@ -102,6 +103,7 @@ foreach($contents as $content) {
                 //get Resources of this Section
                 if ($section->r_count > 0) {
                     $resources = get_section_items($section);
+                    
                     foreach($resources as $resource) {
                         echo html_writer::start_div('resource_item_title');
                         echo html_writer::empty_tag('img', array(
@@ -125,6 +127,24 @@ foreach($contents as $content) {
                             echo html_writer::end_div();
                         }
                         echo html_writer::div($resource->description, 'resource_description');
+                        
+                        //render rating element
+                        $ratingoptions = new stdClass;
+                        $ratingoptions->context = $context; //$modcontext;
+                        $ratingoptions->component = 'mod_resourcelib';
+                        $ratingoptions->ratingarea = 'resource'; //
+                        $ratingoptions->items = array($resource); //
+                        $ratingoptions->aggregate = $resourcelib->assessed; //1;//the aggregation method
+                        $ratingoptions->scaleid = $resourcelib->scale;//5;
+                        $ratingoptions->userid = $USER->id;
+                        $ratingoptions->returnurl = "$CFG->wwwroot/mod/resourcelib/view.php?id=$id";
+                        $rm = new rating_manager();
+                        $items = $rm->get_ratings($ratingoptions);
+                        $item = $items[0];
+                        if(isset($item->rating)) {
+                            $rate_html = html_writer::tag('div', $OUTPUT->render($item->rating), array('class'=>'forum-post-rating'));
+                            echo $rate_html;
+                        }
                     }
                 }
             }

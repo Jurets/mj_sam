@@ -77,6 +77,17 @@ $capabilities = array(
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => array(
             'student' => CAP_ALLOW
-        )
+        )   
     ),
+    
+    'mod/resourcelib:rate' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+            'student' => CAP_ALLOW
+        )
+    ),    
 );
