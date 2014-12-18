@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Capability definitions for the resourcelib module
+ * Capability definitions for the videoresource module
  *
  * The capabilities are loaded into the database table when the module is
  * installed or updated. Whenever the capability definitions are updated,
@@ -39,8 +39,8 @@
  *
  * The variable name for the capability definitions array is $capabilities
  *
- * @package    mod_resourcelib
- * @copyright  2011 Your Name
+ * @package    mod_videoresource
+ * @copyright  2014 Jurets
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -48,7 +48,7 @@ defined('MOODLE_INTERNAL') || die();
 
 // Modify capabilities as needed and remove this comment.
 $capabilities = array(
-    'mod/resourcelib:addinstance' => array(
+    'mod/videoresource:addinstance' => array(
         'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
@@ -59,7 +59,7 @@ $capabilities = array(
         'clonepermissionsfrom' => 'moodle/course:manageactivities'
     ),
 
-    'mod/resourcelib:view' => array(
+    'mod/videoresource:view' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => array(
@@ -71,7 +71,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/resourcelib:submit' => array(
+    'mod/videoresource:submit' => array(
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
@@ -80,7 +80,7 @@ $capabilities = array(
         )   
     ),
     
-    'mod/resourcelib:rate' => array(
+    'mod/videoresource:rate' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
