@@ -160,3 +160,33 @@ function videoresource_edit_video($data) {
     global $DB;
     return $DB->update_record('resource_videos', $data);
 }
+
+/**
+* get Video Resource record from database
+* 
+* @param mixed $id - Resource ID
+*/
+function videoresource_get_video($id) {
+    global $DB;
+    return $DB->get_record('resource_videos', array('id'=>$id));
+}
+
+/**
+* delete Video Resource from database
+* 
+* @param mixed $data - instance of Video Resource
+* @return bool
+*/
+function videoresource_delete_video($data) {
+    global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in videoresource_delete_video() detected');
+    }
+    // Better not trust the parameter and fetch the latest info this will be very expensive anyway.
+    if (!$item = $DB->get_record('resource_videos', array('id' => $data->id))) {
+        debugging('Attempt to delete unknown Video Resource.');
+        return false;
+    }
+    return $DB->delete_records('resource_videos', array('id' => $data->id));
+}

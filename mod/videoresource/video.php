@@ -82,8 +82,6 @@
                 $video = videoresource_get_video($id); //get data from DB
             }
             
-            //get Resource Types List
-            //$types = $DB->get_records_menu('resource_types', null, '', 'id,name');
             //build form
             $editform = new mod_videoresource_form_editvideo($actionurl->out(false), array('video'=>$video)); //create form instance
             //$editform->is_submitted()
@@ -95,7 +93,7 @@
                     $inserted_id = videoresource_add_video($data);
                     $success = isset($id);
                 } else if (isset($id)){
-                    $success = resource_videos($data);
+                    $success = videoresource_edit_video($data);
                 }
                 if ($success){  //call create Resource Type function
                     $url = new moodle_url($returnurl, array('action' => $actionIndex));
@@ -110,26 +108,27 @@
             break;
             
         case $actionDelete: 
+            $head_str = get_string('delete_video', 'videoresource');
             //breadcrumbs
-            $PAGE->navbar->add(get_string('deleteitem', 'resourcelib'));
+            $PAGE->navbar->add($head_str);
             
             if (isset($id) && confirm_sesskey()) { // Delete a selected resource item, after confirmation
-                $item = get_resource($id); //get data from DB
-
+                $item = videoresource_get_video($id); //get data from DB
+                
                 if ($confirm != md5($id)) {
                     echo $OUTPUT->header();
-                    echo $OUTPUT->heading(get_string('deleteitem', 'resourcelib'));
-                    //before delete do check existing of resources in any section
-                    if ($item->rs_count > 0) {
-                        $str = get_string('deletednot', '', $item->title) . ' ' . get_string('resources_exists_in_section', 'resourcelib');
+                    echo $OUTPUT->heading($head_str);
+                    //before delete do check existing of video resources in any course
+                    if (isset($item->c_count) && $item->c_count > 0) {
+                        $str = get_string('deletednot', '', $item->title) . ' ' . get_string('videoresource_exists_in_course', 'videoresource');
                         echo $OUTPUT->notification($str);
                     } else {
                         $optionsyes = array('action'=>$actionDelete, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
-                        echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$item->title'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                        echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$item->internal_title'"), new moodle_url($returnurl, $optionsyes), $returnurl);
                     }
                     echo $OUTPUT->footer();
                 } else if (data_submitted() /*&& !$data->deleted*/){
-                    if (delete_resource($item)) {
+                    if (videoresource_delete_video($item)) {
                         $url = new moodle_url($returnurl, array('action' => $actionIndex));
                         redirect($url);
                     } else {
