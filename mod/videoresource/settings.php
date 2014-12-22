@@ -21,7 +21,7 @@ if ($ADMIN->fulltree) {
                                   );
                                   
                                   
-    $settings->add(new admin_setting_heading('typeconfig', get_string('add_video', 'videoresource'), get_string('add_video_desc', 'videoresource', $CFG->wwwroot.'/mod/videoresource/add.php')));
+    $settings->add(new admin_setting_heading('typeconfig', get_string('add_video', 'videoresource'), get_string('add_video_desc', 'videoresource', $CFG->wwwroot.'/mod/videoresource/video.php?action=add')));
     //$settings->add(new admin_setting_heading('itemconfig', get_string('manage_items', 'resourcelib'), get_string('manage_items_desc', 'resourcelib', $CFG->wwwroot.'/mod/resourcelib/items.php')));
     //$settings->add(new admin_setting_heading('sectionconfig', get_string('manage_sections', 'resourcelib'), get_string('manage_sections_desc', 'resourcelib', $CFG->wwwroot.'/mod/resourcelib/sections.php')));
     //$settings->add(new admin_setting_heading('listconfig', get_string('manage_lists', 'resourcelib'), get_string('manage_lists_desc', 'resourcelib', $CFG->wwwroot.'/mod/resourcelib/lists.php')));

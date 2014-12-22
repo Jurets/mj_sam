@@ -43,8 +43,25 @@ $string['videoresource:view'] = 'View videoresource';
 $string['pluginadministration'] = 'videoresource administration';
 $string['pluginname'] = 'Video Resource';
 
+$string['administration'] = 'Video Resource Administration';
+$string['manage_videos'] = 'Manage Video Resource Library';
+
 $string['add_video'] = 'Add Video Resource';
 $string['edit_video'] = 'Edit Video Resource';
 $string['delete_video'] = 'Delete Video Resource'; 
 
 $string['add_video_desc'] = '<a href="{$a}">Add Video Resource</a> allows to add Video Resource.<br/>';
+
+$string['internal_info'] = 'Internal Reference Information';
+$string['publicly_info'] = 'Publicly Accessible Fields';
+
+$string['internal_name'] = 'Video Name';
+$string['internal_notes'] = 'Notes';
+$string['videoid'] = 'Youtube Video ID';
+$string['video_title'] = 'Video Title';
+$string['description_text'] = 'Description/Followup Text';
+$string['podcast_url'] = 'Podcast URL';
+$string['transcript'] = 'Transcript';
+
+$string['missing_videoid'] = 'Missing Youtube Video ID';
+$string['missing_internal_title'] = 'Missing Internal Title';

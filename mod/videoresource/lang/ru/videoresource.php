@@ -48,3 +48,5 @@ $string['edit_video'] = 'Edit Video Resource';
 $string['delete_video'] = 'Delete Video Resource'; 
 
 $string['add_video_desc'] = '<a href="{$a}">Add Video Resource</a> allows to add Video Resource.<br/>';
+
+$string['missing_videoid'] = 'Пропущен Youtube Video ID';
