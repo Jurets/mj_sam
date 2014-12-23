@@ -52,6 +52,7 @@ $string['delete_video'] = 'Delete Video Resource';
 
 $string['add_video_desc'] = '<a href="{$a}">Add Video Resource</a> allows to add Video Resource.<br/>';
 $string['add_video_chapter'] = 'Add Video Chapter';
+$string['edit_video_chapter'] = 'Edit Video Chapter';
 
 $string['internal_info'] = 'Internal Reference Information';
 $string['publicly_info'] = 'Publicly Accessible Fields';

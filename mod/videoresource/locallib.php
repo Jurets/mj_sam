@@ -92,12 +92,12 @@ function create_deletebutton($url, $action, $id) {
 * @param mixed $id
 * @return string
 */
-function create_editbutton($url, $action, $id) {
+function create_editbutton($url, $action = 'edit', $id) {
     global $OUTPUT;
     
     $stredit   = get_string('edit');
     return html_writer::link(
-        new moodle_url($url, array('action'=>'edit', 'id'=>$id)), 
+        new moodle_url($url, array('action'=>$action, 'id'=>$id)), 
         html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/editstring'), 'alt'=>$stredit, 'class'=>'iconsmall')), 
         array('title'=>$stredit)
     );
@@ -187,4 +187,14 @@ function videoresource_delete_video($data) {
 function videoresource_add_chapter($data) {
     global $DB;
     return $DB->insert_record('resource_video_chapters', $data);
+}
+
+/**
+* update Video Chapter from Video Resource
+* 
+* @param mixed $data - Video Chapter Instance
+*/
+function videoresource_edit_chapter($data) {
+    global $DB;
+    return $DB->update_record('resource_video_chapters', $data);
 }

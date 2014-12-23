@@ -163,7 +163,7 @@
                 echo $OUTPUT->notification(get_string('no_chapters', 'videoresource'), 'redirectmessage');
             } else {
                 if (!isset($buttons)) //default buttons
-                    $buttons = array('delete'=>'chapterdelete', 'edit'=>'chapteredit');
+                    $buttons = array('delete'=>$actionDelChapter, 'edit'=>$actionEditChapter);
                 
                 $table = new html_table();
                 $table->head = array(
@@ -266,30 +266,45 @@
 
         case $actionAddChapter:
         case $actionEditChapter: 
-            require_once($CFG->dirroot.'/mod/videoresource/form_addchapter.php'); //include form_edittype.php  
-
-            //arbitrary param: section_id
-            $video_id = optional_param('video', 0, PARAM_INT);
-            //get Video Resource
-            $video = $DB->get_record('resource_videos', array('id'=>$video_id), '*', MUST_EXIST);
+            require_once($CFG->dirroot.'/mod/videoresource/form_editchapter.php'); //include form_edittype.php  
+            
+            if ($action == $actionAddChapter) { //add new type
+                //check input param
+                $video_id = optional_param('video', -1, PARAM_INT);
+                $video = $DB->get_record('resource_videos', array('id'=>$video_id), '*', MUST_EXIST);
+                //new Chapter instance 
+                $chapter = new stdClass();
+                $chapter->resource_video_id = $video->id;
+                //build url's
+                $action_str = get_string('add_video_chapter', 'videoresource');
+                $urlAction = new moodle_url($returnurl, array('action'=>$actionAddChapter, 'video'=>$video->id));
+            } else if ($action == $actionEditChapter && isset($id)){     //edit existing type ($id parameter must be present in URL)
+                //get Video Chapter
+                $chapter = $DB->get_record('resource_video_chapters', array('id'=>$id), '*', MUST_EXIST);
+                $video = $DB->get_record('resource_videos', array('id'=>$chapter->resource_video_id), '*', MUST_EXIST);
+                //build url's
+                $action_str = get_string('edit_video_chapter', 'videoresource');
+                $urlAction = new moodle_url($returnurl, array('action'=>$actionEditChapter, 'id'=>$id));
+            }
             //heads
             $head_str = !empty($video->title) ? $video->title : $video->internal_title;
-            $action_str = get_string('add_video_chapter', 'videoresource');
-            //build url's
-            $urlView = new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$video_id));
-            $urlAction = new moodle_url($returnurl, array('action'=>$actionAddChapter, 'video'=>$video_id));
+            $urlView = new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$video->id));
             //breadcrumbs
             $PAGE->navbar->add($head_str, $urlView);
             $PAGE->navbar->add($action_str);
-            //get Resources
-            //$sections = get_notlist_sections($list);
             //create and show form instance
-            $editform = new mod_resourcelib_form_addchapter($urlAction->out(false), array('video'=>$video/*, 'sections'=>$sections*/)); 
+            $editform = new mod_resourcelib_form_editchapter($urlAction->out(false), array('chapter'=>$chapter));
             
+            //form data process
             if ($editform->is_cancelled()) {  //in cancel form case - redirect to previous page
                 redirect($urlView);
             } else if ($data = $editform->get_data()) {
-                $inserted_id = videoresource_add_chapter($data);
+                if ($action == $actionAddChapter) {
+                    $inserted_id = videoresource_add_chapter($data);
+                    $success = ($inserted_id > 0);
+                } else if ($action == $actionEditChapter && isset($id)) {
+                    $success = videoresource_edit_chapter($data);
+                }
                 redirect($urlView);
             }
             //show form page
