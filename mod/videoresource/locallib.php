@@ -52,6 +52,20 @@ function show_addbutton($url, $label, $attributes = array('class' => 'mdl-right'
 }
 
 /**
+* Show edit button (usually near data table)
+* 
+* @param mixed $url
+* @param mixed $label
+* @param mixed $attributes
+*/
+function show_editbutton($url, $label, $attributes = array('class' => 'mdl-right')) {
+    global $OUTPUT;
+    echo html_writer::start_tag('div', $attributes);
+    echo html_writer::tag('a', $OUTPUT->pix_icon('t/editstring', '') . ' ' . $label, array('href' => $url->out(false)));
+    echo html_writer::end_tag('div');
+}
+
+/**
 * create a delete button for data table
 * 
 * @param mixed $url
@@ -90,55 +104,29 @@ function create_editbutton($url, $action, $id) {
 }
 
 
-
 /**
-* show Resource items in HTML table
-* 
-* @param mixed $items - array of resource instances
-*/
-function show_resource_items($items, $returnurl, $buttons = null) {
-    global $OUTPUT;
-
-    if (!$items || empty($items)) {
-        echo $OUTPUT->notification(get_string('no_resources', 'resourcelib'), 'redirectmessage');
-    } else {
-        if (!isset($buttons)) //default buttons
-            $buttons = array('delete'=>'delete', 'edit'=>'edit');
-        
-        $table = new html_table();
-        $table->head = array(
-            get_string('videoid', 'videoresource'), 
-            get_string('internal_name', 'videoresource'), 
-            get_string('video_title', 'videoresource')
-        );
-        
-        foreach ($items as $item) {
-            $buttons_column = array();
-            if (key_exists('delete', $buttons))
-                $buttons_column[] = create_deletebutton($returnurl, $buttons['delete'], $item->id);
-            if (key_exists('edit', $buttons))
-                $buttons_column[] = create_editbutton($returnurl, $buttons['edit'], $item->id);
-            $table->data[] = array(
-                $item->video_id, 
-                $item->internal_title, 
-                //$item->internal_notes, 
-                $item->title, 
-                //$type->description, 
-                implode(' ', $buttons_column) 
-            );
-        }
-        echo html_writer::table($table);
-    }
-}
-
-
-/**
-* get all Resources
+* get all Video Resources
 * 
 */
 function videoresource_get_videos() {
     global $DB;
     return $DB->get_records_sql('SELECT * FROM {resource_videos}');
+}
+
+/**
+* get chapters by Video Resource
+* 
+*/
+function get_video_chapters($data) {
+    global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in get_video_chapters() detected');
+    }
+    $items = $DB->get_records('resource_video_chapters', array('resource_video_id'=>$data->id));
+    if (!$items)
+        $items = array();
+    return $items;
 }
 
 /**
@@ -189,4 +177,14 @@ function videoresource_delete_video($data) {
         return false;
     }
     return $DB->delete_records('resource_videos', array('id' => $data->id));
+}
+
+/**
+* add new Chapter to Video Resource
+* 
+* @param mixed $data - Video Resource Instance
+*/
+function videoresource_add_chapter($data) {
+    global $DB;
+    return $DB->insert_record('resource_video_chapters', $data);
 }

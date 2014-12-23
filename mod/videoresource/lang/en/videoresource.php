@@ -51,9 +51,12 @@ $string['edit_video'] = 'Edit Video Resource';
 $string['delete_video'] = 'Delete Video Resource'; 
 
 $string['add_video_desc'] = '<a href="{$a}">Add Video Resource</a> allows to add Video Resource.<br/>';
+$string['add_video_chapter'] = 'Add Video Chapter';
 
 $string['internal_info'] = 'Internal Reference Information';
 $string['publicly_info'] = 'Publicly Accessible Fields';
+$string['chapter_timecode'] = 'Timecode';
+$string['chapter_title'] = 'Title';
 
 $string['internal_name'] = 'Video Name';
 $string['internal_notes'] = 'Notes';
@@ -65,3 +68,8 @@ $string['transcript'] = 'Transcript';
 
 $string['missing_videoid'] = 'Missing Youtube Video ID';
 $string['missing_internal_title'] = 'Missing Internal Title';
+$string['missing_timecode'] = 'Missing Timecode';
+
+$string['no_chapters'] = 'There is no Chapters in this Video Resource';
+
+$string['videoresource_exists_in_course'] = 'Video Resource exists in course';

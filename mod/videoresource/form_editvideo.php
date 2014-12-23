@@ -11,14 +11,6 @@ class mod_videoresource_form_editvideo extends moodleform {
             $data = $this->_customdata['video'];
         } else
             $data = null;
-        /*if (isset($this->_customdata['types']) && is_array($this->_customdata['types'])) {
-            $_items = $this->_customdata['types'];
-            //add empty item to the begin of options
-            $items = array('0'=>'');
-            foreach($_items as $key=>$value) {$items[$key] = $value;}
-            //array_unshift($types, '');
-        } else
-            $types = null;*/
 
         $mform = $this->_form; // Don't forget the underscore! 
  
