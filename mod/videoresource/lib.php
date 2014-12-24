@@ -127,7 +127,7 @@ function videoresource_update_instance(stdClass $videoresource, mod_videoresourc
         if (isset($form_content->list_id)) {
             //firstly, delete the current elements
             $DB->delete_records('videoresource_content', array('videoresource_id'=>$videoresource->id));
-            $items = prepare_items($form_content->list_id, $videoresource->id);
+            $items = videoresource_prepare_items($form_content->list_id, $videoresource->id);
             $DB->insert_records('videoresource_content', $items);
         }
         // You may have to add extra stuff in here.
@@ -143,7 +143,7 @@ function videoresource_update_instance(stdClass $videoresource, mod_videoresourc
 }
 
 //prepare data from form for inserting to DB
-function prepare_items($list_ids, $rlib_id) {
+function videoresource_prepare_items($list_ids, $rlib_id) {
     $items = array();
     foreach($list_ids as $list_id) {
         $item = new stdClass();
