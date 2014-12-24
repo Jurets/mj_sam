@@ -93,37 +93,18 @@ function create_deletebutton($url, $action, $id, $confirm = false) {
 * @param mixed $url
 * @param mixed $action
 * @param mixed $id
+* @param mixed $confirm
 * @return string
 */
-function videoresource_show_deletebutton($url, $action, $id, $confirm = false) {//DebugBreak();
+function videoresource_show_deletebutton($url, $action, $id, $confirm = false) {
     global $OUTPUT;
-
     $strdelete = get_string('delete');
     $url = new moodle_url($url, array('action'=>$action, 'id'=>$id, 'sesskey'=>sesskey()));
-    $text = html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')); //'Delete this website';
-    $link = new action_link($url, $text);
-    //$link->url = new moodle_url($url, array('action'=>$action, 'id'=>$id, 'sesskey'=>sesskey()));
-    //$link->text = html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')); //'Delete this website';
-    
-    //$link->add_action('click', 'confirm_dialog', array('message' => 'Are you sure?'));
-    // OR
-    $action = new component_action('click', 'M.util.show_confirm_dialog', array('message' => $confirm/*'Are you REALLY sure?'*/));
-    //$action = new component_action('click', '"confirm_dialog"', array('message' => 'Are you REALLY sure?'));
+    $text = html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall'));
+    $link = new action_link($url, $text); //create action link
+    $action = new component_action('click', 'M.util.show_confirm_dialog', array('message' => $confirm)); //attach confirm dialog
     $link->add_action($action);
- 
-    //return $OUTPUT->link($link);    
     return $OUTPUT->render($link);
-    
-    
-    /*$strdelete = get_string('delete');
-    $link = html_writer::link(
-        new moodle_url($url, array('action'=>$action, 'id'=>$id, 'sesskey'=>sesskey())), 
-        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), 
-        array('title'=>$strdelete)
-    );
-    if ($confirm)
-        $link->add_action('click', 'confirm_dialog', array('message' => 'Are you sure?'));
-    return $link;*/
 }
 
 /**
@@ -144,7 +125,6 @@ function create_editbutton($url, $action = 'edit', $id) {
         array('title'=>$stredit)
     );
 }
-
 
 /**
 * get all Video Resources
