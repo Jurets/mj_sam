@@ -53,6 +53,7 @@ $string['delete_video'] = 'Delete Video Resource';
 $string['add_video_desc'] = '<a href="{$a}">Add Video Resource</a> allows to add Video Resource.<br/>';
 $string['add_video_chapter'] = 'Add Video Chapter';
 $string['edit_video_chapter'] = 'Edit Video Chapter';
+$string['delete_video_chapter'] = 'Delete Video Chapter';
 
 $string['internal_info'] = 'Internal Reference Information';
 $string['publicly_info'] = 'Publicly Accessible Fields';
@@ -72,5 +73,5 @@ $string['missing_internal_title'] = 'Missing Internal Title';
 $string['missing_timecode'] = 'Missing Timecode';
 
 $string['no_chapters'] = 'There is no Chapters in this Video Resource';
-
 $string['videoresource_exists_in_course'] = 'Video Resource exists in course';
+$string['deletecheck_chapter_fromvideo'] = 'Are you absolutely sure you want to delete chapter {$a} from video?'; 

@@ -20,7 +20,7 @@
     $id = optional_param('id', 0, PARAM_INT); //admin action for mooc-settings
     $confirm = optional_param('confirm', '', PARAM_ALPHANUM);   //md5 confirmation hash
     //get action name
-    $action = optional_param('action', 0, PARAM_TEXT); //admin action for mooc-settings
+    $action = optional_param('action', '', PARAM_TEXT); //action name for process different operations
     $action = (!empty($action) ? $action : 'index');
 
     //actions list
@@ -39,7 +39,6 @@
     require_capability('moodle/site:config', $systemcontext);
 
     /// Build page
-    //$mainurl = $CFG->wwwroot.'/mod/videoresource/admin.php';
     $returnurl = $CFG->wwwroot.'/mod/videoresource/video.php';
     $PAGE->set_url($returnurl);
     $PAGE->set_context($systemcontext);
@@ -50,7 +49,6 @@
     $PAGE->set_pagelayout('admin');     
     //breadcrumbs
     $PAGE->navbar->add(get_string('administration', 'videoresource'), new moodle_url($CFG->wwwroot.'/admin/settings.php', array('section'=>'modsettingvideoresource'))); 
-    //$PAGE->navbar->add(get_string('administration', 'videoresource'), new moodle_url($mainurl)); 
     
     $head_index = get_string('manage_videos', 'videoresource');
     if ($action == $actionIndex) {
@@ -89,11 +87,8 @@
                         $buttons_column[] = create_editbutton($returnurl, $buttons['edit'], $item->id);
                     $table->data[] = array(
                         html_writer::link(new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$item->id)), $item->video_id),
-                        //$item->video_id, 
                         $item->internal_title, 
-                        //$item->internal_notes, 
                         $item->title, 
-                        //$type->description, 
                         implode(' ', $buttons_column) 
                     );
                 }
@@ -111,11 +106,6 @@
             echo $OUTPUT->header();
             echo $OUTPUT->heading($head_str);
             
-            /*if (!empty($list->icon_path)) {
-                $imagevalue = html_writer::empty_tag('img', array('src'=>$video->icon_path, 'alt'=>$video->icon_path));
-            } else {
-                $imagevalue = get_string('none');
-            }*/
             echo html_writer::start_tag('dl', array('class' => 'list'));
             echo html_writer::tag('dt', get_string('videoid', 'videoresource'));
             echo html_writer::tag('dd', $video->video_id);
@@ -174,7 +164,11 @@
                 foreach ($items as $item) {
                     $buttons_column = array();
                     if (key_exists('delete', $buttons))
-                        $buttons_column[] = create_deletebutton($returnurl, $buttons['delete'], $item->id);
+                        //$buttons_column[] = create_deletebutton($returnurl, $buttons['delete'], $item->id, true);
+                        $buttons_column[] = videoresource_show_deletebutton(
+                            $returnurl, $buttons['delete'], $item->id, 
+                            get_string('delete_video_chapter', 'videoresource').'?'
+                        );
                     if (key_exists('edit', $buttons))
                         $buttons_column[] = create_editbutton($returnurl, $buttons['edit'], $item->id);
                     $table->data[] = array(
@@ -315,4 +309,28 @@
             echo $OUTPUT->footer();
             break;  
             
+        case $actionDelChapter: //DebugBreak();
+            //breadcrumbs
+            //$head_str = get_string('delete_video_chapter', 'videoresource');
+            //$PAGE->navbar->add($head_str);
+            
+            if (isset($id) && confirm_sesskey()) { // Delete a selected chapter from video, after confirmation
+                $chapter = videoresource_get_chapter($id);
+
+                /*if ($confirm != md5($id)) {
+                    echo $OUTPUT->header();
+                    echo $OUTPUT->heading($head_str);
+                    $optionsyes = array('action'=>$actionDelChapter, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
+                    echo $OUTPUT->confirm(get_string('deletecheck_chapter_fromvideo', 'videoresource', "'$chapter->title'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                    echo $OUTPUT->footer();
+                } else*/ /*if (data_submitted() )*/{
+                    if (videoresource_delete_chapter($chapter)) {
+                        $url = new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$chapter->resource_video_id));
+                        redirect($url);
+                    } else {
+                        echo $OUTPUT->notification(get_string('deletednot', '', $chapter->title));
+                    }
+                }
+            }
+            break;
     }

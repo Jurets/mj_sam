@@ -73,15 +73,57 @@ function show_editbutton($url, $label, $attributes = array('class' => 'mdl-right
 * @param mixed $id
 * @return string
 */
-function create_deletebutton($url, $action, $id) {
+function create_deletebutton($url, $action, $id, $confirm = false) {
     global $OUTPUT;
     
     $strdelete = get_string('delete');
-    return html_writer::link(
+    $link = html_writer::link(
         new moodle_url($url, array('action'=>$action, 'id'=>$id, 'sesskey'=>sesskey())), 
         html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), 
         array('title'=>$strdelete)
     );
+    if ($confirm)
+        $link->add_action('click', 'confirm_dialog', array('message' => 'Are you sure?'));
+    return $link;
+}
+
+/**
+* create a delete button for data table
+* 
+* @param mixed $url
+* @param mixed $action
+* @param mixed $id
+* @return string
+*/
+function videoresource_show_deletebutton($url, $action, $id, $confirm = false) {//DebugBreak();
+    global $OUTPUT;
+
+    $strdelete = get_string('delete');
+    $url = new moodle_url($url, array('action'=>$action, 'id'=>$id, 'sesskey'=>sesskey()));
+    $text = html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')); //'Delete this website';
+    $link = new action_link($url, $text);
+    //$link->url = new moodle_url($url, array('action'=>$action, 'id'=>$id, 'sesskey'=>sesskey()));
+    //$link->text = html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')); //'Delete this website';
+    
+    //$link->add_action('click', 'confirm_dialog', array('message' => 'Are you sure?'));
+    // OR
+    $action = new component_action('click', 'M.util.show_confirm_dialog', array('message' => $confirm/*'Are you REALLY sure?'*/));
+    //$action = new component_action('click', '"confirm_dialog"', array('message' => 'Are you REALLY sure?'));
+    $link->add_action($action);
+ 
+    //return $OUTPUT->link($link);    
+    return $OUTPUT->render($link);
+    
+    
+    /*$strdelete = get_string('delete');
+    $link = html_writer::link(
+        new moodle_url($url, array('action'=>$action, 'id'=>$id, 'sesskey'=>sesskey())), 
+        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), 
+        array('title'=>$strdelete)
+    );
+    if ($confirm)
+        $link->add_action('click', 'confirm_dialog', array('message' => 'Are you sure?'));
+    return $link;*/
 }
 
 /**
@@ -180,6 +222,16 @@ function videoresource_delete_video($data) {
 }
 
 /**
+* get Chapter instance
+* 
+* @param mixed $id - chapter ID
+*/
+function videoresource_get_chapter($id) {
+    global $DB;
+    return $DB->get_record('resource_video_chapters', array('id'=>$id));
+}
+
+/**
 * add new Chapter to Video Resource
 * 
 * @param mixed $data - Video Resource Instance
@@ -197,4 +249,23 @@ function videoresource_add_chapter($data) {
 function videoresource_edit_chapter($data) {
     global $DB;
     return $DB->update_record('resource_video_chapters', $data);
+}
+
+/**
+* delete Video Chapter
+* 
+* @param mixed $data - Video Chapter Instance
+*/
+function videoresource_delete_chapter($data) {
+    global $DB;
+     // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in videoresource_edit_chapter() detected');
+    }
+    // Better not trust the parameter and fetch the latest info this will be very expensive anyway.
+    if (!$item = $DB->get_record('resource_video_chapters', array('id' => $data->id))) {
+        debugging('Attempt to delete unknown Video Chapter.');
+        return false;
+    }
+    return $DB->delete_records('resource_video_chapters', array('id' => $data->id));
 }
