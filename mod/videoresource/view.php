@@ -105,8 +105,6 @@ if (!empty($video->transcript)) {
     $video_metadata[] = html_writer::link($url, get_string('transcript', 'videoresource'), array('target'=>'__blank'));
 }
 $video_metadata = implode(' | ', $video_metadata);
-//echo ' | ';
-//echo ' ]';
 $video_metadata = '[ ' . $video_metadata . ' ]';
 echo $video_metadata;
 echo html_writer::end_div();
@@ -121,6 +119,25 @@ if (!empty($video->chapters)) {
         echo html_writer::end_div();
     }
 }
+
+//render rating element
+$ratingoptions = new stdClass;
+$ratingoptions->context = $context; //$modcontext;
+$ratingoptions->component = 'mod_videoresource';
+$ratingoptions->ratingarea = 'resource'; //
+$ratingoptions->items = array($videoresource); //
+$ratingoptions->aggregate = $videoresource->assessed; //1;//the aggregation method
+$ratingoptions->scaleid = $videoresource->scale;//5;
+$ratingoptions->userid = $USER->id;
+$ratingoptions->returnurl = "$CFG->wwwroot/mod/videoresource/view.php?id=$id";
+$rm = new rating_manager();
+$items = $rm->get_ratings($ratingoptions);
+$item = $items[0];
+if(isset($item->rating)) {
+    $rate_html = html_writer::tag('div', $OUTPUT->render($item->rating), array('class'=>'forum-post-rating'));
+    echo $rate_html;
+}
+
 
 // Finish the page.
 echo $OUTPUT->footer();
