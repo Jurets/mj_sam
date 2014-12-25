@@ -87,15 +87,13 @@ function videoresource_add_instance(stdClass $videoresource, mod_videoresource_m
         $videoresource->assesstimestart = 0;
         $videoresource->assesstimefinish = 0;
         $videoresource->scale = (int)RATING_AGGREGATE_SUM;
-        //insert record
-        $videoresource->id = $DB->insert_record('videoresource', $videoresource, true);
         //process form data
         $form_content = $mform->get_data();
-        if (isset($form_content->list_id)) {
-            $items = prepare_items($form_content->list_id, $videoresource->id);
-            $DB->insert_records('videoresource_content', $items);
-        }
-         // Assuming the both inserts work, we get to the following line.
+        //set video ID
+        $videoresource->resource_videos_id = $form_content->resource_videos_id;
+        //insert record
+        $videoresource->id = $DB->insert_record('videoresource', $videoresource, true);
+        // Assuming the both inserts work, we get to the following line.
         $transaction->allow_commit();
         $success = true;
     } catch(Exception $e) {
@@ -125,13 +123,7 @@ function videoresource_update_instance(stdClass $videoresource, mod_videoresourc
     try {
         $transaction = $DB->start_delegated_transaction();
         //process form data
-        $form_content = $mform->get_data();
-        if (isset($form_content->list_id)) {
-            //firstly, delete the current elements
-            $DB->delete_records('videoresource_content', array('videoresource_id'=>$videoresource->id));
-            $items = videoresource_prepare_items($form_content->list_id, $videoresource->id);
-            $DB->insert_records('videoresource_content', $items);
-        }
+        //$form_content = $mform->get_data();
         // You may have to add extra stuff in here.
         $DB->update_record('videoresource', $videoresource);
          // Assuming the both inserts work, we get to the following line.
@@ -175,11 +167,9 @@ function videoresource_delete_instance($id) {
     }
     try {
         $transaction = $DB->start_delegated_transaction();
-        //firstly, delete the elements of module
-        $DB->delete_records('videoresource_content', array('videoresource_id'=>$videoresource->id));
         //delete module instance from course
         $DB->delete_records('videoresource', array('id' => $videoresource->id));
-         // Assuming the both inserts work, we get to the following line.
+        // Assuming the both inserts work, we get to the following line.
         $transaction->allow_commit();
         $success = true;
     } catch(Exception $e) {

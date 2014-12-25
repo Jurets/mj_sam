@@ -127,12 +127,28 @@ function create_editbutton($url, $action = 'edit', $id) {
 }
 
 /**
-* get all Video Resources
+* get all Video Resource Instances
 * 
 */
 function videoresource_get_videos() {
     global $DB;
     return $DB->get_records_sql('SELECT * FROM {resource_videos}');
+}
+
+/**
+* get Video Resource items for selecting
+* 
+* @return array
+*/
+function videoresource_get_videos_select() {
+    global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    $sql = 'SELECT v.id, v.internal_title
+            FROM {resource_videos} v';
+    $items = $DB->get_records_sql_menu($sql);
+    if (!$items)
+        $items = array();
+    return $items;
 }
 
 /**

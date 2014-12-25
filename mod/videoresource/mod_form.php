@@ -60,19 +60,16 @@ class mod_videoresource_mod_form extends moodleform_mod {
 
         // Adding the standard "intro" and "introformat" fields.
         $this->add_intro_editor();
-
-        //group of videoresource elements
-        /*$mform->addElement('header', 'videoresourcefieldset', get_string('videoresourcefieldset', 'videoresource'));
-        $items = get__lists();
-        $_items = get_cource_lists($this->current);
-        $select = $mform->addElement('select', 'list_id', get_string('list'), $items);
-        $select->setMultiple(true);
-        $select->setSelected($_items);
-        $mform->setType('list_id', PARAM_TEXT);                   //Set type of element
-        $mform->addHelpButton('list_id', 'listfield', 'videoresource');
-        //$mform->addRule('list_id', get_string('missingname'), 'required', null, 'client');
-        $mform->setExpanded('videoresourcefieldset');*/
         
+        //group of resourcelib elements
+        $mform->addElement('header', 'videoresourcefieldset', get_string('videoresourcefieldset', 'videoresource'));
+        $items = videoresource_get_videos_select();  //get list of videos
+        $select = $mform->addElement('select', 'resource_videos_id', get_string('list'), $items);
+        $mform->setType('resource_videos_id', PARAM_INT); //Set type of element
+        $mform->addHelpButton('resource_videos_id', 'listfield', 'videoresource');
+        //$mform->addRule('list_id', get_string('missingname'), 'required', null, 'client');
+        $mform->setExpanded('videoresourcefieldset');
+
         //$mform->addElement('modgrade', 'scale', get_string('grade'), false);
 
         // Add standard elements, common to all modules.
