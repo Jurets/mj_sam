@@ -32,6 +32,7 @@
     $actionAddChapter = 'addchapter';
     $actionEditChapter = 'editchapter';
     $actionDelChapter = 'delchapter';
+    $actionTranscript = 'transcript';
     
     /// Security
     $systemcontext = context_system::instance();
@@ -316,5 +317,23 @@
                     echo $OUTPUT->notification(get_string('deletednot', '', $chapter->title));
                 }
             }
+            break;
+        
+        //show transcript of Video Resource
+        case $actionTranscript:
+            $video = $DB->get_record('resource_videos', array('id'=>$id), '*', MUST_EXIST); //get data from DB
+
+            $head_str = !empty($video->title) ? $video->title : $video->internal_title;
+            $PAGE->navbar->add($head_str);
+            echo $OUTPUT->header();
+            echo $OUTPUT->heading($head_str);
+            //header
+            echo html_writer::tag('h3', get_string('video_transcript', 'videoresource'));
+            //transcript text
+            echo html_writer::start_div('panel panel-default');
+            echo html_writer::tag('div', $video->transcript);
+            echo html_writer::end_div();
+            //footer
+            echo $OUTPUT->footer();
             break;
     }

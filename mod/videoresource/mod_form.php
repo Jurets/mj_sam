@@ -62,16 +62,16 @@ class mod_videoresource_mod_form extends moodleform_mod {
         $this->add_intro_editor();
 
         //group of videoresource elements
-        $mform->addElement('header', 'videoresourcefieldset', get_string('videoresourcefieldset', 'videoresource'));
+        /*$mform->addElement('header', 'videoresourcefieldset', get_string('videoresourcefieldset', 'videoresource'));
         $items = get__lists();
         $_items = get_cource_lists($this->current);
-        $select = $mform->addElement('select', 'list_id', get_string('list'/*, 'videoresource'*/), $items);
+        $select = $mform->addElement('select', 'list_id', get_string('list'), $items);
         $select->setMultiple(true);
         $select->setSelected($_items);
         $mform->setType('list_id', PARAM_TEXT);                   //Set type of element
         $mform->addHelpButton('list_id', 'listfield', 'videoresource');
         //$mform->addRule('list_id', get_string('missingname'), 'required', null, 'client');
-        $mform->setExpanded('videoresourcefieldset');
+        $mform->setExpanded('videoresourcefieldset');*/
         
         //$mform->addElement('modgrade', 'scale', get_string('grade'), false);
 

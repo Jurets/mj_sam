@@ -85,7 +85,42 @@ if ($videoresource->intro) {
 
 require_once(dirname(__FILE__).'/locallib.php');
 
+/// Render Video Resource Data
+//$video = $DB->get_record('resource_videos', array('id'=>$videoresource->resource_videos_id)); //
+$video = videoresource_get_video($videoresource->resource_videos_id);
 
+//render media frame
+$mediarenderer = $PAGE->get_renderer('core', 'media');
+$url = 'http://youtu.be/'.$video->video_id;
+echo $mediarenderer->embed_url(new moodle_url($url));
+
+//render podcast and transcript block
+echo html_writer::start_div('video_metadata', array('style'=>'text-align: center'));
+$video_metadata = array();
+if (!empty($video->podcast_url)) {
+    $video_metadata[] = html_writer::link($video->podcast_url, get_string('podcast_url', 'videoresource'), array('target'=>'__blank'));
+}
+if (!empty($video->transcript)) {
+    $url = new moodle_url(VR_URL_MAIN, array('action'=>'transcript', 'id'=>$video->id));
+    $video_metadata[] = html_writer::link($url, get_string('transcript', 'videoresource'), array('target'=>'__blank'));
+}
+$video_metadata = implode(' | ', $video_metadata);
+//echo ' | ';
+//echo ' ]';
+$video_metadata = '[ ' . $video_metadata . ' ]';
+echo $video_metadata;
+echo html_writer::end_div();
+
+//render chapters
+if (!empty($video->chapters)) {
+    echo html_writer::div(get_string('in_this_video', 'videoresource') . ':', 'video_chapter_header');
+    foreach ($video->chapters as $chapter) {
+        echo html_writer::start_div('video_chapter');
+        $time = videoresource_time_convert($chapter->timecode);
+        echo html_writer::tag('a', $time . ' - ' . $chapter->title, array('onclick'=>'chapter_marker("v_46", "0")'));
+        echo html_writer::end_div();
+    }
+}
 
 // Finish the page.
 echo $OUTPUT->footer();

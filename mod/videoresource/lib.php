@@ -35,6 +35,8 @@ defined('MOODLE_INTERNAL') || die();
  * define('videoresource_ULTIMATE_ANSWER', 42);
  */
 
+define('VR_URL_MAIN', $CFG->wwwroot.'/mod/videoresource/video.php');
+ 
 /**
  * Moodle core API
  */

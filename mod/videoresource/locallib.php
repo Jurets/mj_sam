@@ -178,7 +178,14 @@ function videoresource_edit_video($data) {
 */
 function videoresource_get_video($id) {
     global $DB;
-    return $DB->get_record('resource_videos', array('id'=>$id));
+    /*$chapters = $DB->get_records_sql('
+        SELECT 
+        FROM {resource_video_chapters} vc LEFT JOIN
+             {resource_videos} v ON v.
+    ', array('id'=>$id));*/
+    $video = $DB->get_record('resource_videos', array('id'=>$id));
+    $video->chapters = $DB->get_records('resource_video_chapters', array('resource_video_id'=>$video->id));
+    return $video;
 }
 
 /**
@@ -248,4 +255,13 @@ function videoresource_delete_chapter($data) {
         return false;
     }
     return $DB->delete_records('resource_video_chapters', array('id' => $data->id));
+}
+
+/**
+* convert time in seconds to "hh:mm:ss"
+* 
+* @param mixed $time
+*/
+function videoresource_time_convert($time) {
+    return sprintf('%02d:%02d:%02d', $time/3600, ($time % 3600)/60, ($time % 3600) % 60);
 }

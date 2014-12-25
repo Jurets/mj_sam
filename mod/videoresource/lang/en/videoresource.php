@@ -67,6 +67,7 @@ $string['video_title'] = 'Video Title';
 $string['description_text'] = 'Description/Followup Text';
 $string['podcast_url'] = 'Podcast URL';
 $string['transcript'] = 'Transcript';
+$string['video_transcript'] = 'Video Transcript';
 
 $string['missing_videoid'] = 'Missing Youtube Video ID';
 $string['missing_internal_title'] = 'Missing Internal Title';
@@ -75,3 +76,4 @@ $string['missing_timecode'] = 'Missing Timecode';
 $string['no_chapters'] = 'There is no Chapters in this Video Resource';
 $string['videoresource_exists_in_course'] = 'Video Resource exists in course';
 $string['deletecheck_chapter_fromvideo'] = 'Are you absolutely sure you want to delete chapter {$a} from video?'; 
+$string['in_this_video'] = 'In this video (Click to Advance)'; 
