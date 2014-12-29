@@ -28,7 +28,7 @@ class mod_resourcelib_form_editchapter extends moodleform {
         $mform->addRule('timecode', get_string('missing_timecode', 'videoresource'), 'required', null, 'client');
         
         //video chapter: timecode
-        $mform->addElement('text', 'title', get_string('chapter_title', 'videoresource')); // Add elements to your form
+        $mform->addElement('text', 'title', get_string('chapter_title', 'videoresource'), array('style'=>'width: 100%')); // Add elements to your form
         $mform->setType('title', PARAM_TEXT); //Set type of element
         $mform->addRule('title', get_string('maximumchars', '', 100), 'maxlength', 100, 'client');
         
