@@ -59,6 +59,7 @@
     }
 
     switch($action) {
+        ///  Index page
         case $actionIndex:
             echo $OUTPUT->header();
             echo $OUTPUT->heading($head_index);
@@ -99,6 +100,7 @@
             echo $OUTPUT->footer();
             break;
 
+        /// View page
         case $actionView:
             $video = $DB->get_record('resource_videos', array('id'=>$id), '*', MUST_EXIST); //get data from DB
 
@@ -172,7 +174,7 @@
                     if (key_exists('edit', $buttons))
                         $buttons_column[] = create_editbutton($returnurl, $buttons['edit'], $item->id);
                     $table->data[] = array(
-                        $item->timecode, 
+                        videoresource_time_convert($item->timecode), 
                         $item->title, 
                         implode(' ', $buttons_column) 
                     );
@@ -280,6 +282,7 @@
             //heads
             $head_str = !empty($video->title) ? $video->title : $video->internal_title;
             $urlView = new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$video->id));
+            $urlAddChapter = new moodle_url($returnurl, array('action'=>$actionAddChapter, 'video'=>$video->id));
             //breadcrumbs
             $PAGE->navbar->add($head_str, $urlView);
             $PAGE->navbar->add($action_str);
@@ -296,7 +299,10 @@
                 } else if ($action == $actionEditChapter && isset($id)) {
                     $success = videoresource_edit_chapter($data);
                 }
-                redirect($urlView);
+                if (isset($data->submitbutton))
+                    redirect($urlView);
+                else 
+                    redirect($urlAddChapter);
             }
             //show form page
             echo $OUTPUT->header();

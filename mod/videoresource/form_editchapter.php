@@ -32,7 +32,17 @@ class mod_resourcelib_form_editchapter extends moodleform {
         $mform->setType('title', PARAM_TEXT); //Set type of element
         $mform->addRule('title', get_string('maximumchars', '', 100), 'maxlength', 100, 'client');
         
-        $this->add_action_buttons();
+        //$this->add_action_buttons();
+        $buttonarray=array();
+        if (isset($chapter->id)) {
+            $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('savechanges'));
+        } else {
+            $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('save_return_view', 'videoresource'));
+            $buttonarray[] = &$mform->createElement('submit', 'submitbutton2', get_string('save_new_chapter', 'videoresource'));
+        }
+        $buttonarray[] = &$mform->createElement('cancel');
+        $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
+        $mform->closeHeaderBefore('buttonar');
         
     }
 }  

@@ -55,6 +55,9 @@ $string['add_video_chapter'] = 'Add Video Chapter';
 $string['edit_video_chapter'] = 'Edit Video Chapter';
 $string['delete_video_chapter'] = 'Delete Video Chapter';
 
+$string['save_return_view'] = 'Save and return to view video';
+$string['save_new_chapter'] = 'Save and add new chapter';
+
 $string['internal_info'] = 'Internal Reference Information';
 $string['publicly_info'] = 'Publicly Accessible Fields';
 $string['chapter_timecode'] = 'Timecode';
