@@ -46,11 +46,14 @@ $string['pluginname'] = 'Video Resource';
 $string['administration'] = 'Video Resource Administration';
 $string['manage_videos'] = 'Manage Video Resource Library';
 
+$string['index_video'] = 'Video Resource Index';
 $string['add_video'] = 'Add Video Resource';
 $string['edit_video'] = 'Edit Video Resource';
 $string['delete_video'] = 'Delete Video Resource'; 
 
 $string['add_video_desc'] = '<a href="{$a}">Add Video Resource</a> allows to add Video Resource.<br/>';
+$string['index_video_desc'] = '<a href="{$a}">Video Resource</a> shows List of Video Resources.<br/>';
+
 $string['add_video_chapter'] = 'Add Video Chapter';
 $string['edit_video_chapter'] = 'Edit Video Chapter';
 $string['delete_video_chapter'] = 'Delete Video Chapter';
