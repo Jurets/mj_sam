@@ -28,9 +28,11 @@
 // Replace videoresource with the name of your module and remove this line.
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/locallib.php');
 
 require_once($CFG->dirroot.'/rating/lib.php');
 
+//process input params
 $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
 $n  = optional_param('n', 0, PARAM_INT);  // ... videoresource instance ID - it should be named as the first character of the module.
 
@@ -65,6 +67,10 @@ $PAGE->set_title(format_string($videoresource->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($context);
 
+//include js-script for chapter markers
+$PAGE->requires->js('/mod/videoresource/js/chapter_marker_player.js', true);
+
+
 /*
  * Other things you may want to set - remove if not needed.
  * $PAGE->set_cacheable(false);
@@ -80,29 +86,47 @@ if ($videoresource->intro) {
     echo $OUTPUT->box(format_module_intro('videoresource', $videoresource, $cm->id), 'generalbox mod_introbox', 'videoresourceintro');
 }
 
-// Replace the following lines with you own code.
-//echo $OUTPUT->heading('Yay! It works!');
-
-require_once(dirname(__FILE__).'/locallib.php');
-
 /// Render Video Resource Data
-//$video = $DB->get_record('resource_videos', array('id'=>$videoresource->resource_videos_id)); //
 $video = videoresource_get_video($videoresource->resource_videos_id);
 
 //render media frame
-$mediarenderer = $PAGE->get_renderer('core', 'media');
-$url = 'http://youtu.be/'.$video->video_id;
-echo $mediarenderer->embed_url(new moodle_url($url));
+
+//$mediarenderer = $PAGE->get_renderer('core', 'media');  //previous version
+//$url = 'http://youtu.be/'.$video->video_id;
+//echo $mediarenderer->embed_url(new moodle_url($url));
+
+echo html_writer::div('', 'mediaplugin mediaplugin_youtube', array('id'=>'iframe-session-player'));
+$video_id = $video->video_id;
+$video_chapters = '';
+foreach ($video->chapters as $chapter) {
+    $video_chapters .= $chapter->timecode . ': "' . $chapter->title . '",';
+}
+echo <<<EOD
+    <script type="text/javascript">
+    //<![CDATA[
+    ChapterMarkerPlayer.insert({
+      container: 'iframe-session-player',
+      videoId: '$video_id',
+      width: 600,
+      chapters:{ $video_chapters }
+    });
+
+    function chapter_marker(time) {
+        player.seekTo(time);
+    }
+    //]]>
+    </script>
+EOD;
 
 //render podcast and transcript block
 echo html_writer::start_div('video_metadata', array('style'=>'text-align: center'));
 $video_metadata = array();
 if (!empty($video->podcast_url)) {
-    $video_metadata[] = html_writer::link($video->podcast_url, get_string('podcast_url', 'videoresource'), array('target'=>'__blank'));
+    $video_metadata[] = html_writer::link($video->podcast_url, get_string('podcast_url', 'videoresource'), array('target'=>'_blank'));
 }
 if (!empty($video->transcript)) {
     $url = new moodle_url(VR_URL_MAIN, array('action'=>'transcript', 'id'=>$video->id));
-    $video_metadata[] = html_writer::link($url, get_string('transcript', 'videoresource'), array('target'=>'__blank'));
+    $video_metadata[] = html_writer::link($url, get_string('transcript', 'videoresource'), array('target'=>'_blank'));
 }
 $video_metadata = implode(' | ', $video_metadata);
 $video_metadata = '[ ' . $video_metadata . ' ]';
@@ -115,7 +139,7 @@ if (!empty($video->chapters)) {
     foreach ($video->chapters as $chapter) {
         echo html_writer::start_div('video_chapter');
         $time = videoresource_time_convert($chapter->timecode);
-        echo html_writer::tag('a', $time . ' - ' . $chapter->title, array('onclick'=>'chapter_marker("v_46", "0")'));
+        echo html_writer::tag('a', $time . ' - ' . $chapter->title, array('onclick'=>'chapter_marker("'.$chapter->timecode.'")'));
         echo html_writer::end_div();
     }
 }
@@ -137,7 +161,6 @@ if(isset($item->rating)) {
     $rate_html = html_writer::tag('div', $OUTPUT->render($item->rating), array('class'=>'forum-post-rating'));
     echo $rate_html;
 }
-
 
 // Finish the page.
 echo $OUTPUT->footer();
