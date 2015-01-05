@@ -79,6 +79,7 @@ $string['missing_videoid'] = 'Missing Youtube Video ID';
 $string['missing_internal_title'] = 'Missing Internal Title';
 $string['missing_timecode'] = 'Missing Timecode';
 
+$string['no_resources'] = 'There is no Video Resources';
 $string['no_chapters'] = 'There is no Chapters in this Video Resource';
 $string['videoresource_exists_in_course'] = 'Video Resource exists in course';
 $string['deletecheck_chapter_fromvideo'] = 'Are you absolutely sure you want to delete chapter {$a} from video?'; 

@@ -69,7 +69,7 @@
             $items = videoresource_get_videos();
             //show_resource_items(videoresource_get_videos(), $returnurl);
             if (!$items || empty($items)) {
-                echo $OUTPUT->notification(get_string('no_resources', 'resourcelib'), 'redirectmessage');
+                echo $OUTPUT->notification(get_string('no_resources', 'videoresource'), 'redirectmessage');
             } else {
                 if (!isset($buttons)) //default buttons
                     $buttons = array('delete'=>'delete', 'edit'=>'edit');
