@@ -178,11 +178,6 @@ function htmlresource_edit_item($data) {
 */
 function htmlresource_get_item($id) {
     global $DB;
-    /*$sql = '
-        SELECT r.*, (select count(*) from {resource_section_items} si where si.resource_section_id = s.id) AS c_count
-        FROM {resource_html} r
-        WHERE r.id = ?
-    ';*/
     if ($item = $DB->get_record('resource_html', array('id'=>$id))) {
         $text = $item->html;
         $item->html = array();
@@ -219,14 +214,6 @@ function htmlresource_delete_item($data) {
 */
 function htmlresource_count_in_courses($data) {
     global $DB;
-    /*$sql = 'SELECT count(*)
-            FROM mdl_course_modules cm, 
-              mdl_course_sections cw, 
-              mdl_modules md
-            WHERE cm.course = 4 AND
-            cm.section = cw.id AND
-            md.name = "resourcelib" AND
-            md.id = cm.module';*/
     $sql = 'SELECT count(*) FROM {htmlresource} r
             WHERE r.resource_html_id = ?';
     $count = $DB->get_field_sql($sql, array($data->id));

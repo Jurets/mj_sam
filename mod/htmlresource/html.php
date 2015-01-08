@@ -63,7 +63,6 @@
             show_addbutton(new moodle_url($returnurl, array('action' => $actionAdd)), get_string('add_html', 'htmlresource'));
             //show table with items data
             $items = htmlresource_get_items();
-            //show_resource_items(htmlresource_get_videos(), $returnurl);
             if (!$items || empty($items)) {
                 echo $OUTPUT->notification(get_string('no_resources', 'htmlresource'), 'redirectmessage');
             } else {
