@@ -83,8 +83,8 @@
                     if (key_exists('edit', $buttons))
                         $buttons_column[] = create_editbutton($returnurl, $buttons['edit'], $item->id);
                     $table->data[] = array(
-                        html_writer::link(new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$item->id)), $item->video_id),
-                        $item->internal_title, 
+                        html_writer::link(new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$item->id)), $item->internal_title),
+                        //$item->internal_title, 
                         $item->title, 
                         implode(' ', $buttons_column) 
                     );
@@ -97,53 +97,48 @@
 
         /// View page
         case $actionView:
-            $html = $DB->get_record('resource_html', array('id'=>$id), '*', MUST_EXIST); //get data from DB
+            $item = $DB->get_record('resource_html', array('id'=>$id), '*', MUST_EXIST); //get data from DB
 
-            $head_str = !empty($html->title) ? $html->title : $html->internal_title;
+            $head_str = !empty($item->title) ? $item->title : $item->internal_title;
             $PAGE->navbar->add($head_str);
             echo $OUTPUT->header();
             echo $OUTPUT->heading($head_str);
             
             echo html_writer::start_tag('dl', array('class' => 'list'));
-            echo html_writer::tag('dt', get_string('videoid', 'htmlresource'));
-            echo html_writer::tag('dd', $html->video_id);
-            echo html_writer::end_tag('dl');
-            
-            echo html_writer::start_tag('dl', array('class' => 'list'));
             echo html_writer::tag('dt', get_string('internal_name', 'htmlresource'));
-            echo html_writer::tag('dd', $html->internal_title);
+            echo html_writer::tag('dd', $item->internal_title);
             echo html_writer::end_tag('dl');
 
             echo html_writer::start_tag('dl', array('class' => 'list'));
             echo html_writer::tag('dt', get_string('internal_notes', 'htmlresource'));
-            echo html_writer::tag('dd', $html->internal_notes);
+            echo html_writer::tag('dd', $item->internal_notes);
             echo html_writer::end_tag('dl');
 
             echo html_writer::start_tag('dl', array('class' => 'list'));
-            echo html_writer::tag('dt', get_string('video_title', 'htmlresource'));
-            echo html_writer::tag('dd', $html->title);
+            echo html_writer::tag('dt', get_string('html_title', 'htmlresource'));
+            echo html_writer::tag('dd', $item->title);
             echo html_writer::end_tag('dl');
 
             echo html_writer::start_tag('dl', array('class' => 'list'));
             echo html_writer::tag('dt', get_string('description_text', 'htmlresource'));
-            echo html_writer::tag('dd', $html->description, array('style'=>'max-height: 300px; overflow: auto;'));
+            echo html_writer::tag('dd', $item->description, array('style'=>'max-height: 300px; overflow: auto;'));
             echo html_writer::end_tag('dl');
 
-            echo html_writer::start_tag('dl', array('class' => 'list'));
+            /*echo html_writer::start_tag('dl', array('class' => 'list'));
             echo html_writer::tag('dt', get_string('podcast_url', 'htmlresource'));
-            echo html_writer::tag('dd', html_writer::link(new moodle_url($html->podcast_url), $html->podcast_url, array('target'=>'_blank')));
-            echo html_writer::end_tag('dl');
+            echo html_writer::tag('dd', html_writer::link(new moodle_url($item->podcast_url), $item->podcast_url, array('target'=>'_blank')));
+            echo html_writer::end_tag('dl');*/
 
             echo html_writer::start_tag('dl', array('class' => 'list'));
-            echo html_writer::tag('dt', get_string('transcript', 'htmlresource'));
-            echo html_writer::tag('dd', $html->transcript, array('style'=>'max-height: 300px; overflow: auto;'));
+            echo html_writer::tag('dt', get_string('html_text', 'htmlresource'));
+            echo html_writer::tag('dd', $item->html, array('style'=>'max-height: 300px; overflow: auto;'));
             echo html_writer::end_tag('dl');
             //show edit button
-            show_editbutton(new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$html->id)), get_string('edit_video', 'htmlresource'));
+            show_editbutton(new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$item->id)), get_string('edit_html', 'htmlresource'));
             //
-            echo html_writer::tag('hr', '');
+            //echo html_writer::tag('hr', '');
             //add section button
-            show_addbutton(new moodle_url($returnurl, array('action' => $actionAddChapter, 'video'=>$id)), get_string('add_video_chapter', 'htmlresource'));
+            //show_addbutton(new moodle_url($returnurl, array('action' => $actionAddChapter, 'video'=>$id)), get_string('add_video_chapter', 'htmlresource'));
             
             //chapters in table format
             /*$items = get_video_chapters($html);
@@ -189,25 +184,29 @@
             if ($action == $actionAdd) { //add new type
                 $PAGE->navbar->add($head_str);
                 $actionurl = new moodle_url($returnurl, array('action' => $actionAdd));
-                $html = null;        //empty data
+                $item = null;        //empty data
             } else if (isset($id)){     //edit existing type ($id parameter must be present in URL)
                 $PAGE->navbar->add($head_str);
                 $actionurl = new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$id));
-                $html = htmlresource_get_video($id); //get data from DB
+                $item = htmlresource_get_item($id); //get data from DB
             }
             
             //build form
-            $editform = new mod_htmlresource_form_editvideo($actionurl->out(false), array('video'=>$html)); //create form instance
+            $editform = new mod_htmlresource_form_edit($actionurl->out(false), array('item'=>$item)); //create form instance
             //$editform->is_submitted()
             if ($editform->is_cancelled()) {  //in cancel form case - redirect to previous page
                 $url = new moodle_url($returnurl, array('action' => $actionIndex));
                 redirect($url);
             } else if ($data = $editform->get_data()) {
+                $text = $data->html['text'];
+                $format = $data->html['format'];
+                unset($data->html);
+                $data->html = $text;
                 if ($action == $actionAdd) {
-                    $inserted_id = htmlresource_add_video($data);
+                    $inserted_id = htmlresource_add_item($data);
                     $success = isset($id);
                 } else if (isset($id)){
-                    $success = htmlresource_edit_video($data);
+                    $success = htmlresource_edit_item($data);
                 }
                 if ($success){  //call create Resource Type function
                     $url = new moodle_url($returnurl, array('action' => $actionIndex));
@@ -225,13 +224,16 @@
             $head_str = get_string('delete_html', 'htmlresource');
             //breadcrumbs
             $PAGE->navbar->add($head_str);
-            
+            DebugBreak();
             if (isset($id) && confirm_sesskey()) { // Delete a selected resource item, after confirmation
-                $item = htmlresource_get_video($id); //get data from DB
-                
-                if ($confirm != md5($id)) {
-                    echo $OUTPUT->header();
-                    echo $OUTPUT->heading($head_str);
+                echo $OUTPUT->header();
+                echo $OUTPUT->heading($head_str);
+                $item = htmlresource_get_item($id); //get data from DB
+                if (!$item) {
+                    echo $OUTPUT->notification($returnurl, get_string('deletednot', '', $id));
+                } else if ($confirm != md5($id)) {
+                    //echo $OUTPUT->header();
+                    //echo $OUTPUT->heading($head_str);
                     //before delete do check existing of video resources in any course
                     if (isset($item->c_count) && $item->c_count > 0) {
                         $str = get_string('deletednot', '', $item->title) . ' ' . get_string('htmlresource_exists_in_course', 'htmlresource');
@@ -242,7 +244,7 @@
                     }
                     echo $OUTPUT->footer();
                 } else if (data_submitted() /*&& !$data->deleted*/){
-                    if (htmlresource_delete_video($item)) {
+                    if (htmlresource_delete_item($item)) {
                         $url = new moodle_url($returnurl, array('action' => $actionIndex));
                         redirect($url);
                     } else {
@@ -251,74 +253,6 @@
                 }
             }
             break;
-
-        /*case $actionAddChapter:
-        case $actionEditChapter: 
-            require_once($CFG->dirroot.'/mod/htmlresource/form_editchapter.php'); //include form_edittype.php  
-            
-            if ($action == $actionAddChapter) { //add new type
-                //check input param
-                $html_id = optional_param('html', -1, PARAM_INT);
-                $html = $DB->get_record('resource_videos', array('id'=>$html_id), '*', MUST_EXIST);
-                //new Chapter instance 
-                $chapter = new stdClass();
-                $chapter->resource_video_id = $html->id;
-                //build url's
-                $action_str = get_string('add_video_chapter', 'htmlresource');
-                $urlAction = new moodle_url($returnurl, array('action'=>$actionAddChapter, 'video'=>$html->id));
-            } else if ($action == $actionEditChapter && isset($id)){     //edit existing type ($id parameter must be present in URL)
-                //get Video Chapter
-                $chapter = $DB->get_record('resource_video_chapters', array('id'=>$id), '*', MUST_EXIST);
-                $html = $DB->get_record('resource_videos', array('id'=>$chapter->resource_video_id), '*', MUST_EXIST);
-                //build url's
-                $action_str = get_string('edit_video_chapter', 'htmlresource');
-                $urlAction = new moodle_url($returnurl, array('action'=>$actionEditChapter, 'id'=>$id));
-            }
-            //heads
-            $head_str = !empty($html->title) ? $html->title : $html->internal_title;
-            $urlView = new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$html->id));
-            $urlAddChapter = new moodle_url($returnurl, array('action'=>$actionAddChapter, 'video'=>$html->id));
-            //breadcrumbs
-            $PAGE->navbar->add($head_str, $urlView);
-            $PAGE->navbar->add($action_str);
-            //create and show form instance
-            $editform = new mod_resourcelib_form_editchapter($urlAction->out(false), array('chapter'=>$chapter));
-            
-            //form data process
-            if ($editform->is_cancelled()) {  //in cancel form case - redirect to previous page
-                redirect($urlView);
-            } else if ($data = $editform->get_data()) {
-                if ($action == $actionAddChapter) {
-                    $inserted_id = htmlresource_add_chapter($data);
-                    $success = ($inserted_id > 0);
-                } else if ($action == $actionEditChapter && isset($id)) {
-                    $success = htmlresource_edit_chapter($data);
-                }
-                if (isset($data->submitbutton))
-                    redirect($urlView);
-                else 
-                    redirect($urlAddChapter);
-            }
-            //show form page
-            echo $OUTPUT->header();
-            echo $OUTPUT->heading($action_str);
-            $editform->display();
-            
-            echo $OUTPUT->footer();
-            break;*/  
-            
-        //delete video chapter: after js-confirmation
-        /*case $actionDelChapter:
-            if (isset($id) && confirm_sesskey()) { // Delete a selected chapter from video, after confirmation
-                $chapter = htmlresource_get_chapter($id);
-                if (htmlresource_delete_chapter($chapter)) {
-                    $url = new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$chapter->resource_video_id));
-                    redirect($url);
-                } else {
-                    echo $OUTPUT->notification(get_string('deletednot', '', $chapter->title));
-                }
-            }
-            break;*/
         
         //show transcript of Video Resource
         case $actionTranscript:

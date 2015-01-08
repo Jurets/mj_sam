@@ -54,10 +54,6 @@ $string['delete_html'] = 'Delete Html Resource';
 $string['add_html_desc'] = '<a href="{$a}">Add Html Resource</a> allows to add Html Resource.<br/>';
 $string['index_html_desc'] = '<a href="{$a}">Html Resource Index</a> shows List of Html Resources.<br/>';
 
-//$string['add_video_chapter'] = 'Add Video Chapter';
-//$string['edit_video_chapter'] = 'Edit Video Chapter';
-//$string['delete_video_chapter'] = 'Delete Video Chapter';
-
 $string['save_return_view'] = 'Save and return to view video';
 $string['save_new_chapter'] = 'Save and add new chapter';
 
@@ -68,22 +64,16 @@ $string['chapter_title'] = 'Title';
 
 $string['internal_name'] = 'Html Name';
 $string['internal_notes'] = 'Notes';
-//$string['videoid'] = 'Youtube Video ID';
+
 $string['html_title'] = 'Html Title';
 $string['description_text'] = 'Description/Followup Text';
 $string['podcast_url'] = 'Podcast URL';
-$string['transcript'] = 'Transcript';
-$string['video_transcript'] = 'Video Transcript';
+$string['html_text'] = 'Html Text';
 
-//$string['missing_videoid'] = 'Missing Youtube Video ID';
 $string['missing_internal_title'] = 'Missing Internal Title';
-//$string['missing_timecode'] = 'Missing Timecode';
 $string['no_resources'] = 'There is no Html Resources';
 
-//$string['no_chapters'] = 'There is no Chapters in this Video Resource';
 $string['htmlresource_exists_in_course'] = 'Html Resource exists in course';
-//$string['deletecheck_chapter_fromvideo'] = 'Are you absolutely sure you want to delete chapter {$a} from video?'; 
-//$string['in_this_video'] = 'In this video (Click to Advance)'; 
 
 $string['listfield'] = 'Html Resource List';
 $string['listfield_help'] = 'Select Html Resource from list below';

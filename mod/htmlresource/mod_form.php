@@ -61,13 +61,12 @@ class mod_htmlresource_mod_form extends moodleform_mod {
         // Adding the standard "intro" and "introformat" fields.
         $this->add_intro_editor();
         
-        //group of resourcelib elements
+        //group of elements
         $mform->addElement('header', 'htmlresourcefieldset', get_string('htmlresourcefieldset', 'htmlresource'));
-        $items = htmlresource_get_videos_select();  //get list of videos
-        $select = $mform->addElement('select', 'resource_videos_id', get_string('list'), $items);
-        $mform->setType('resource_videos_id', PARAM_INT); //Set type of element
-        $mform->addHelpButton('resource_videos_id', 'listfield', 'htmlresource');
-        //$mform->addRule('list_id', get_string('missingname'), 'required', null, 'client');
+        $items = htmlresource_get_items_select();  //get list of html
+        $select = $mform->addElement('select', 'resource_html_id', get_string('list'), $items);
+        $mform->setType('resource_html_id', PARAM_INT); //Set type of element
+        $mform->addHelpButton('resource_html_id', 'listfield', 'htmlresource');
         $mform->setExpanded('htmlresourcefieldset');
 
         //$mform->addElement('modgrade', 'scale', get_string('grade'), false);

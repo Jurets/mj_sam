@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * define('htmlresource_ULTIMATE_ANSWER', 42);
  */
 
-define('VR_URL_MAIN', $CFG->wwwroot.'/mod/htmlresource/video.php');
+//define('VR_URL_MAIN', $CFG->wwwroot.'/mod/htmlresource/video.php');
  
 /**
  * Moodle core API
@@ -90,7 +90,7 @@ function htmlresource_add_instance(stdClass $htmlresource, mod_htmlresource_mod_
         //process form data
         $form_content = $mform->get_data();
         //set video ID
-        $htmlresource->resource_videos_id = $form_content->resource_videos_id;
+        $htmlresource->resource_html_id = $form_content->resource_html_id;
         //insert record
         $htmlresource->id = $DB->insert_record('htmlresource', $htmlresource, true);
         // Assuming the both inserts work, we get to the following line.
@@ -122,9 +122,7 @@ function htmlresource_update_instance(stdClass $htmlresource, mod_htmlresource_m
 
     try {
         $transaction = $DB->start_delegated_transaction();
-        //process form data
-        //$form_content = $mform->get_data();
-        // You may have to add extra stuff in here.
+        // update instance
         $DB->update_record('htmlresource', $htmlresource);
          // Assuming the both inserts work, we get to the following line.
         $transaction->allow_commit();

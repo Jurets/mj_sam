@@ -140,11 +140,11 @@ function htmlresource_get_items() {
 * 
 * @return array
 */
-function htmlresource_get_videos_select() {
+function htmlresource_get_items_select() {
     global $DB;
     // Make sure nobody sends bogus record type as parameter.
     $sql = 'SELECT v.id, v.internal_title
-            FROM {resource_videos} v';
+            FROM {resource_html} v';
     $items = $DB->get_records_sql_menu($sql);
     if (!$items)
         $items = array();
@@ -152,132 +152,80 @@ function htmlresource_get_videos_select() {
 }
 
 /**
-* get chapters by Video Resource
-* 
-*/
-function get_video_chapters($data) {
-    global $DB;
-    // Make sure nobody sends bogus record type as parameter.
-    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
-        throw new coding_exception('Invalid $data parameter in get_video_chapters() detected');
-    }
-    $items = $DB->get_records('resource_video_chapters', array('resource_video_id'=>$data->id));
-    if (!$items)
-        $items = array();
-    return $items;
-}
-
-/**
-* add new Resource to database
+* add new Html Resource to database
 * 
 * @param mixed $data - Resource Instance
 */
-function htmlresource_add_video($data) {
+function htmlresource_add_item($data) {
     global $DB;
-    return $DB->insert_record('resource_videos', $data);
+    return $DB->insert_record('resource_html', $data);
 }
 
 /**
-* update Resource in database
+* update Html Resource in database
 * 
 * @param mixed $data - Resource Instance
 */
-function htmlresource_edit_video($data) {
+function htmlresource_edit_item($data) {
     global $DB;
-    return $DB->update_record('resource_videos', $data);
+    return $DB->update_record('resource_html', $data);
 }
 
 /**
-* get Video Resource record from database
+* get Html Resource record from database
 * 
 * @param mixed $id - Resource ID
 */
-function htmlresource_get_video($id) {
+function htmlresource_get_item($id) {
     global $DB;
-    /*$chapters = $DB->get_records_sql('
-        SELECT 
-        FROM {resource_video_chapters} vc LEFT JOIN
-             {resource_videos} v ON v.
-    ', array('id'=>$id));*/
-    $video = $DB->get_record('resource_videos', array('id'=>$id));
-    $video->chapters = $DB->get_records('resource_video_chapters', array('resource_video_id'=>$video->id));
-    return $video;
+    /*$sql = '
+        SELECT r.*, (select count(*) from {resource_section_items} si where si.resource_section_id = s.id) AS c_count
+        FROM {resource_html} r
+        WHERE r.id = ?
+    ';*/
+    if ($item = $DB->get_record('resource_html', array('id'=>$id))) {
+        $text = $item->html;
+        $item->html = array();
+        $item->html['text'] = $text;
+        $item->html['format'] = 1;
+    }
+    return $item;
 }
 
 /**
-* delete Video Resource from database
+* delete Html Resource from database
 * 
 * @param mixed $data - instance of Video Resource
 * @return bool
 */
-function htmlresource_delete_video($data) {
+function htmlresource_delete_item($data) {
     global $DB;
     // Make sure nobody sends bogus record type as parameter.
     if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
-        throw new coding_exception('Invalid $data parameter in htmlresource_delete_video() detected');
+        throw new coding_exception('Invalid $data parameter in htmlresource_delete_item() detected');
     }
     // Better not trust the parameter and fetch the latest info this will be very expensive anyway.
-    if (!$item = $DB->get_record('resource_videos', array('id' => $data->id))) {
-        debugging('Attempt to delete unknown Video Resource.');
+    if (!$item = $DB->get_record('resource_html', array('id' => $data->id))) {
+        debugging('Attempt to delete unknown Html Resource.');
         return false;
     }
-    return $DB->delete_records('resource_videos', array('id' => $data->id));
+    return $DB->delete_records('resource_html', array('id' => $data->id));
 }
 
 /**
-* get Chapter instance
+* Returns count of all the active instances of a particular module in all courses
 * 
-* @param mixed $id - chapter ID
+* @param mixed $data - instance of Html Resource
 */
-function htmlresource_get_chapter($id) {
-    global $DB;
-    return $DB->get_record('resource_video_chapters', array('id'=>$id));
-}
-
-/**
-* add new Chapter to Video Resource
-* 
-* @param mixed $data - Video Resource Instance
-*/
-function htmlresource_add_chapter($data) {
-    global $DB;
-    return $DB->insert_record('resource_video_chapters', $data);
-}
-
-/**
-* update Video Chapter from Video Resource
-* 
-* @param mixed $data - Video Chapter Instance
-*/
-function htmlresource_edit_chapter($data) {
-    global $DB;
-    return $DB->update_record('resource_video_chapters', $data);
-}
-
-/**
-* delete Video Chapter
-* 
-* @param mixed $data - Video Chapter Instance
-*/
-function htmlresource_delete_chapter($data) {
-    global $DB;
-     // Make sure nobody sends bogus record type as parameter.
-    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
-        throw new coding_exception('Invalid $data parameter in htmlresource_edit_chapter() detected');
-    }
-    // Better not trust the parameter and fetch the latest info this will be very expensive anyway.
-    if (!$item = $DB->get_record('resource_video_chapters', array('id' => $data->id))) {
-        debugging('Attempt to delete unknown Video Chapter.');
-        return false;
-    }
-    return $DB->delete_records('resource_video_chapters', array('id' => $data->id));
-}
-
-/**
-* convert time in seconds to "hh:mm:ss"
-* 
-* @param mixed $time
-*/
-function htmlresource_time_convert($time) {
-    return sprintf('%02d:%02d:%02d', $time/3600, ($time % 3600)/60, ($time % 3600) % 60);
+function htmlresource_count_in_courses($data) {
+    $sql = '
+        SELECT count(*)
+FROM mdl_course_modules cm, 
+  mdl_course_sections cw, 
+  mdl_modules md
+WHERE cm.course = 4 AND
+cm.section = cw.id AND
+md.name = "resourcelib" AND
+md.id = cm.module
+    ';
 }

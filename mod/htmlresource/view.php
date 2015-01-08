@@ -67,10 +67,6 @@ $PAGE->set_title(format_string($htmlresource->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($context);
 
-//include js-script for chapter markers
-$PAGE->requires->js('/mod/htmlresource/js/chapter_marker_player.js', true);
-
-
 /*
  * Other things you may want to set - remove if not needed.
  * $PAGE->set_cacheable(false);
@@ -86,63 +82,11 @@ if ($htmlresource->intro) {
     echo $OUTPUT->box(format_module_intro('htmlresource', $htmlresource, $cm->id), 'generalbox mod_introbox', 'htmlresourceintro');
 }
 
-/// Render Video Resource Data
-$video = htmlresource_get_video($htmlresource->resource_videos_id);
+/// get HTML item
+$item = htmlresource_get_item($htmlresource->resource_html_id);
 
-//render media frame
-
-//$mediarenderer = $PAGE->get_renderer('core', 'media');  //previous version
-//$url = 'http://youtu.be/'.$video->video_id;
-//echo $mediarenderer->embed_url(new moodle_url($url));
-
-echo html_writer::div('', 'mediaplugin mediaplugin_youtube', array('id'=>'iframe-session-player'));
-$video_id = $video->video_id;
-$video_chapters = '';
-foreach ($video->chapters as $chapter) {
-    $video_chapters .= $chapter->timecode . ': "' . $chapter->title . '",';
-}
-echo <<<EOD
-    <script type="text/javascript">
-    //<![CDATA[
-    ChapterMarkerPlayer.insert({
-      container: 'iframe-session-player',
-      videoId: '$video_id',
-      width: 600,
-      chapters:{ $video_chapters }
-    });
-
-    function chapter_marker(time) {
-        player.seekTo(time);
-    }
-    //]]>
-    </script>
-EOD;
-
-//render podcast and transcript block
-echo html_writer::start_div('video_metadata', array('style'=>'text-align: center'));
-$video_metadata = array();
-if (!empty($video->podcast_url)) {
-    $video_metadata[] = html_writer::link($video->podcast_url, get_string('podcast_url', 'htmlresource'), array('target'=>'_blank'));
-}
-if (!empty($video->transcript)) {
-    $url = new moodle_url(VR_URL_MAIN, array('action'=>'transcript', 'id'=>$video->id));
-    $video_metadata[] = html_writer::link($url, get_string('transcript', 'htmlresource'), array('target'=>'_blank'));
-}
-$video_metadata = implode(' | ', $video_metadata);
-$video_metadata = '[ ' . $video_metadata . ' ]';
-echo $video_metadata;
-echo html_writer::end_div();
-
-//render chapters
-if (!empty($video->chapters)) {
-    echo html_writer::div(get_string('in_this_video', 'htmlresource') . ':', 'video_chapter_header');
-    foreach ($video->chapters as $chapter) {
-        echo html_writer::start_div('video_chapter');
-        $time = htmlresource_time_convert($chapter->timecode);
-        echo html_writer::tag('a', $time . ' - ' . $chapter->title, array('onclick'=>'chapter_marker("'.$chapter->timecode.'")'));
-        echo html_writer::end_div();
-    }
-}
+//render HTML
+echo $item->html['text'];
 
 //render rating element
 $ratingoptions = new stdClass;
