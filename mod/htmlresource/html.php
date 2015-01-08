@@ -124,53 +124,12 @@
             echo html_writer::tag('dd', $item->description, array('style'=>'max-height: 300px; overflow: auto;'));
             echo html_writer::end_tag('dl');
 
-            /*echo html_writer::start_tag('dl', array('class' => 'list'));
-            echo html_writer::tag('dt', get_string('podcast_url', 'htmlresource'));
-            echo html_writer::tag('dd', html_writer::link(new moodle_url($item->podcast_url), $item->podcast_url, array('target'=>'_blank')));
-            echo html_writer::end_tag('dl');*/
-
             echo html_writer::start_tag('dl', array('class' => 'list'));
             echo html_writer::tag('dt', get_string('html_text', 'htmlresource'));
             echo html_writer::tag('dd', $item->html, array('style'=>'max-height: 300px; overflow: auto;'));
             echo html_writer::end_tag('dl');
             //show edit button
             show_editbutton(new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$item->id)), get_string('edit_html', 'htmlresource'));
-            //
-            //echo html_writer::tag('hr', '');
-            //add section button
-            //show_addbutton(new moodle_url($returnurl, array('action' => $actionAddChapter, 'video'=>$id)), get_string('add_video_chapter', 'htmlresource'));
-            
-            //chapters in table format
-            /*$items = get_video_chapters($html);
-            if (!$items || empty($items)) {
-                echo $OUTPUT->notification(get_string('no_chapters', 'htmlresource'), 'redirectmessage');
-            } else {
-                if (!isset($buttons)) //default buttons
-                    $buttons = array('delete'=>$actionDelChapter, 'edit'=>$actionEditChapter);
-                
-                $table = new html_table();
-                $table->head = array(
-                    get_string('chapter_timecode', 'htmlresource'), 
-                    get_string('chapter_title', 'htmlresource')
-                );
-                
-                foreach ($items as $item) {
-                    $buttons_column = array();
-                    if (key_exists('delete', $buttons))
-                        $buttons_column[] = htmlresource_show_deletebutton(
-                            $returnurl, $buttons['delete'], $item->id, 
-                            get_string('delete_video_chapter', 'htmlresource').'?'
-                        );
-                    if (key_exists('edit', $buttons))
-                        $buttons_column[] = create_editbutton($returnurl, $buttons['edit'], $item->id);
-                    $table->data[] = array(
-                        htmlresource_time_convert($item->timecode), 
-                        $item->title, 
-                        implode(' ', $buttons_column) 
-                    );
-                }
-                echo html_writer::table($table);
-            } */
             
             echo $OUTPUT->footer();
             break;
@@ -224,51 +183,32 @@
             $head_str = get_string('delete_html', 'htmlresource');
             //breadcrumbs
             $PAGE->navbar->add($head_str);
-            DebugBreak();
+            echo $OUTPUT->header();
+            echo $OUTPUT->heading($head_str);
+            
             if (isset($id) && confirm_sesskey()) { // Delete a selected resource item, after confirmation
-                echo $OUTPUT->header();
-                echo $OUTPUT->heading($head_str);
                 $item = htmlresource_get_item($id); //get data from DB
                 if (!$item) {
-                    echo $OUTPUT->notification($returnurl, get_string('deletednot', '', $id));
+                    echo $OUTPUT->notification($returnurl, get_string('deletednot', '', $id), 'redirectmessage');
+                } else if ($count = htmlresource_count_in_courses($item)) {
+                    echo $OUTPUT->notification(get_string('deletednot', '', $id) . ' ' . get_string('htmlresource_exists_in_course', 'htmlresource'), 'notifyproblem');
+                    echo html_writer::start_div('continuebutton');
+                    echo html_writer::link($returnurl, '('.get_string('continue').')');
+                    echo html_writer::end_div();
+                    //print_error('deletednot');
+                    //echo $OUTPUT->redirect_message($returnurl, get_string('deletednot', '', $id), 5, false);
                 } else if ($confirm != md5($id)) {
-                    //echo $OUTPUT->header();
-                    //echo $OUTPUT->heading($head_str);
-                    //before delete do check existing of video resources in any course
-                    if (isset($item->c_count) && $item->c_count > 0) {
-                        $str = get_string('deletednot', '', $item->title) . ' ' . get_string('htmlresource_exists_in_course', 'htmlresource');
-                        echo $OUTPUT->notification($str);
-                    } else {
-                        $optionsyes = array('action'=>$actionDelete, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
-                        echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$item->internal_title'"), new moodle_url($returnurl, $optionsyes), $returnurl);
-                    }
-                    echo $OUTPUT->footer();
+                    $optionsyes = array('action'=>$actionDelete, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
+                    echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$item->internal_title'"), new moodle_url($returnurl, $optionsyes), $returnurl);
                 } else if (data_submitted() /*&& !$data->deleted*/){
                     if (htmlresource_delete_item($item)) {
                         $url = new moodle_url($returnurl, array('action' => $actionIndex));
                         redirect($url);
                     } else {
-                        echo $OUTPUT->notification($returnurl, get_string('deletednot', '', $item->name));
+                        echo $OUTPUT->notification($returnurl, get_string('deletednot', '', $item->name), 'redirectmessage');
                     }
                 }
             }
-            break;
-        
-        //show transcript of Video Resource
-        case $actionTranscript:
-            $html = $DB->get_record('resource_html', array('id'=>$id), '*', MUST_EXIST); //get data from DB
-
-            $head_str = !empty($html->title) ? $html->title : $html->internal_title;
-            $PAGE->navbar->add($head_str);
-            echo $OUTPUT->header();
-            echo $OUTPUT->heading($head_str);
-            //header
-            echo html_writer::tag('h3', get_string('video_transcript', 'htmlresource'));
-            //transcript text
-            echo html_writer::start_div('panel panel-default');
-            echo html_writer::tag('div', $html->transcript);
-            echo html_writer::end_div();
-            //footer
             echo $OUTPUT->footer();
             break;
     }

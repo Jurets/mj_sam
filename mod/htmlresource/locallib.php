@@ -218,14 +218,17 @@ function htmlresource_delete_item($data) {
 * @param mixed $data - instance of Html Resource
 */
 function htmlresource_count_in_courses($data) {
-    $sql = '
-        SELECT count(*)
-FROM mdl_course_modules cm, 
-  mdl_course_sections cw, 
-  mdl_modules md
-WHERE cm.course = 4 AND
-cm.section = cw.id AND
-md.name = "resourcelib" AND
-md.id = cm.module
-    ';
+    global $DB;
+    /*$sql = 'SELECT count(*)
+            FROM mdl_course_modules cm, 
+              mdl_course_sections cw, 
+              mdl_modules md
+            WHERE cm.course = 4 AND
+            cm.section = cw.id AND
+            md.name = "resourcelib" AND
+            md.id = cm.module';*/
+    $sql = 'SELECT count(*) FROM {htmlresource} r
+            WHERE r.resource_html_id = ?';
+    $count = $DB->get_field_sql($sql, array($data->id));
+    return $count;
 }
