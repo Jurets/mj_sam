@@ -21,16 +21,19 @@
  * if you like, and it can span multiple lines.
  *
  * @package    mod_resourcelib
- * @copyright  2011 Your Name
+ * @copyright  2015 Jurets
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 // Replace resourcelib with the name of your module and remove this line.
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/locallib.php');
 
 require_once($CFG->dirroot.'/rating/lib.php');
+require_once(dirname(__FILE__).'/classes/mooc_lib.php');  // New class!!!
 
+// process input params
 $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
 $n  = optional_param('n', 0, PARAM_INT);  // ... resourcelib instance ID - it should be named as the first character of the module.
 
@@ -59,7 +62,6 @@ $event->add_record_snapshot('course', $PAGE->course);
 $event->trigger();
 
 // Print the page header.
-
 $PAGE->set_url('/mod/resourcelib/view.php', array('id' => $cm->id));
 $PAGE->set_title(format_string($resourcelib->name));
 $PAGE->set_heading(format_string($course->fullname));
@@ -71,7 +73,6 @@ $PAGE->set_context($context);
  * $PAGE->set_focuscontrol('some-html-id');
  * $PAGE->add_body_class('resourcelib-'.$somevar);
  */
-
 // Output starts here.
 echo $OUTPUT->header();
 
@@ -80,14 +81,15 @@ if ($resourcelib->intro) {
     echo $OUTPUT->box(format_module_intro('resourcelib', $resourcelib, $cm->id), 'generalbox mod_introbox', 'resourcelibintro');
 }
 
-// Replace the following lines with you own code.
-//echo $OUTPUT->heading('Yay! It works!');
 
-require_once(dirname(__FILE__).'/locallib.php');
+/// Reinitialise global $OUTPUT for correct Rating renderer
+$OUTPUT = new mooc_renderer($PAGE, RENDERER_TARGET_MAINTENANCE);
 
+
+// ------------- Main process of resources
 $contents = $DB->get_records('resourcelib_content', array('resourcelib_id'=>$resourcelib->id));
-foreach($contents as $content) {
-    //echo $content->type . ' - '. $content->instance_id . '<br>';
+foreach($contents as $content)
+{
     if ($content->type == 'list') {
         //get List instance
         $list = get_list($content->instance_id);
@@ -158,8 +160,9 @@ foreach($contents as $content) {
                         $rm = new rating_manager();
                         $items = $rm->get_ratings($ratingoptions);
                         $item = $items[0];
+                        $rendered_rating = $OUTPUT->render($item->rating);
                         if(isset($item->rating)) {
-                            $rate_html = html_writer::tag('div', $OUTPUT->render($item->rating), array('class'=>'forum-post-rating'));
+                            $rate_html = html_writer::tag('div', $rendered_rating, array('class'=>'forum-post-rating'));
                             echo $rate_html;
                         }
                     }
