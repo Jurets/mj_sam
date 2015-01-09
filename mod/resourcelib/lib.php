@@ -476,9 +476,9 @@ function resourcelib_rating_permissions($contextid, $component, $ratingarea) {
         return null;
     }
     return array(
-        'view'    => true, //has_capability('mod/resourcelib:viewrating', $context),
-        'viewany' => true, //has_capability('mod/resourcelib:viewanyrating', $context),
-        'viewall' => true, //has_capability('mod/resourcelib:viewallratings', $context),
-        'rate'    => true, //has_capability('mod/resourcelib:rate', $context)
+        'view'    => has_capability('mod/resourcelib:viewrating', $context),
+        'viewany' => has_capability('mod/resourcelib:viewanyrating', $context),
+        'viewall' => has_capability('mod/resourcelib:viewallratings', $context),
+        'rate'    => has_capability('mod/resourcelib:rate', $context)
     );
 }
