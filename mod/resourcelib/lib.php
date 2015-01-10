@@ -296,7 +296,7 @@ function resourcelib_scale_used($resourcelibid, $scaleid) {
     global $DB;
 
     /* @example */
-    if ($scaleid and $DB->record_exists('resourcelib', array('id' => $resourcelibid, 'grade' => -$scaleid))) {
+    if ($scaleid and $DB->record_exists('resourcelib', array('id' => $resourcelibid, 'scale' => -$scaleid))) {
         return true;
     } else {
         return false;
@@ -315,7 +315,7 @@ function resourcelib_scale_used_anywhere($scaleid) {
     global $DB;
 
     /* @example */
-    if ($scaleid and $DB->record_exists('resourcelib', array('grade' => -$scaleid))) {
+    if ($scaleid and $DB->record_exists('resourcelib', array('scale' => -$scaleid))) {
         return true;
     } else {
         return false;

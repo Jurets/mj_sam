@@ -99,10 +99,14 @@ function delete_type($data) {
 * get all Resources
 * 
 */
-function get_resources() {
+function resourcelib_get_resources($sort = '', $dir = '') {
     global $DB;
-    return $DB->get_records_sql('SELECT ri.*, rt.name AS type_name, rt.icon_path
-                          FROM {resource_items} ri LEFT JOIN {resource_types} rt ON rt.id = ri.type_id');
+    $sql = 'SELECT ri.*, rt.name AS type_name, rt.icon_path
+            FROM {resource_items} ri LEFT JOIN {resource_types} rt ON rt.id = ri.type_id';
+    if (!empty($sort)) {
+        $sql .= ' ORDER BY ri.' . $sort . (!empty($dir) ? ' ' . $dir : '');
+    }
+    return $DB->get_records_sql($sql);
 }
 
 /**
@@ -164,12 +168,14 @@ function delete_resource($data) {
 * get all List Instances
 * 
 */
-function get_lists() {
+function resourcelib_get_lists($sort = '', $dir = '') {
     global $DB;
-    return $DB->get_records_sql('
-        SELECT l.*, (select count(*) from {resource_list_sections} ls where ls.resource_list_id = l.id) AS s_count
-        FROM {resource_lists} l
-    ');
+    $sql = 'SELECT l.*, (select count(*) from {resource_list_sections} ls where ls.resource_list_id = l.id) AS s_count
+        FROM {resource_lists} l';
+    if (!empty($sort)) {
+        $sql .= ' ORDER BY l.' . $sort . (!empty($dir) ? ' ' . $dir : '');
+    }
+    return $DB->get_records_sql($sql);
 }
 
 /**
@@ -267,13 +273,15 @@ function get__lists() {
 * get all Sections
 * 
 */
-function get_sections() {
+function resourcelib_get_sections($sort = '', $dir = '') {
     global $DB;
-    //return $DB->get_records('resource_sections');
     $sql = 'SELECT s.*,
                 (select count(*) from {resource_section_items} si where si.resource_section_id = s.id) AS r_count
             FROM {resource_sections} s
     ';
+    if (!empty($sort)) {
+        $sql .= ' ORDER BY s.' . $sort . (!empty($dir) ? ' ' . $dir : '');
+    }
     $items = $DB->get_records_sql($sql);
     if (!$items)
         $items = array();
@@ -591,15 +599,44 @@ function show_list_sections($items, $returnurl, $buttons = null) {
         echo html_writer::table($table);
     }
 }
+
+/**
+* take sorting column, if need
+* 
+* @param mixed $returnurl
+* @param mixed $title
+* @param mixed $sort
+* @param mixed $dir
+* @return string
+*/
+function resourcelib_get_column_title($returnurl, $columnname, $columntitle, $sort = '', $dir = '') {
+    global $OUTPUT;
+    
+    if (!empty($sort)) {
+        if ($sort != $columnname) {
+            $columnicon = '';
+            $columndir = "ASC";
+        } else {
+            $columnicon = ($dir == "ASC") ? "sort_asc" : "sort_desc";
+            $columnicon = "<img class='iconsort' src=\"" . $OUTPUT->pix_url('t/' . $columnicon) . "\" alt=\"\" />";
+            $dir = !empty($dir) ? $dir : 'ASC';
+            $columndir = $dir == "ASC" ? "DESC":"ASC";
+        }
+        $column_title = html_writer::link(new moodle_url($returnurl, array('sort'=>$columnname, 'dir'=>$columndir)), $columntitle . $columnicon);
+    } else {
+        $column_title = $columntitle;
+    }
+    return $column_title;
+}
     
 /**
 * show Resource items in HTML table
 * 
 * @param mixed $items - array of resource instances
 */
-function show_resource_items($items, $returnurl, $buttons = null) {
+function resourcelib_show_resource_items($items, $returnurl, $buttons = null, $sort = '', $dir = '') {
     global $OUTPUT;
-
+    
     if (!$items || empty($items)) {
         echo $OUTPUT->notification(get_string('no_resources', 'resourcelib'), 'redirectmessage');
         //echo '<div class="alert alert-warning">' . get_string('no_resources', 'resourcelib') . '</div>';
@@ -607,9 +644,13 @@ function show_resource_items($items, $returnurl, $buttons = null) {
         if (!isset($buttons)) //default buttons
             $buttons = array('delete'=>'delete', 'edit'=>'edit');
         
+        // take sorting column, if need
+        $title_column = resourcelib_get_column_title($returnurl, 'title', get_string('name'), $sort, $dir);
+
+        // build table header
         $table = new html_table();
-        $table->head = array(
-            get_string('name'), 
+        $table->head = array( //sorting in first column!
+            $title_column,
             //get_string('description'), 
             get_string('type', 'resourcelib')
         );
@@ -644,7 +685,7 @@ function show_resource_items($items, $returnurl, $buttons = null) {
 * @param mixed $label
 * @param mixed $attributes
 */
-function show_addbutton($url, $label, $attributes = array('class' => 'mdl-right')) {
+function resourcelib_show_addbutton($url, $label, $attributes = array('class' => 'mdl-right')) {
     global $OUTPUT;
     echo html_writer::start_tag('div', $attributes);
     echo html_writer::tag('a', $OUTPUT->pix_icon('t/add', '') . ' ' . $label, array('href' => $url->out(false)));
@@ -658,7 +699,7 @@ function show_addbutton($url, $label, $attributes = array('class' => 'mdl-right'
 * @param mixed $label
 * @param mixed $attributes
 */
-function show_editbutton($url, $label, $attributes = array('class' => 'mdl-right')) {
+function resourcelib_show_editbutton($url, $label, $attributes = array('class' => 'mdl-right')) {
     global $OUTPUT;
     echo html_writer::start_tag('div', $attributes);
     echo html_writer::tag('a', $OUTPUT->pix_icon('t/editstring', '') . ' ' . $label, array('href' => $url->out(false)));

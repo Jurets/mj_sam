@@ -22,6 +22,9 @@
     //get action name
     $action = optional_param('action', 0, PARAM_TEXT); //admin action for mooc-settings
     $action = (!empty($action) ? $action : 'index');
+    //get sort param (if present)
+    $sort = optional_param('sort', 'title', PARAM_TEXT);
+    $dir = optional_param('dir', 'ASC', PARAM_TEXT);
 
     //actions list
     $actionIndex = 'index';
@@ -46,21 +49,22 @@
     $PAGE->set_pagelayout('admin');     
     //breadcrumbs
     $PAGE->navbar->add(get_string('administration', 'resourcelib'), new moodle_url($CFG->wwwroot.'/admin/settings.php', array('section'=>'modsettingresourcelib'))); 
-    //$PAGE->navbar->add(get_string('administration', 'resourcelib'), new moodle_url($mainurl)); 
     if ($action == $actionIndex) {
         $PAGE->navbar->add(get_string('manage_items', 'resourcelib'));
     } else {
         $PAGE->navbar->add(get_string('manage_items', 'resourcelib'), new moodle_url($returnurl));
     }
 
+    /// ------------- main process --------------
     switch($action) {
         case $actionIndex:
             echo $OUTPUT->header();
             echo $OUTPUT->heading(get_string('manage_items', 'resourcelib'));
             //add type button
-            show_addbutton(new moodle_url($returnurl, array('action' => $actionAdd)), get_string('additem', 'resourcelib'));
+            resourcelib_show_addbutton(new moodle_url($returnurl, array('action' => $actionAdd)), get_string('additem', 'resourcelib'));
             //show table with items data
-            show_resource_items(get_resources(), $returnurl);
+            $items = resourcelib_get_resources($sort, $dir);
+            resourcelib_show_resource_items($items, $returnurl, null, $sort, $dir);
             echo $OUTPUT->footer();
             break;
             

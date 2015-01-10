@@ -22,6 +22,9 @@
     //get action name
     $action = optional_param('action', 0, PARAM_TEXT); //admin action for mooc-settings
     $action = (!empty($action) ? $action : 'index');
+    //get sort param (if present)
+    $sort = optional_param('sort', 'name', PARAM_TEXT);
+    $dir = optional_param('dir', 'ASC', PARAM_TEXT);
 
     //actions list
     $actionIndex = 'index';
@@ -66,15 +69,18 @@
             $stredit   = get_string('edit');
             $strdelete = get_string('delete');
             $strview = get_string('settings');
+            
             $table = new html_table();
-            $table->head = array(
-                get_string('name'), 
-                get_string('display_name', 'resourcelib'), 
-                get_string('icon'),
-                get_string('section_count', 'resourcelib'),
-            );
+            $table->head = array();
+            $table->head[] = resourcelib_get_column_title($returnurl, 'name', get_string('name'), $sort, $dir);
+            $table->head[] = resourcelib_get_column_title($returnurl, 'display_name', get_string('display_name', 'resourcelib'), $sort, $dir);
+            $table->head[] = get_string('icon');
+            $table->head[] = get_string('section_count', 'resourcelib');
+            
+            $table->size[4] = '80px';
+            
             //get list of data
-            $lists = get_lists();
+            $lists = resourcelib_get_lists($sort, $dir);
             foreach ($lists as $list) {
                 $buttons = array();
                 $buttons[] = html_writer::link(new moodle_url($returnurl, array('action'=>$actionEdit, 'id'=>$list->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/editstring'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$stredit));
@@ -94,7 +100,7 @@
                 );
             }
             //add type button
-            show_addbutton(new moodle_url($returnurl, array('action' => $actionAdd)), get_string('addlist', 'resourcelib'));
+            resourcelib_show_addbutton(new moodle_url($returnurl, array('action' => $actionAdd)), get_string('addlist', 'resourcelib'));
             //table with types data
             echo html_writer::table($table);
             echo $OUTPUT->footer();
@@ -133,11 +139,11 @@
             echo html_writer::tag('dd', $imagevalue);
             echo html_writer::end_tag('dl');
             //show edit button
-            show_editbutton(new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$list->id)), get_string('editlist', 'resourcelib'));
+            resourcelib_show_editbutton(new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$list->id)), get_string('editlist', 'resourcelib'));
             //
             echo html_writer::tag('hr', '');
             //add section button
-            show_addbutton(new moodle_url($returnurl, array('action' => $actionAddSection, 'list'=>$id)), get_string('add_list_section', 'resourcelib'));
+            resourcelib_show_addbutton(new moodle_url($returnurl, array('action' => $actionAddSection, 'list'=>$id)), get_string('add_list_section', 'resourcelib'));
             //sections in table format
             show_list_sections(get_list_sections($list), $returnurl, array('delete'=>$actionDelSection));
             

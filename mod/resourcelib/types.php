@@ -81,7 +81,7 @@
                 );
             }
             //add type button
-            show_addbutton(new moodle_url($returnurl, array('action' => $actionAdd)), get_string('addtype', 'resourcelib'));
+            resourcelib_show_addbutton(new moodle_url($returnurl, array('action' => $actionAdd)), get_string('addtype', 'resourcelib'));
             //table with types data
             echo html_writer::table($table);
             echo $OUTPUT->footer();
