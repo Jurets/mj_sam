@@ -160,8 +160,12 @@ foreach($contents as $content)
                         $rm = new rating_manager();
                         $items = $rm->get_ratings($ratingoptions);
                         $item = $items[0];
-                        $rendered_rating = $OUTPUT->render($item->rating);
-                        if(isset($item->rating)) {
+                        if (isset($item->rating)) {
+                            if (is_null($item->rating->rating)) {
+                                $rendered_rating = $OUTPUT->render($item->rating);
+                            } else {
+                                $rendered_rating = get_string('your_rate', 'resourcelib') . get_string('labelsep', 'langconfig') . ' ' . $item->rating->rating;
+                            }
                             $rate_html = html_writer::tag('div', $rendered_rating, array('class'=>'forum-post-rating'));
                             echo $rate_html;
                         }

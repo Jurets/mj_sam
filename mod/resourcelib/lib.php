@@ -458,16 +458,34 @@ function resourcelib_extend_navigation(navigation_node $navref, stdclass $course
 function resourcelib_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $resourcelibnode=null) {
 }
 
-
-
-
+/**
+* validation before rating
+* 
+* @param mixed $params
+*/
 function resourcelib_rating_validate($params) {
+    global $USER;
     if (!array_key_exists('itemid', $params) || !array_key_exists('context', $params) || !array_key_exists('rateduserid', $params)) {
         throw new rating_exception('missingparameter');
     }
+    /*$ratingoptions = new stdClass;
+    $ratingoptions->context = $params['context']; //$modcontext;
+    $ratingoptions->component = $params['component'];
+    $ratingoptions->ratingarea = $params['ratingarea']; //
+    $ratingoptions->aggregate = $params['aggregation']; //1;//the aggregation method
+    $ratingoptions->scaleid = $params['scaleid'];//5;
+    $ratingoptions->userid = $USER->id;
+    $ratingoptions->items = array($resource);*/ //
     return true;
 }
 
+/**
+* put your comment there...
+* 
+* @param mixed $contextid
+* @param mixed $component
+* @param mixed $ratingarea
+*/
 function resourcelib_rating_permissions($contextid, $component, $ratingarea) {
     $context = context::instance_by_id($contextid, MUST_EXIST);
     if ($component != 'mod_resourcelib' || $ratingarea != 'resource') {

@@ -108,3 +108,5 @@ $string['resources_exists_in_section'] = 'This resource is present in the sectio
 
 $string['listfield'] = 'Resource Library Lists';
 $string['listfield_help'] = 'Select list from select element below. You can choose multiple items by pressing button <Ctrl> and mouse clicking';
+
+$string['your_rate'] = 'Your rate is';
