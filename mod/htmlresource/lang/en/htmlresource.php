@@ -30,8 +30,8 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['modulename'] = 'Html Resource';
 $string['modulenameplural'] = 'Html Resource';
-$string['modulename_help'] = 'In a place outside of the course (in Moodle, but in administration, to allow for reusability across courses), the video resource will store a YouTube video ID, video description, some additional metadata. The system will also allow for storage of a URL for a podcast, and a long-text transcript. Admins will also be able to enter timecodes and descriptions as chapter markers.';
-$string['htmlresourcefieldset'] = 'Video Resource Items';
+$string['modulename_help'] = 'Blocks of HTML can be entered outside of a course structure. Each block has a title and block for HTML. A course developer can insert a block into TinyMCE by selecting the block title from a drop-down menu.';
+$string['htmlresourcefieldset'] = 'Html Resource Items';
 $string['htmlresourcename'] = 'htmlresource name';
 $string['htmlresourcename_help'] = 'This is the content of the help tooltip associated with the htmlresourcename field. Markdown syntax is supported.';
 $string['htmlresource'] = 'Html Resource Library';
@@ -54,7 +54,7 @@ $string['delete_html'] = 'Delete Html Resource';
 $string['add_html_desc'] = '<a href="{$a}">Add Html Resource</a> allows to add Html Resource.<br/>';
 $string['index_html_desc'] = '<a href="{$a}">Html Resource Index</a> shows List of Html Resources.<br/>';
 
-$string['save_return_view'] = 'Save and return to view video';
+$string['save_return_view'] = 'Save and return to view Html';
 $string['save_new_chapter'] = 'Save and add new chapter';
 
 $string['internal_info'] = 'Internal Reference Information';

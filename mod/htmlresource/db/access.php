@@ -79,7 +79,44 @@ $capabilities = array(
             'student' => CAP_ALLOW
         )   
     ),
-    
+
+    // Rating capabilities
+    'mod/htmlresource:viewrating' => array(
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'student' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+
+    'mod/htmlresource:viewanyrating' => array(
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+            'student' => CAP_PROHIBIT
+        )
+    ),
+
+    'mod/htmlresource:viewallratings' => array(
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+            'student' => CAP_PROHIBIT
+        ),
+        'clonepermissionsfrom' =>  'mod/htmlresource:viewanyrating'
+    ), 
+        
     'mod/htmlresource:rate' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
@@ -89,5 +126,5 @@ $capabilities = array(
             'manager' => CAP_ALLOW,
             'student' => CAP_ALLOW
         )
-    ),    
+    ),      
 );

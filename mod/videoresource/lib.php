@@ -288,7 +288,7 @@ function videoresource_scale_used($videoresourceid, $scaleid) {
     global $DB;
 
     /* @example */
-    if ($scaleid and $DB->record_exists('videoresource', array('id' => $videoresourceid, 'grade' => -$scaleid))) {
+    if ($scaleid and $DB->record_exists('videoresource', array('id' => $videoresourceid, 'scale' => -$scaleid))) {
         return true;
     } else {
         return false;
@@ -307,7 +307,7 @@ function videoresource_scale_used_anywhere($scaleid) {
     global $DB;
 
     /* @example */
-    if ($scaleid and $DB->record_exists('videoresource', array('grade' => -$scaleid))) {
+    if ($scaleid and $DB->record_exists('videoresource', array('scale' => -$scaleid))) {
         return true;
     } else {
         return false;

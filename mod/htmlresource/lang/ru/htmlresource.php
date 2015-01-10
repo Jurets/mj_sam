@@ -28,7 +28,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['modulename'] = 'Video Resource';
+$string['modulename'] = 'Html Resource';
 $string['modulenameplural'] = 'Video Resource';
 $string['modulename_help'] = 'In a place outside of the course (in Moodle, but in administration, to allow for reusability across courses), the video resource will store a YouTube video ID, video description, some additional metadata. The system will also allow for storage of a URL for a podcast, and a long-text transcript. Admins will also be able to enter timecodes and descriptions as chapter markers.';
 $string['htmlresourcefieldset'] = 'Resource Library Items';

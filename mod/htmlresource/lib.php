@@ -286,7 +286,7 @@ function htmlresource_scale_used($htmlresourceid, $scaleid) {
     global $DB;
 
     /* @example */
-    if ($scaleid and $DB->record_exists('htmlresource', array('id' => $htmlresourceid, 'grade' => -$scaleid))) {
+    if ($scaleid and $DB->record_exists('htmlresource', array('id' => $htmlresourceid, 'scale' => -$scaleid))) {
         return true;
     } else {
         return false;
@@ -305,7 +305,7 @@ function htmlresource_scale_used_anywhere($scaleid) {
     global $DB;
 
     /* @example */
-    if ($scaleid and $DB->record_exists('htmlresource', array('grade' => -$scaleid))) {
+    if ($scaleid and $DB->record_exists('htmlresource', array('scale' => -$scaleid))) {
         return true;
     } else {
         return false;
