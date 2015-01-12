@@ -38,6 +38,8 @@ $string['resourcelibname'] = 'resourcelib name';
 $string['resourcelibname_help'] = 'This is the content of the help tooltip associated with the resourcelibname field. Markdown syntax is supported.';
 $string['resourcelib'] = 'Resource Library';
 
+$string['eventresourceviewed'] = 'Resource was viewed';
+
 $string['resourcelib:addinstance'] = 'Add a new resourcelib';
 $string['resourcelib:submit'] = 'Submit resourcelib';
 $string['resourcelib:view'] = 'View resourcelib';

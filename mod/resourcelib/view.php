@@ -67,6 +67,8 @@ $PAGE->set_title(format_string($resourcelib->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($context);
 
+$PAGE->requires->js('/lib/jquery/jquery-1.11.0.min.js', true);
+
 /*
  * Other things you may want to set - remove if not needed.
  * $PAGE->set_cacheable(false);
@@ -130,7 +132,12 @@ foreach($contents as $content)
                             'alt'=>$resource->icon_path, 
                             'class'=>'iconsmall', 
                             'style'=>'width: 30px; height: 30px;'));
-                        echo html_writer::link($resource->url, $resource->title, array('target'=>'__blank'));
+                        echo html_writer::link($resource->url, $resource->title, array(
+                            'target'=>'_blank',
+                            'class'=>'resourcelink',
+                            //'data-resourcelibid'=>$cm->id,
+                            'data-objectid'=>$resource->id,
+                        ));
                         echo html_writer::end_div();
 
                         if (!empty($resource->author)) {
@@ -177,5 +184,40 @@ foreach($contents as $content)
     }
 }
 
+$sesskey = sesskey();
+$cm_id =  $cm->id;
+
+//output of script
+echo <<<EOD
+    <script type="text/javascript">
+    //<![CDATA[
+    
+    $(document).ready(function(){
+        $(".resourcelink").click(function(){
+            //id = $(this).attr("data-resourcelibid");
+            objectid = $(this).attr("data-objectid");
+            //alert(id);
+            $.ajax({
+              type: "GET",
+              //url: "/mod/resourcelib/ajax.php?action=logview&id=$cm->id&objectid=$objectid&sesskey=$sesskey",
+              url: "/mod/resourcelib/ajax.php",
+              data: {"action": "logview", "id": "$cm_id", "objectid": objectid, "sesskey": "$sesskey"},
+              dataType: "json",
+              success: function(response){
+                if (!response.success)
+                    Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
+                    //alert("Error during AJAX request: " + response.error);
+              }
+            });
+            return true;
+        })
+    });
+
+    //]]>
+    </script>
+
+EOD;
+
 // Finish the page.
 echo $OUTPUT->footer();
+
