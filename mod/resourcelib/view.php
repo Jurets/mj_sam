@@ -67,7 +67,9 @@ $PAGE->set_title(format_string($resourcelib->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($context);
 
-$PAGE->requires->js('/lib/jquery/jquery-1.11.0.min.js', true);
+//attach jQuery
+$PAGE->requires->jquery();
+//$PAGE->requires->js('/lib/jquery/jquery-1.11.0.min.js', true);
 
 /*
  * Other things you may want to set - remove if not needed.
@@ -184,10 +186,10 @@ foreach($contents as $content)
     }
 }
 
+//output of script, this jQuery click process command need for event storing
 $sesskey = sesskey();
-$cm_id =  $cm->id;
-
-//output of script
+$cm_id = $cm->id;
+$baseurl = $CFG->wwwroot;
 echo <<<EOD
     <script type="text/javascript">
     //<![CDATA[
@@ -200,7 +202,7 @@ echo <<<EOD
             $.ajax({
               type: "GET",
               //url: "/mod/resourcelib/ajax.php?action=logview&id=$cm->id&objectid=$objectid&sesskey=$sesskey",
-              url: "/mod/resourcelib/ajax.php",
+              url: "$baseurl/mod/resourcelib/ajax.php",
               data: {"action": "logview", "id": "$cm_id", "objectid": objectid, "sesskey": "$sesskey"},
               dataType: "json",
               success: function(response){
