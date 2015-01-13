@@ -89,63 +89,40 @@ if ($resourcelib->intro) {
 /// Reinitialise global $OUTPUT for correct Rating renderer
 $OUTPUT = new mooc_renderer($PAGE, RENDERER_TARGET_MAINTENANCE);
 
-
-/*echo '
-<div role="tabpanel">
-
-  <!-- Nav tabs -->
-  <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
-    <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Profile</a></li>
-    <li role="presentation"><a href="#messages" aria-controls="messages" role="tab" data-toggle="tab">Messages</a></li>
-    <li role="presentation"><a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">Settings</a></li>
-  </ul>
-
-  <!-- Tab panes -->
-  <div class="tab-content">
-    <div role="tabpanel" class="tab-pane active" id="home">home</div>
-    <div role="tabpanel" class="tab-pane" id="profile">profile</div>
-    <div role="tabpanel" class="tab-pane" id="messages">messages</div>
-    <div role="tabpanel" class="tab-pane" id="settings">settings</div>
-  </div>
-
-</div>
-';*/
-
 // ------------- Main process of resources
 $contents = $DB->get_records('resourcelib_content', array('resourcelib_id'=>$resourcelib->id));
+$isTabs = count($contents) > 1;
 
-echo '<div role="tabpanel">';
+if ($isTabs) {
+    echo '<div role="tabpanel">';
+        //output of tabs
+        echo '<ul class="nav nav-tabs" role="tablist">';
+            $index = 0;
+            foreach($contents as $content) {
+                $list = get_list($content->instance_id);
+                echo '<li role="presentation"' . ($index++ == 0 ? 'class="active"' : '') . '><a href="#'.$index.'" aria-controls="'.$index.'" role="tab" data-toggle="tab">'.$list->display_name.'</a></li>';
+            }
+        echo '</ul>';
+    echo '</div>';
+}
 
-echo '<ul class="nav nav-tabs" role="tablist">';
+if ($isTabs) {
+    //output of tab content
+    echo '<div class="tab-content">';
     $index = 0;
-    foreach($contents as $content) {
-        $list = get_list($content->instance_id);
-        //echo '<li role="presentation"' . ($index++ == 0 ? 'class="active"' : '') . '><a href="#'.$index.'" aria-controls="'.$index.'" role="tab" data-toggle="tab">'.$content->instance_id.'</a></li>';
-        echo '<li role="presentation"' . ($index++ == 0 ? 'class="active"' : '') . '><a href="#'.$index.'" aria-controls="'.$index.'" role="tab" data-toggle="tab">'.$list->display_name.'</a></li>';
-    }
-echo '</ul>';
+}
 
-/*echo '<div class="tab-content">';
-    $index = 0;
-    foreach($contents as $content) {
-        //echo '<div role="tabpanel" class="tab-pane ' . ($index++ == 0 ? 'active' : '') . '" id="'.$index.'">Content' . $index . '</div>';
-        echo '<div role="tabpanel" class="tab-pane ' . ($index++ == 0 ? 'active' : '') . '" id="'.$index.'">' . $list->display_name . '</div>';
-    }
-echo '</div>';*/
-
-
-echo '<div class="tab-content">';
-$index = 0;
 foreach($contents as $content)
 {
     if ($content->type == 'list') 
     {
         //get List instance
         $list = get_list($content->instance_id);
-
-        echo '<div role="tabpanel" class="tab-pane ' . ($index++ == 0 ? 'active' : '') . '" id="'.$index.'">';
-
+        
+        if ($isTabs) {
+            echo '<div role="tabpanel" class="tab-pane ' . ($index++ == 0 ? 'active' : '') . '" id="'.$index.'">';
+        }
+        
         //list head
         echo html_writer::start_div('list_title');
         echo html_writer::empty_tag('img', array(
@@ -232,10 +209,14 @@ foreach($contents as $content)
             }
         }
         echo html_writer::end_div();
-        echo '</div>';
+        if ($isTabs) {
+            echo '</div>';
+        }
     }
 }
-echo '</div>';
+if ($isTabs) {
+    echo '</div>';
+}
 
 //output of script, this jQuery click process command need for event storing
 $sesskey = sesskey();
