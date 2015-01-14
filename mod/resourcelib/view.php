@@ -94,7 +94,7 @@ $contents = $DB->get_records('resourcelib_content', array('resourcelib_id'=>$res
 $isTabs = count($contents) > 1;
 
 if ($isTabs) {
-    echo '<div role="tabpanel">';
+    echo '<div role="tabpanel" style="overflow: visible;">';
         //output of tabs
         echo '<ul class="nav nav-tabs" role="tablist">';
             $index = 0;
