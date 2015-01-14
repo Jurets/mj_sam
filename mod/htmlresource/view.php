@@ -89,7 +89,7 @@ $item = htmlresource_get_item($htmlresource->resource_html_id);
 echo $item->html['text'];
 
 //render rating element
-$ratingoptions = new stdClass;
+/*$ratingoptions = new stdClass;
 $ratingoptions->context = $context; //$modcontext;
 $ratingoptions->component = 'mod_htmlresource';
 $ratingoptions->ratingarea = 'resource'; //
@@ -104,7 +104,7 @@ $item = $items[0];
 if(isset($item->rating)) {
     $rate_html = html_writer::tag('div', $OUTPUT->render($item->rating), array('class'=>'forum-post-rating'));
     echo $rate_html;
-}
+}*/
 
 // Finish the page.
 echo $OUTPUT->footer();
