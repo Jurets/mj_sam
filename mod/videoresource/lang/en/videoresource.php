@@ -71,7 +71,7 @@ $string['internal_notes'] = 'Notes';
 $string['videoid'] = 'Youtube Video ID';
 $string['video_title'] = 'Video Title';
 $string['description_text'] = 'Description/Followup Text';
-$string['podcast_url'] = 'Podcast URL';
+$string['podcast_url'] = 'Podcast';
 $string['transcript'] = 'Transcript';
 $string['video_transcript'] = 'Video Transcript';
 

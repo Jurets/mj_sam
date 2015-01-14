@@ -89,12 +89,7 @@ if ($videoresource->intro) {
 /// Render Video Resource Data
 $video = videoresource_get_video($videoresource->resource_videos_id);
 
-//render media frame
-
-//$mediarenderer = $PAGE->get_renderer('core', 'media');  //previous version
-//$url = 'http://youtu.be/'.$video->video_id;
-//echo $mediarenderer->embed_url(new moodle_url($url));
-
+/// --- Render media frame
 echo html_writer::div('', 'mediaplugin mediaplugin_youtube', array('id'=>'iframe-session-player'));
 $video_id = $video->video_id;
 $video_chapters = '';
@@ -117,8 +112,12 @@ echo <<<EOD
     //]]>
     </script>
 EOD;
+///  --- below previous version - throug moodle mediarenderer
+//$mediarenderer = $PAGE->get_renderer('core', 'media');  //previous version
+//$url = 'http://youtu.be/'.$video->video_id;
+//echo $mediarenderer->embed_url(new moodle_url($url));
 
-//render podcast and transcript block
+/// --- Render podcast and transcript block
 echo html_writer::start_div('video_metadata', array('style'=>'text-align: center'));
 $video_metadata = array();
 if (!empty($video->podcast_url)) {
@@ -133,7 +132,13 @@ $video_metadata = '[ ' . $video_metadata . ' ]';
 echo $video_metadata;
 echo html_writer::end_div();
 
-//render chapters
+/// --- Render Follow Up Text
+if (!empty($video->description)) {
+    echo html_writer::div($video->description);
+    echo '<br>';
+}
+
+/// --- Render chapters
 if (!empty($video->chapters)) {
     echo html_writer::div(get_string('in_this_video', 'videoresource') . ':', 'video_chapter_header');
     foreach ($video->chapters as $chapter) {
