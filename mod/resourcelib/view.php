@@ -108,7 +108,7 @@ if ($isTabs) {
 
 if ($isTabs) {
     //output of tab content
-    echo '<div class="tab-content" style="overflow: visible;>';
+    echo '<div class="tab-content" style="overflow: unset;>';
     $index = 0;
 }
 
