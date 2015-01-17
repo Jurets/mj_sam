@@ -167,5 +167,11 @@ if(isset($item->rating)) {
     echo $rate_html;
 }
 
+/// --- Render secondary description field (activity)
+if (!empty($videoresource->activity)) {
+    echo html_writer::div($videoresource->activity);
+    echo '<br>';
+}
+
 // Finish the page.
 echo $OUTPUT->footer();

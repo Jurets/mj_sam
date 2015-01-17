@@ -65,6 +65,7 @@ $string['internal_info'] = 'Internal Reference Information';
 $string['publicly_info'] = 'Publicly Accessible Fields';
 $string['chapter_timecode'] = 'Timecode';
 $string['chapter_title'] = 'Title';
+$string['secondary_description'] = 'Secondary description';
 
 $string['internal_name'] = 'Video Name';
 $string['internal_notes'] = 'Notes';
