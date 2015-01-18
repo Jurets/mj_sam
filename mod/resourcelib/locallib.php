@@ -334,18 +334,18 @@ function delete_section($data) {
 * @param mixed $data - section instance
 * @return array
 */
-function get_section_items($data) {
+function resourcelib_get_section_items($data) {
     global $DB;
     // Make sure nobody sends bogus record type as parameter.
     if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
         throw new coding_exception('Invalid $data parameter in get_section_items() detected');
     }
-    $sql = 'SELECT si.id, r.url, r.title, r.description, r.author, r.source, t.name AS type_name, t.icon_path
+    $sql = 'SELECT si.id, r.url, r.title, r.description, r.author, r.source, t.name AS type_name, t.icon_path, si.sort_order
             FROM {resource_section_items} si 
                 LEFT JOIN {resource_items} r ON r.id = si.resource_item_id
                 LEFT JOIN {resource_types} t ON t.id = r.type_id
             WHERE si.resource_section_id = ?
-            ORDER BY si.sort_order';
+            ORDER BY si.sort_order ASC';
     $items = $DB->get_records_sql($sql, array($data->section_id));
     if (!$items)
         $items = array();
@@ -664,6 +664,49 @@ function move_section($section, $direction = 'down') {
     return $result;
 }
 
+/**
+* Move resource down in resources List
+* 
+* @param mixed $resource
+* @return bool
+*/
+function resourcelib_resource_move_down($resource) {
+    return move_resource($resource, 'down');
+}
+
+/**
+* Move resource up in resources List
+* 
+* @param mixed $resource
+* @return bool
+*/
+function resourcelib_resource_move_up($resource) {
+    return move_resource($resource, 'up');
+}
+
+/**
+* Move Section
+* 
+* @param mixed $resource
+* @param mixed $direction - direction of moving ("down" or "up")
+* @return bool
+*/
+function move_resource($resource, $direction = 'down') {
+    global $DB;
+    $sql = 'SELECT * FROM {resource_section_items}
+            WHERE resource_section_id = ? 
+                  AND sort_order ' . ($direction == 'down' ? '>' : '<') . ' ?
+            ORDER BY sort_order ' . ($direction == 'down' ? 'ASC' : 'DESC') . '
+            LIMIT 1';
+    $other_resource = $DB->get_record_sql($sql, array($resource->resource_section_id, $resource->sort_order));
+    if (!$other_resource) { //if other section not exists - return false
+        return false;
+    }
+    $result = $DB->set_field('resource_section_items', 'sort_order', $other_resource->sort_order, array('id' => $resource->id))
+           && $DB->set_field('resource_section_items', 'sort_order', $resource->sort_order,  array('id' => $other_resource->id));
+    return $result;
+}
+
 //
 function get_action_icon($url, $icon, $alt, $tooltip) {
     global $OUTPUT;
@@ -712,6 +755,8 @@ function resourcelib_get_column_title($returnurl, $columnname, $columntitle, $so
 */
 function resourcelib_show_resource_items($items, $returnurl, $buttons = null, $sort = '', $dir = '') {
     global $OUTPUT;
+    $strmoveup = get_string('moveup');
+    $strmovedown = get_string('movedown');
     
     if (!$items || empty($items)) {
         echo $OUTPUT->notification(get_string('no_resources', 'resourcelib'), 'redirectmessage');
@@ -730,9 +775,25 @@ function resourcelib_show_resource_items($items, $returnurl, $buttons = null, $s
             //get_string('description'), 
             get_string('type', 'resourcelib')
         );
+        $table->size[2] = '120px';
+        
+        $first_item = reset($items);
+        $last_item = end($items);
         
         foreach ($items as $item) {
             $buttons_column = array();
+            // Move up.
+            if ($item->sort_order != $first_item->sort_order) {
+                $buttons_column[] = get_action_icon($returnurl . '?action=moveup&amp;id=' . $item->id . '&amp;sesskey=' . sesskey(), 'up', $strmoveup, $strmoveup);
+            } else {
+                $buttons_column[] = get_spacer();
+            }
+            // Move down.
+            if ($item->sort_order != $last_item->sort_order) {
+                $buttons_column[] = get_action_icon($returnurl . '?action=movedown&amp;id=' . $item->id . '&amp;sesskey=' . sesskey(), 'down', $strmovedown, $strmovedown);
+            } else {
+                $buttons_column[] = get_spacer();
+            }
             if (key_exists('delete', $buttons))
                 $buttons_column[] = create_deletebutton($returnurl, $buttons['delete'], $item->id);
             if (key_exists('edit', $buttons))

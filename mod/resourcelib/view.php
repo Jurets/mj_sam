@@ -151,7 +151,7 @@ foreach($contents as $content)
                 echo html_writer::div($section->heading, 'list_heading');
                 //get Resources of this Section
                 if ($section->r_count > 0) {
-                    $resources = get_section_items($section);
+                    $resources = resourcelib_get_section_items($section);
                     
                     foreach($resources as $resource) {
                         echo html_writer::start_div('resource_title');

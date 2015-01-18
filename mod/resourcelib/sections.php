@@ -35,6 +35,8 @@
     $actionView = 'view';
     $actionAddResource = 'addtosection';
     $actionDelResource = 'delfromsection';
+    $actionMoveResourceDown = 'movedown';
+    $actionMoveResourceUp = 'moveup';
     
     /// Security
     $systemcontext = context_system::instance();
@@ -105,6 +107,25 @@
             echo $OUTPUT->footer();
             break;
             
+        // Move Section Up in section List
+        case $actionMoveResourceUp:
+        case $actionMoveResourceDown:
+            // get section in list
+            $resource = $DB->get_record('resource_section_items', array('id'=>$id));
+            // build url for return
+            $url = new moodle_url($returnurl, array('action' => $actionView, 'id'=>$resource->resource_section_id));
+            if (confirm_sesskey()) {
+                if ($action == $actionMoveResourceDown)
+                    $result = resourcelib_resource_move_down($resource);  //move down
+                else if ($action == $actionMoveResourceUp)
+                    $result = resourcelib_resource_move_up($resource);    //move up
+                if (!$result) {
+                    print_error('cannotmoveresource', 'resourcelib', $url->out(false), $id);
+                }
+            }
+            redirect($url);
+            break;
+
         case $actionView:
             //get section
             $section = get_section($id);
@@ -145,7 +166,7 @@
             //add resource button
             resourcelib_show_addbutton(new moodle_url($returnurl, array('action' => $actionAddResource, 'section'=>$id)), get_string('add_section_resource', 'resourcelib'));
             //resources in table format
-            resourcelib_show_resource_items(get_section_items($section), $returnurl, array('delete'=>$actionDelResource));
+            resourcelib_show_resource_items(resourcelib_get_section_items($section), $returnurl, array('delete'=>$actionDelResource));
             //
             echo $OUTPUT->footer();
             break;
