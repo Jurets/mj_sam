@@ -561,6 +561,9 @@ function create_editbutton($url, $action, $id) {
 function show_list_sections($items, $returnurl, $buttons = null) {
     global $CFG, $OUTPUT;
     
+    $strmoveup = get_string('moveup');
+    $strmovedown = get_string('movedown');
+    
     if (!$items || empty($items)) {
         echo $OUTPUT->notification(get_string('no_sections', 'resourcelib'), 'redirectmessage');
     } else {
@@ -574,9 +577,26 @@ function show_list_sections($items, $returnurl, $buttons = null) {
             get_string('type', 'resourcelib'),
             get_string('resource_count', 'resourcelib'),
         );
+        $table->size[4] = '80px';
+        
+        $first_item = reset($items);
+        $last_item = end($items);
         
         foreach ($items as $item) {
             $buttons_column = array();
+            // Move up.
+            if ($item->sort_order != $first_item->sort_order) {
+                $buttons_column[] = get_action_icon($returnurl . '?action=moveup&amp;id=' . $item->id . '&amp;sesskey=' . sesskey(), 'up', $strmoveup, $strmoveup);
+            } else {
+                $buttons_column[] = get_spacer();
+            }
+            // Move down.
+            if ($item->sort_order != $last_item->sort_order) {
+                $buttons_column[] = get_action_icon($returnurl . '?action=movedown&amp;id=' . $item->id . '&amp;sesskey=' . sesskey(), 'down', $strmovedown, $strmovedown);
+            } else {
+                $buttons_column[] = get_spacer();
+            }
+            // Delete
             if (key_exists('delete', $buttons))
                 $buttons_column[] = create_deletebutton($returnurl, $buttons['delete'], $item->id);
             if (key_exists('edit', $buttons))
@@ -598,6 +618,62 @@ function show_list_sections($items, $returnurl, $buttons = null) {
         }
         echo html_writer::table($table);
     }
+}
+
+
+/**
+* Move Section down in Sections List
+* 
+* @param mixed $section
+* @return bool
+*/
+function resourcelib_section_move_down($section) {
+    return move_section($section, 'down');
+}
+
+/**
+* Move Section up in Sections List
+* 
+* @param mixed $section
+* @return bool
+*/
+function resourcelib_section_move_up($section) {
+    return move_section($section, 'up');
+}
+
+/**
+* Move Section
+* 
+* @param mixed $section
+* @param mixed $direction - direction of moving ("down" or "up")
+* @return bool
+*/
+function move_section($section, $direction = 'down') {
+    global $DB;
+    $sql = 'SELECT * FROM {resource_list_sections}
+            WHERE resource_list_id = ? 
+                  AND sort_order ' . ($direction == 'down' ? '>' : '<') . ' ?
+            ORDER BY sort_order ' . ($direction == 'down' ? 'ASC' : 'DESC') . '
+            LIMIT 1';
+    $other_section = $DB->get_record_sql($sql, array($section->resource_list_id, $section->sort_order));
+    if (!$other_section) { //if other section not exists - return false
+        return false;
+    }
+    $result = $DB->set_field('resource_list_sections', 'sort_order', $other_section->sort_order, array('id' => $section->id))
+           && $DB->set_field('resource_list_sections', 'sort_order', $section->sort_order,  array('id' => $other_section->id));
+    return $result;
+}
+
+//
+function get_action_icon($url, $icon, $alt, $tooltip) {
+    global $OUTPUT;
+    return '<a title="' . $tooltip . '" href="'. $url . '">' .
+            '<img src="' . $OUTPUT->pix_url('t/' . $icon) . '" class="iconsmall" alt="' . $alt . '" /></a> ';
+}
+
+function get_spacer() {
+    global $OUTPUT;
+    return '<img src="' . $OUTPUT->pix_url('spacer') . '" class="iconsmall" alt="" /> ';
 }
 
 /**

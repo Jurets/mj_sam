@@ -34,6 +34,8 @@
     $actionView = 'view';
     $actionAddSection = 'addtolist';
     $actionDelSection = 'delfromlist';
+    $actionMoveSectionDown = 'movedown';
+    $actionMoveSectionUp = 'moveup';
     
     /// Security
     $systemcontext = context_system::instance();
@@ -105,7 +107,26 @@
             echo html_writer::table($table);
             echo $OUTPUT->footer();
             break;
-            
+
+        // Move Section Up in section List
+        case $actionMoveSectionUp:
+        case $actionMoveSectionDown:
+            // get section in list
+            $section = $DB->get_record('resource_list_sections', array('id'=>$id));
+            // build url for return
+            $url = new moodle_url($returnurl, array('action' => $actionView, 'id'=>$section->resource_list_id));
+            if (confirm_sesskey()) {
+                if ($action == $actionMoveSectionDown)
+                    $result = resourcelib_section_move_down($section);  //move down
+                else if ($action == $actionMoveSectionUp)
+                    $result = resourcelib_section_move_up($section);    //move up
+                if (!$result) {
+                    print_error('cannotmovesection', 'resourcelib', $url->out(false), $id);
+                }
+            }
+            redirect($url);
+            break;
+
         case $actionView:
             $list = $DB->get_record('resource_lists', array('id'=>$id), '*', MUST_EXIST); //get data from DB
 

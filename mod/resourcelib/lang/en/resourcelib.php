@@ -107,6 +107,7 @@ $string['resources_exists'] = 'There are resources of this type';
 $string['section_resource_exists'] = 'There are resources in this section';
 $string['section_exists'] = 'There are sections in this list';
 $string['resources_exists_in_section'] = 'This resource is present in the sections';
+$string['cannotmovesection'] = 'Can not move this Section with ID {$a}';
 
 $string['listfield'] = 'Resource Library Lists';
 $string['listfield_help'] = 'Select list from select element below. You can choose multiple items by pressing button <Ctrl> and mouse clicking';
