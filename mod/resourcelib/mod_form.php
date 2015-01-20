@@ -62,22 +62,12 @@ class mod_resourcelib_mod_form extends moodleform_mod {
         $this->add_intro_editor();
         
         //group of resourcelib elements
-        $mform->addElement('header', 'resourcelibfieldset', get_string('resourcelibfieldset', 'resourcelib'));
-        $url = new moodle_url('/mod/resourcelib/edit.php', array('id'=>$PAGE->cm->id, 'action'=>'index'));
-        //$mform->addElement('button', 'editcontent', "moveup", array('style'=>'float: left;'));
-        $mform->addElement('static', 'editcontent', get_string('editcontentlabel', 'resourcelib'), get_string('editcontentlink', 'resourcelib', $url->out(false)));
-        /*$items = get__lists();
-        $_items = get_cource_lists($this->current);
-        $select = $mform->addElement('select', 'list_id', get_string('list'), $items);
-        $select->setMultiple(true);
-        $select->setSelected($_items);
-        $mform->setType('list_id', PARAM_TEXT);                   //Set type of element
-        $mform->addHelpButton('list_id', 'listfield', 'resourcelib');  */
-        //$mform->addRule('list_id', get_string('missingname'), 'required', null, 'client');
-        $mform->setExpanded('resourcelibfieldset');
-        
-        //$mform->addElement('button', 'moveup', "moveup", array('style'=>'float: left;'));
-        
+        if (isset($PAGE->cm)) {
+            $mform->addElement('header', 'resourcelibfieldset', get_string('resourcelibfieldset', 'resourcelib'));
+            $url = new moodle_url('/mod/resourcelib/edit.php', array('id'=>$PAGE->cm->id, 'action'=>'index'));
+            $mform->addElement('static', 'editcontent', get_string('editcontentlabel', 'resourcelib'), get_string('editcontentlink', 'resourcelib', $url->out(false)));
+            $mform->setExpanded('resourcelibfieldset');
+        }
         //$mform->addElement('modgrade', 'scale', get_string('grade'), false);
 
         // Add standard elements, common to all modules.
