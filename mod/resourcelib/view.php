@@ -90,7 +90,7 @@ if ($resourcelib->intro) {
 $OUTPUT = new mooc_renderer($PAGE, RENDERER_TARGET_MAINTENANCE);
 
 // ------------- Main process of resources
-$contents = $DB->get_records('resourcelib_content', array('resourcelib_id'=>$resourcelib->id));
+$contents = $DB->get_records('resourcelib_content', array('resourcelib_id'=>$resourcelib->id), 'sort_order ASC');
 $isTabs = count($contents) > 1;
 
 if ($isTabs) {

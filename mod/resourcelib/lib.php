@@ -456,6 +456,17 @@ function resourcelib_extend_navigation(navigation_node $navref, stdclass $course
  * @param navigation_node $resourcelibnode {@link navigation_node}
  */
 function resourcelib_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $resourcelibnode=null) {
+    global $PAGE, $DB;
+
+    $canedit = has_capability('mod/resourcelib:edit', $PAGE->cm->context);
+    
+    $url = new moodle_url('/mod/resourcelib/view.php', array('id'=>$PAGE->cm->id));
+    $resourcelibnode->add(get_string('preview', 'lesson'), $url);
+
+    if ($canedit) {
+        $url = new moodle_url('/mod/resourcelib/edit.php', array('id'=>$PAGE->cm->id));
+        $resourcelibnode->add(get_string('edit'/*, 'lesson'*/), $url);
+    }
 }
 
 /**

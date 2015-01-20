@@ -470,6 +470,26 @@ function get_cource_lists($data) {
 }
 
 /**
+* get Lists wich is in Cource
+* 
+* @param mixed $data - resourcelib instance
+* @return array
+*/
+function resourcelib_get_courcemodule_contents($data) {
+    global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in resourcelib_get_courcemodule_contents() detected');
+    }
+    $sql = 'SELECT rlc.id, l.id as content_id, l.name, rlc.sort_order
+            FROM mdl_resourcelib_content rlc 
+              LEFT JOIN mdl_resource_lists l ON rlc.instance_id = l.id
+            WHERE rlc.type = ? AND rlc.resourcelib_id = ?
+            ORDER BY rlc.sort_order ASC';
+    return $DB->get_records_sql($sql, array('list', $data->id));
+}
+
+/**
 * add Resource to Section
 * 
 * @param mixed $data - instance of Resource Item in Section

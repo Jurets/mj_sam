@@ -59,6 +59,26 @@ $capabilities = array(
         'clonepermissionsfrom' => 'moodle/course:manageactivities'
     ),
 
+    'mod/resourcelib:edit' => array(
+        'riskbitmask' => RISK_XSS, // we want flash and JS in question pages
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+
+    'mod/resourcelib:manage' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+        
     'mod/resourcelib:view' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
