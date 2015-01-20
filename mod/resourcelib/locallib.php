@@ -430,17 +430,17 @@ function get_notlist_sections($data) {
 * @param mixed $data - resourcelib instance
 * @return array
 */
-function get_notcource_lists($data) {
-     global $DB;
+function resourcelib_get_notcource_lists($resourcelib_id) {
+    global $DB;
     // Make sure nobody sends bogus record type as parameter.
-    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+    /*if (!property_exists($data, 'id')) {
         throw new coding_exception('Invalid $data parameter in get_notlist_sections() detected');
-    }
+    }*/
     $sql = 'SELECT l.id, l.name
             FROM {resource_lists} l 
             WHERE l.id NOT IN 
               (SELECT rlc.instance_id FROM {resourcelib_content} rlc WHERE rlc.type = ? AND rlc.resourcelib_id = ?)';
-    $items = $DB->get_records_sql_menu($sql, array('list', $data->id));
+    $items = $DB->get_records_sql_menu($sql, array('list', $resourcelib_id /*$data->id*/));
     if (!$items)
         $items = array();
     return $items;
@@ -481,7 +481,7 @@ function resourcelib_get_courcemodule_contents($data) {
     if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
         throw new coding_exception('Invalid $data parameter in resourcelib_get_courcemodule_contents() detected');
     }
-    $sql = 'SELECT rlc.id, l.id as content_id, l.name, rlc.sort_order
+    $sql = 'SELECT rlc.id, l.id as content_id, l.name, rlc.instance_id, l.icon_path, rlc.sort_order
             FROM mdl_resourcelib_content rlc 
               LEFT JOIN mdl_resource_lists l ON rlc.instance_id = l.id
             WHERE rlc.type = ? AND rlc.resourcelib_id = ?
@@ -550,6 +550,26 @@ function create_deletebutton($url, $action, $id) {
         html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), 
         array('title'=>$strdelete)
     );
+}
+
+/**
+* create a delete button for data table
+* 
+* @param mixed $url
+* @param mixed $action
+* @param mixed $id
+* @param mixed $confirm
+* @return string
+*/
+function resourcelib_confirm_deletebutton($url, $action, $itemid, $confirm = false) {
+    global $OUTPUT;
+    $strdelete = get_string('delete');
+    $url = new moodle_url($url, array('action'=>$action, 'itemid'=>$itemid, 'sesskey'=>sesskey()));
+    $text = html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall'));
+    $link = new action_link($url, $text); //create action link
+    $action = new component_action('click', 'M.util.show_confirm_dialog', array('message' => $confirm)); //attach confirm dialog
+    $link->add_action($action);
+    return $OUTPUT->render($link);
 }
 
 /**
@@ -639,7 +659,6 @@ function show_list_sections($items, $returnurl, $buttons = null) {
         echo html_writer::table($table);
     }
 }
-
 
 /**
 * Move Section down in Sections List
@@ -737,6 +756,49 @@ function get_action_icon($url, $icon, $alt, $tooltip) {
 function get_spacer() {
     global $OUTPUT;
     return '<img src="' . $OUTPUT->pix_url('spacer') . '" class="iconsmall" alt="" /> ';
+}
+
+/**
+* Move Item down in Items List of Course module content
+* 
+* @param mixed $section
+* @return bool
+*/
+function resourcelib_item_move_down($item) {
+    return move_item($item, 'down');
+}
+
+/**
+* Move Item up in Items List of Course module content
+* 
+* @param mixed $section
+* @return bool
+*/
+function resourcelib_item_move_up($item) {
+    return move_item($item, 'up');
+}
+
+/**
+* Move Item
+* 
+* @param mixed $item
+* @param mixed $direction - direction of moving ("down" or "up")
+* @return bool
+*/
+function move_item($item, $direction = 'down') {
+    global $DB;
+    $sql = 'SELECT * FROM {resourcelib_content}
+            WHERE resourcelib_id = ? 
+                  AND sort_order ' . ($direction == 'down' ? '>' : '<') . ' ?
+            ORDER BY sort_order ' . ($direction == 'down' ? 'ASC' : 'DESC') . '
+            LIMIT 1';
+    $other_item = $DB->get_record_sql($sql, array($item->resourcelib_id, $item->sort_order));
+    if (!$other_item) { //if other section not exists - return false
+        return false;
+    }
+    $result = $DB->set_field('resourcelib_content', 'sort_order', $other_item->sort_order, array('id' => $item->id))
+           && $DB->set_field('resourcelib_content', 'sort_order', $item->sort_order,  array('id' => $other_item->id));
+    return $result;
 }
 
 /**

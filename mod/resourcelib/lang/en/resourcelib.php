@@ -50,6 +50,9 @@ $string['manage_items_desc'] = '<a href="{$a}">Resources Page</a> allows to add,
 $string['manage_sections_desc'] = '<a href="{$a}">Sections Page</a> allows to configure Resource Sections.<br/>';
 $string['manage_lists_desc'] = '<a href="{$a}">Lists Page</a> allows to configure Resource Sections.<br/>';
 
+$string['editcontentlabel'] = '';
+$string['editcontentlink'] = 'For course module content editing go to <a href="{$a}">Edit page</a>';
+
 $string['pluginadministration'] = 'resourcelib administration';
 $string['pluginname'] = 'Resource Library';
 
@@ -100,6 +103,11 @@ $string['missing_section'] = 'Missing Section';
 $string['no_resources'] = 'There is no Resources in this Section';
 $string['no_sections'] = 'There is no Sections in this List';
 
+$string['all_lists_in_course_module'] = 'All of Lists added in this Course Module';
+$string['no_lists_in_course_module']  = 'There are no Lists in this Course Module';
+
+$string['deletecheck_item_fromlist'] = 'Are you absolutely sure to delete "{$a}" from content?';
+
 $string['deletecheck_resurce_fromsection'] = 'Are you absolutely sure you want to delete resource {$a} from section?';
 $string['deletecheck_section_fromlist'] = 'Are you absolutely sure you want to delete section {$a} from list?';
 $string['enter_estimated_time'] = 'Enter estimated time to read this resource IN WHOLE MINUTES';
@@ -107,8 +115,11 @@ $string['resources_exists'] = 'There are resources of this type';
 $string['section_resource_exists'] = 'There are resources in this section';
 $string['section_exists'] = 'There are sections in this list';
 $string['resources_exists_in_section'] = 'This resource is present in the sections';
+
 $string['cannotmovesection'] = 'Can not move this Section with ID {$a}';
 $string['cannotmoveresource'] = 'Can not move this Resource with ID {$a}';
+$string['cannotmoveitem'] = 'Can not move this Item with ID {$a}';
+$string['cannotdelitem'] = 'Can not delete this Item with ID {$a}';
 
 $string['listfield'] = 'Resource Library Lists';
 $string['listfield_help'] = 'Select list from select element below. You can choose multiple items by pressing button <Ctrl> and mouse clicking';
