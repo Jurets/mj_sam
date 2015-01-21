@@ -857,24 +857,31 @@ function resourcelib_show_resource_items($items, $returnurl, $buttons = null, $s
             //get_string('description'), 
             get_string('type', 'resourcelib')
         );
-        $table->size[2] = '120px';
         
         $first_item = reset($items);
         $last_item = end($items);
         
+        if (isset($first_item->sort_order)) {
+            $table->size[2] = '120px';
+        } else {
+            $table->size[2] = '80px';
+        }
+        
         foreach ($items as $item) {
             $buttons_column = array();
-            // Move up.
-            if ($item->sort_order != $first_item->sort_order) {
-                $buttons_column[] = get_action_icon($returnurl . '?action=moveup&amp;id=' . $item->id . '&amp;sesskey=' . sesskey(), 'up', $strmoveup, $strmoveup);
-            } else {
-                $buttons_column[] = get_spacer();
-            }
-            // Move down.
-            if ($item->sort_order != $last_item->sort_order) {
-                $buttons_column[] = get_action_icon($returnurl . '?action=movedown&amp;id=' . $item->id . '&amp;sesskey=' . sesskey(), 'down', $strmovedown, $strmovedown);
-            } else {
-                $buttons_column[] = get_spacer();
+            if (isset($item->sort_order)) {
+                // Move up.
+                if ($item->sort_order != $first_item->sort_order) {
+                    $buttons_column[] = get_action_icon($returnurl . '?action=moveup&amp;id=' . $item->id . '&amp;sesskey=' . sesskey(), 'up', $strmoveup, $strmoveup);
+                } else {
+                    $buttons_column[] = get_spacer();
+                }
+                // Move down.
+                if (isset($item->sort_order) && ($item->sort_order != $last_item->sort_order)) {
+                    $buttons_column[] = get_action_icon($returnurl . '?action=movedown&amp;id=' . $item->id . '&amp;sesskey=' . sesskey(), 'down', $strmovedown, $strmovedown);
+                } else {
+                    $buttons_column[] = get_spacer();
+                }
             }
             if (key_exists('delete', $buttons))
                 $buttons_column[] = create_deletebutton($returnurl, $buttons['delete'], $item->id);
