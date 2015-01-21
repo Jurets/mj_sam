@@ -105,6 +105,7 @@ $string['no_sections'] = 'There is no Sections in this List';
 
 $string['all_lists_in_course_module'] = 'All of Lists added in this Course Module';
 $string['no_lists_in_course_module']  = 'There are no Lists in this Course Module';
+$string['there_are_no_lists']  = 'There is no Lists! Go to <a href="{$a}">Resource List Page</a> for Lists Manage';
 
 $string['deletecheck_item_fromlist'] = 'Are you absolutely sure to delete "{$a}" from content?';
 

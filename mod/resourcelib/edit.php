@@ -132,7 +132,13 @@
             // get lists, wich is not in course module
             $items = resourcelib_get_notcource_lists($cm->instance);
             if (empty($items)) {
-                echo $OUTPUT->notification(get_string('all_lists_in_course_module', 'resourcelib'), 'redirectmessage');
+                $count = $DB->get_field('resource_lists', 'COUNT(*)', array());
+                if ($count > 0) {
+                    echo $OUTPUT->notification(get_string('all_lists_in_course_module', 'resourcelib'), 'redirectmessage');
+                } else {
+                    $url = new moodle_url($CFG->wwwroot.'/mod/resourcelib/lists.php');
+                    echo $OUTPUT->notification(get_string('there_are_no_lists', 'resourcelib', $url->out(false)), 'notifyproblem');
+                }
             } else {
                 // form for adding
                 echo html_writer::start_tag('form', array('method'=>'POST', 'action'=>$moodle_returnurl->out(false)));
