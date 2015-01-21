@@ -842,7 +842,6 @@ function resourcelib_show_resource_items($items, $returnurl, $buttons = null, $s
     
     if (!$items || empty($items)) {
         echo $OUTPUT->notification(get_string('no_resources', 'resourcelib'), 'redirectmessage');
-        //echo '<div class="alert alert-warning">' . get_string('no_resources', 'resourcelib') . '</div>';
     } else {
         if (!isset($buttons)) //default buttons
             $buttons = array('delete'=>'delete', 'edit'=>'edit');

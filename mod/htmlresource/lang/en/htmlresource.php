@@ -69,6 +69,7 @@ $string['html_title'] = 'Html Title';
 $string['description_text'] = 'Description/Followup Text';
 $string['podcast_url'] = 'Podcast URL';
 $string['html_text'] = 'Html Text';
+$string['html_category'] = 'Html Category';
 
 $string['missing_internal_title'] = 'Missing Internal Title';
 $string['no_resources'] = 'There is no Html Resources';

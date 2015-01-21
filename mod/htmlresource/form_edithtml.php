@@ -28,6 +28,9 @@ class mod_htmlresource_form_edit extends moodleform {
         //html: Internal notes
         $mform->addElement('textarea', 'internal_notes', get_string('internal_notes', 'htmlresource'), array('rows'=>3, 'style'=>'width: 100%'));
         $mform->setType('internal_notes', PARAM_TEXT);
+        //html: Category
+        $mform->addElement('text', 'category', get_string('html_category', 'htmlresource'), array('style'=>'width: 100%'));
+        $mform->setType('category', PARAM_TEXT);
         
         //  Publicly Accessible Fields
         $mform->addElement('header', 'publiclyinfofieldset', get_string('publicly_info', 'htmlresource'));

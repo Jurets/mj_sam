@@ -127,12 +127,47 @@ function create_editbutton($url, $action = 'edit', $id) {
 }
 
 /**
+* take sorting column, if need
+* 
+* @param mixed $returnurl
+* @param mixed $title
+* @param mixed $sort
+* @param mixed $dir
+* @return string
+*/
+function htmlresource_get_sort_column($returnurl, $columnname, $columntitle, $sort = '', $dir = '') {
+    global $OUTPUT;
+    
+    if (!empty($sort)) {
+        if ($sort != $columnname) {
+            $columnicon = '';
+            $columndir = "ASC";
+        } else {
+            $columnicon = ($dir == "ASC") ? "sort_asc" : "sort_desc";
+            $columnicon = "<img class='iconsort' src=\"" . $OUTPUT->pix_url('t/' . $columnicon) . "\" alt=\"\" />";
+            $dir = !empty($dir) ? $dir : 'ASC';
+            $columndir = $dir == "ASC" ? "DESC":"ASC";
+        }
+        $column_title = html_writer::link(new moodle_url($returnurl, array('sort'=>$columnname, 'dir'=>$columndir)), $columntitle . $columnicon);
+    } else {
+        $column_title = $columntitle;
+    }
+    return $column_title;
+}
+    
+// -------------------------------------------------------------------------
+    
+/**
 * get all Video Resource Instances
 * 
 */
-function htmlresource_get_items() {
+function htmlresource_get_items($sort = '', $dir = '') {
     global $DB;
-    return $DB->get_records_sql('SELECT * FROM {resource_html}');
+    $sql = 'SELECT * FROM {resource_html} rh';
+    if (!empty($sort)) {
+        $sql .= ' ORDER BY rh.' . $sort . (!empty($dir) ? ' ' . $dir : '');
+    }
+    return $DB->get_records_sql($sql);
 }
 
 /**

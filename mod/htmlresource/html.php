@@ -22,6 +22,9 @@
     //get action name
     $action = optional_param('action', '', PARAM_TEXT); //action name for process different operations
     $action = (!empty($action) ? $action : 'index');
+    //get sort param (if present)
+    $sort = optional_param('sort', 'internal_title', PARAM_TEXT);
+    $dir = optional_param('dir', 'ASC', PARAM_TEXT);
 
     //actions list
     $actionIndex = 'index';
@@ -62,17 +65,19 @@
             //add type button
             show_addbutton(new moodle_url($returnurl, array('action' => $actionAdd)), get_string('add_html', 'htmlresource'));
             //show table with items data
-            $items = htmlresource_get_items();
+            $items = htmlresource_get_items($sort, $dir);
             if (!$items || empty($items)) {
                 echo $OUTPUT->notification(get_string('no_resources', 'htmlresource'), 'redirectmessage');
             } else {
                 if (!isset($buttons)) //default buttons
                     $buttons = array('delete'=>'delete', 'edit'=>'edit');
                 
+                // build table header
                 $table = new html_table();
                 $table->head = array(
-                    get_string('internal_name', 'htmlresource'), 
-                    get_string('html_title', 'htmlresource')
+                    htmlresource_get_sort_column($returnurl, 'internal_title', get_string('internal_name', 'htmlresource'), $sort, $dir), 
+                    htmlresource_get_sort_column($returnurl, 'title', get_string('html_title', 'htmlresource'), $sort, $dir),
+                    htmlresource_get_sort_column($returnurl, 'category', get_string('html_category', 'htmlresource'), $sort, $dir)
                 );
                 
                 foreach ($items as $item) {
@@ -85,6 +90,7 @@
                         html_writer::link(new moodle_url($returnurl, array('action'=>$actionView, 'id'=>$item->id)), $item->internal_title),
                         //$item->internal_title, 
                         $item->title, 
+                        $item->category, 
                         implode(' ', $buttons_column) 
                     );
                 }
