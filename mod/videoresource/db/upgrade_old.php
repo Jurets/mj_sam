@@ -28,7 +28,7 @@
  * @copyright  2014 Jurets
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-DebugBreak();
+
 defined('MOODLE_INTERNAL') || die();
 
 /**

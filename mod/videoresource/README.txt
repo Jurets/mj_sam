@@ -1,48 +1,16 @@
-The following steps should get you up and running with
-this module template code.
+Plugin: Video Resources
 
-* DO NOT PANIC!
+In a place outside of the course (in Moodle, but in administration, to allow for reusability across courses), 
+the video resource will store a YouTube video ID, video description, some additional metadata. 
+The system will also allow for storage of a URL for a podcast, and a long-text transcript. 
+Admins will also be able to enter timecodes and descriptions as chapter markers.
 
-* Unzip the archive and read this file
+Videos can be inserted anywhere in the course using a TinyMCE plugin. Once inserted, 
+the system will generate an iFrame with the video, along with the description and metadata, 
+a link to a pop-up with the transcript. Chapter-makers will be listed, and clicking them will 
+control the iFrame player (code available). Event log will store all video events, and chapter marker usage. 
+Videos can also be rated on a 5-star scale. Users may rate a video exactly once per course. 
+Once rated, users will see the average rating of the video in that course.
 
-* Rename the newmodule/ folder to the name of your module (eg "widget").
-  The module folder MUST be lower case and can't contain underscores. You should check the CVS contrib
-  area at http://cvs.moodle.org/contrib/plugins/mod/ to make sure that
-  your name is not already used by an other module. Registering the plugin
-  name @ http://moodle.org/plugins will secure it for you.
-
-* Edit all the files in this directory and its subdirectories and change
-  all the instances of the string "newmodule" to your module name
-  (eg "widget"). If you are using Linux, you can use the following command
-  $ find . -type f -exec sed -i 's/newmodule/widget/g' {} \;
-  
-  On a mac, use:
-  $ find . -type f -exec sed -i '' 's/newmodule/widget/g' {} \;
-
-* Rename the file lang/en/newmodule.php to lang/en/widget.php
-  where "widget" is the name of your module
-
-* Place the widget folder into the /mod folder of the moodle
-  directory.
-
-* Go to Settings > Site Administration > Development > XMLDB editor
-  and modify the module's tables.
-  Make sure, that the web server has write-access to the db/ folder.
-  You need at least one table, even if your module doesn't use it.
-
-* Modify version.php and set the initial version of you module.
-
-* Visit Settings > Site Administration > Notifications, you should find
-  the module's tables successfully created
-
-* Go to Site Administration > Plugins > Activity modules > Manage activities
-  and you should find that this newmodule has been added to the list of
-  installed modules.
-
-* You may now proceed to run your own code in an attempt to develop
-  your module. You will probably want to modify mod_form.php and view.php
-  as a first step. Check db/access.php to add capabilities.
-
-We encourage you to share your code and experience - visit http://moodle.org
-
-Good luck!
+Course and site admins can report on video activity across a course or across all courses, 
+and see ratings across a course or all courses.
