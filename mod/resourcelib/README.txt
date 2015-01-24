@@ -1,48 +1,16 @@
-The following steps should get you up and running with
-this module template code.
+Plugin: Resource Library
 
-* DO NOT PANIC!
+The system will allow the creation on generic web links outside of the course. 
+There are several fields of metadata that will be collected. This is done outside of the course to 
+allow for reusability across courses. Resources will be organized into list subsections, 
+and multiple subsections may be displayed at once.
 
-* Unzip the archive and read this file
+In the course, a user can insert one or more lists (with subsections) on a single page. 
+If the number of lists is greater than one, the lists (with subsections) will be displayed in tabs (using the Bootstrap framework code). 
 
-* Rename the newmodule/ folder to the name of your module (eg "widget").
-  The module folder MUST be lower case and can't contain underscores. You should check the CVS contrib
-  area at http://cvs.moodle.org/contrib/plugins/mod/ to make sure that
-  your name is not already used by an other module. Registering the plugin
-  name @ http://moodle.org/plugins will secure it for you.
+Each resource will contain an icon, the title and link to a video, along with other metadata. 
+The system will record clicks on each link in the event log. Users will also have the ability to rate 
+each resource using a star rating system. They may select a rating one time per resource per course, and may not change it. 
+Once a rating has been selected, the user will be able to see the average rating for the resource in that course.
 
-* Edit all the files in this directory and its subdirectories and change
-  all the instances of the string "newmodule" to your module name
-  (eg "widget"). If you are using Linux, you can use the following command
-  $ find . -type f -exec sed -i 's/newmodule/widget/g' {} \;
-  
-  On a mac, use:
-  $ find . -type f -exec sed -i '' 's/newmodule/widget/g' {} \;
-
-* Rename the file lang/en/newmodule.php to lang/en/widget.php
-  where "widget" is the name of your module
-
-* Place the widget folder into the /mod folder of the moodle
-  directory.
-
-* Go to Settings > Site Administration > Development > XMLDB editor
-  and modify the module's tables.
-  Make sure, that the web server has write-access to the db/ folder.
-  You need at least one table, even if your module doesn't use it.
-
-* Modify version.php and set the initial version of you module.
-
-* Visit Settings > Site Administration > Notifications, you should find
-  the module's tables successfully created
-
-* Go to Site Administration > Plugins > Activity modules > Manage activities
-  and you should find that this newmodule has been added to the list of
-  installed modules.
-
-* You may now proceed to run your own code in an attempt to develop
-  your module. You will probably want to modify mod_form.php and view.php
-  as a first step. Check db/access.php to add capabilities.
-
-We encourage you to share your code and experience - visit http://moodle.org
-
-Good luck!
+Administrators will be able to report on resource usage and ratings across a single course or across all course instances.
