@@ -18,7 +18,7 @@
  * Html Resource module version information
  *
  * @package    mod_htmlresource
- * @copyright  2009 Petr Skoda  {@link http://skodak.org}
+ * @copyright  2014 Jurets
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */ 
  
