@@ -3,6 +3,27 @@ require_once($CFG->dirroot.'/lib/outputrenderers.php');
 require_once($CFG->dirroot.'/rating/lib.php');
 
 class mooc_renderer extends core_renderer {
+
+    /**
+     * Constructor
+     *
+     * @param moodle_page $page the page we are doing output for.
+     * @param string $target one of rendering target constants
+     */
+    public function __construct(moodle_page $page, $target) {
+        global $CFG;
+        // execute parent constructor
+        parent::__construct($page, $target);
+        // output jquery.raty library
+        if ($file_content = file_get_contents($CFG->dirroot.'/mod/resourcelib/raty-master/jquery.raty.js')) {
+            echo   //wrap contant of js-file into <script> tag
+            '<script type="text/javascript">
+                //<![CDATA[
+                ' . $file_content . '
+                //]]>
+            </script>';
+        }
+    }
     
     /**
      * Produces the html that represents this rating in the UI
@@ -17,11 +38,15 @@ class mooc_renderer extends core_renderer {
             return null;//ratings are turned off
         }
 
-        $ratingmanager = new mooc_rating_manager(); /////////////////////////
+        /// Create instance of mooc_rating_manager
+        $ratingmanager = new mooc_rating_manager();
+        // ... and set custom Label for widget!
+        $ratingmanager->customLabel = 'Rate this resource';
+         
         // Initialise the JavaScript so ratings can be done by AJAX.
         $ratingmanager->initialise_rating_javascript($this->page);
 
-        $strrate = get_string("rate", "rating");
+        $strrate = 'Rate this resource'; //get_string("rate", "rating");
         $ratinghtml = ''; //the string we'll return
 
         // permissions check - can they view the aggregate?
@@ -76,19 +101,42 @@ class mooc_renderer extends core_renderer {
             }
 
             if (empty($ratinghtml)) {
-                $ratinghtml .= $strrate.': ';
+                $ratinghtml .= $strrate . get_string('labelsep', 'langconfig');
             }
             $ratinghtml = $formstart.$ratinghtml;
 
             $scalearray = array(RATING_UNSET_RATING => $strrate.'...') + $rating->settings->scale->scaleitems;
             $scaleattrs = array('class'=>'postratingmenu ratinginput','id'=>'menurating'.$rating->itemid);
+            // set invisibility for select-element
+            $scaleattrs['style'] = 'display: none';
             $ratinghtml .= html_writer::label($rating->rating, 'menurating'.$rating->itemid, false, array('class' => 'accesshide'));
             $ratinghtml .= html_writer::select($scalearray, 'rating', $rating->rating, false, $scaleattrs);
+            
+            // -------- add Star Raty plugin
+            $itemid = 'star_menurating'.$rating->itemid;
+            $rating_value = isset($rating->rating) ? 'readOnly: true, score: '.$rating->rating : '';
+            $callback_click = 'click: function(score, evt) {
+                                  id = $(this).data("id");
+                                  select = $("select#menurating" + id);
+                                  select.children("[value=" + score + "]").attr("selected", "selected");
+                                  sel = Y.one("select#menurating" + id);
+                                  M.core_rating.submit_rating("change", sel);  //Y.fire("change", {nodes: sel}); 
+                                  $(this).raty("readOnly", true);
+                              }, ';
+            $ratinghtml .= html_writer::start_span('star-rate', array('id'=>$itemid, 'data-id'=>$rating->itemid)) . 
+                           html_writer::end_span(); // DOM-container for Star Raty Plugin
+            $ratinghtml .= '<script type="text/javascript"> 
+                                $("#'.$itemid.'").raty({' . $callback_click . $rating_value . ' }); 
+                            </script>';   // set Raty plugin into container
 
-            //output submit button
+            // Output submit button
             $ratinghtml .= html_writer::start_tag('span', array('class'=>"ratingsubmit"));
 
-            $attributes = array('type' => 'submit', 'class' => 'postratingmenusubmit', 'id' => 'postratingsubmit'.$rating->itemid, 'value' => s(get_string('rate', 'rating')));
+            $attributes = array('type' => 'submit', 'class' => 'postratingmenusubmit', 
+                'id' => 'postratingsubmit'.$rating->itemid, 
+                'value' => s(get_string('rate', 'rating')),
+                'style' => 'display: none',    // set invisible mode for submit button
+            );
             $ratinghtml .= html_writer::empty_tag('input', $attributes);
 
             if (!$rating->settings->scale->isnumeric) {
@@ -111,6 +159,10 @@ class mooc_renderer extends core_renderer {
 }  
 
 class mooc_rating_manager extends rating_manager {
+
+    // custom label fore rating widget
+    public $customLabel = '';
+
     /**
      * Returns a string that describes the aggregation method that was provided.
      *
@@ -118,25 +170,12 @@ class mooc_rating_manager extends rating_manager {
      * @return string describes the aggregation method that was provided
      */
     public function get_aggregate_label($aggregationmethod) {
-        $aggregatelabel = 'Rate this resource';
-        /* switch ($aggregationmethod) {
-            case RATING_AGGREGATE_AVERAGE :
-                $aggregatelabel .= get_string("aggregateavg", "rating");
-                break;
-            case RATING_AGGREGATE_COUNT :
-                $aggregatelabel .= get_string("aggregatecount", "rating");
-                break;
-            case RATING_AGGREGATE_MAXIMUM :
-                $aggregatelabel .= get_string("aggregatemax", "rating");
-                break;
-            case RATING_AGGREGATE_MINIMUM :
-                $aggregatelabel .= get_string("aggregatemin", "rating");
-                break;
-            case RATING_AGGREGATE_SUM :
-                $aggregatelabel .= get_string("aggregatesum", "rating");
-                break;
-        }*/
-        $aggregatelabel .= get_string('labelsep', 'langconfig');
+        // firstly run parent method
+        $aggregatelabel = parent::get_aggregate_label($aggregationmethod);
+        // then check setting of custom Label
+        if (!empty($this->customLabel)) {
+            $aggregatelabel = $this->customLabel . get_string('labelsep', 'langconfig');
+        }
         return $aggregatelabel;
     }
     

@@ -67,9 +67,14 @@ $PAGE->set_title(format_string($resourcelib->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($context);
 
-//attach jQuery
-$PAGE->requires->jquery();
-//$PAGE->requires->js('/lib/jquery/jquery-1.11.0.min.js', true);
+// Attach jQuery 
+//uncomment string below in case if non-bootstrap theme (without jQuery) will use
+//$PAGE->requires->jquery();
+
+// Include js-script for star rating
+// !TODO: learn more for working with js-files
+//$PAGE->requires->js('/mod/resourcelib/raty-master/jquery.raty.js', true);
+
 
 /*
  * Other things you may want to set - remove if not needed.
@@ -163,8 +168,7 @@ foreach($contents as $content)
                         echo html_writer::link($resource->url, $resource->title, array(
                             'target'=>'_blank',
                             'class'=>'resourcelink',
-                            //'data-resourcelibid'=>$cm->id,
-                            'data-objectid'=>$resource->id,
+                            'data-objectid'=>$resource->id, //'data-resourcelibid'=>$cm->id,
                         ));
                         echo html_writer::end_div();
 
@@ -196,11 +200,8 @@ foreach($contents as $content)
                         $items = $rm->get_ratings($ratingoptions);
                         $item = $items[0];
                         if (isset($item->rating)) {
-                            if (is_null($item->rating->rating)) {
-                                $rendered_rating = $OUTPUT->render($item->rating);
-                            } else {
-                                $rendered_rating = get_string('your_rate', 'resourcelib') . get_string('labelsep', 'langconfig') . ' ' . $item->rating->rating;
-                            }
+                            //$rendered_rating = is_null($item->rating->rating) ? $OUTPUT->render($item->rating) : get_string('your_rate', 'resourcelib') . get_string('labelsep', 'langconfig') . ' ' . $item->rating->rating;
+                            $rendered_rating = $OUTPUT->render($item->rating);
                             $rate_html = html_writer::tag('div', $rendered_rating, array('class'=>'forum-post-rating'));
                             echo $rate_html;
                         }
@@ -225,7 +226,7 @@ $baseurl = $CFG->wwwroot;
 echo <<<EOD
     <script type="text/javascript">
     //<![CDATA[
-    
+
     $(document).ready(function(){
         $(".resourcelink").click(function(){
             //id = $(this).attr("data-resourcelibid");
@@ -245,10 +246,9 @@ echo <<<EOD
             return true;
         })
     });
-
     //]]>
     </script>
-
+       
 EOD;
 
 // Finish the page.
