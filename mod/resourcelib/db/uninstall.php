@@ -18,7 +18,7 @@
  * @see uninstall_plugin()
  *
  * @package    mod_resourcelib
- * @copyright  2011 Your Name <your@email.adress>
+ * @copyright  2014 Jurets
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
