@@ -172,20 +172,6 @@ foreach($contents as $content)
                         ));
                         echo html_writer::end_div();
 
-                        if (!empty($resource->author)) {
-                            echo html_writer::start_div('resource_metadata');
-                            echo html_writer::tag('strong', 'Author');
-                            echo ': ' . $resource->author;
-                            echo html_writer::end_div();
-                        }
-                        if (!empty($resource->source)) {
-                            echo html_writer::start_div('resource_metadata');
-                            echo html_writer::tag('strong', 'Source');
-                            echo ': ' . $resource->source;
-                            echo html_writer::end_div();
-                        }
-                        echo html_writer::div($resource->description, 'resource_description');
-                        
                         //render rating element
                         $ratingoptions = new stdClass;
                         $ratingoptions->context = $context; //$modcontext;
@@ -205,6 +191,22 @@ foreach($contents as $content)
                             $rate_html = html_writer::tag('div', $rendered_rating, array('class'=>'forum-post-rating'));
                             echo $rate_html;
                         }
+
+                        // render Author and source
+                        if (!empty($resource->author)) {
+                            echo html_writer::start_div('resource_metadata');
+                            echo html_writer::tag('strong', 'Author');
+                            echo ': ' . $resource->author;
+                            echo html_writer::end_div();
+                        }
+                        if (!empty($resource->source)) {
+                            echo html_writer::start_div('resource_metadata');
+                            echo html_writer::tag('strong', 'Source');
+                            echo ': ' . $resource->source;
+                            echo html_writer::end_div();
+                        }
+                        echo html_writer::div($resource->description, 'resource_description');
+                        
                     }
                 }
             }
