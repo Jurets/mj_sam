@@ -75,6 +75,8 @@ $PAGE->set_context($context);
 // !TODO: learn more for working with js-files
 //$PAGE->requires->js('/mod/resourcelib/raty-master/jquery.raty.js', true);
 
+// Include CSS file
+$PAGE->requires->css('/mod/resourcelib/styles.css');
 
 /*
  * Other things you may want to set - remove if not needed.
@@ -153,12 +155,15 @@ foreach($contents as $content)
                 echo html_writer::tag('h3', $section->display_name);
                 echo html_writer::end_div();
                 
-                echo html_writer::div($section->heading, 'list_heading');
+                echo html_writer::div($section->heading, 'section_heading');
+
                 //get Resources of this Section
                 if ($section->r_count > 0) {
                     $resources = resourcelib_get_section_items($section);
-                    
-                    foreach($resources as $resource) {
+                    foreach($resources as $resource)
+                    {
+                        /// --- Render one resource item                    
+                        echo html_writer::start_div('resource_item');
                         echo html_writer::start_div('resource_title');
                         echo html_writer::empty_tag('img', array(
                             'src'=>$resource->icon_path, 
@@ -171,7 +176,6 @@ foreach($contents as $content)
                             'data-objectid'=>$resource->id, //'data-resourcelibid'=>$cm->id,
                         ));
                         echo html_writer::end_div();
-
                         //render rating element
                         $ratingoptions = new stdClass;
                         $ratingoptions->context = $context; //$modcontext;
@@ -191,7 +195,6 @@ foreach($contents as $content)
                             $rate_html = html_writer::tag('div', $rendered_rating, array('class'=>'forum-post-rating'));
                             echo $rate_html;
                         }
-
                         // render Author and source
                         if (!empty($resource->author)) {
                             echo html_writer::start_div('resource_metadata');
@@ -206,7 +209,7 @@ foreach($contents as $content)
                             echo html_writer::end_div();
                         }
                         echo html_writer::div($resource->description, 'resource_description');
-                        
+                        echo html_writer::end_div(); // end of Resource Item ---
                     }
                 }
             }
@@ -250,9 +253,7 @@ echo <<<EOD
     });
     //]]>
     </script>
-       
 EOD;
 
 // Finish the page.
 echo $OUTPUT->footer();
-
