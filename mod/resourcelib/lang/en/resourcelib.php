@@ -43,6 +43,12 @@ $string['eventresourceviewed'] = 'Resource was viewed';
 $string['resourcelib:addinstance'] = 'Add a new resourcelib';
 $string['resourcelib:submit'] = 'Submit resourcelib';
 $string['resourcelib:view'] = 'View resourcelib';
+$string['resourcelib:viewallratings'] = 'View all raw ratings given by individuals';
+$string['resourcelib:viewanyrating'] = 'View total ratings that anyone received';
+$string['resourcelib:viewrating'] = 'View the total rating you received';
+$string['resourcelib:rate'] = 'Rate entries';
+$string['resourcelib:manage'] = 'Manage ResourceLib Items';
+$string['resourcelib:edit'] = 'Edit ResourceLib'; 
 
 $string['configuration'] = 'Configuration';
 $string['manage_types_desc'] = '<a href="{$a}">Resource Types Page</a> allows to configure types of Resources.<br/>';

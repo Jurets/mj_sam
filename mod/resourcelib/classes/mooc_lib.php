@@ -74,10 +74,10 @@ class mooc_renderer extends core_renderer {
 
         $strrate = 'Rate this resource'; //get_string("rate", "rating");
         $ratinghtml = ''; //the string we'll return
-
-        // permissions check - can they view the aggregate?
-        if ($rating->user_can_view_aggregate()) {
-
+        
+        // check: user can view the aggregate, if he have same permissions or resource has been rated by him
+        if ($rating->rating || $rating->user_can_view_aggregate())
+        {
             $aggregatelabel = $ratingmanager->get_aggregate_label($rating->settings->aggregationmethod);
             $aggregatestr   = $rating->get_aggregate_string();
 
@@ -90,8 +90,9 @@ class mooc_renderer extends core_renderer {
             $aggregatehtml .= html_writer::tag('span', $countstr, array('id'=>"ratingcount{$rating->itemid}", 'class' => 'ratingcount')).' ';
 
             $ratinghtml .= html_writer::tag('span', $aggregatelabel, array('class'=>'rating-aggregate-label'));
-            if ($rating->settings->permissions->viewall && $rating->settings->pluginpermissions->viewall) {
-
+            // check permissions for "viewallratings"
+            if ($rating->settings->permissions->viewall && $rating->settings->pluginpermissions->viewall)
+            {
                 $nonpopuplink = $rating->get_view_ratings_url();
                 $popuplink = $rating->get_view_ratings_url(true);
 

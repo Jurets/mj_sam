@@ -120,7 +120,7 @@ $capabilities = array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-            'student' => CAP_PROHIBIT
+            'student' => CAP_ALLOW
         )
     ),
 
@@ -134,7 +134,7 @@ $capabilities = array(
             'manager' => CAP_ALLOW,
             'student' => CAP_PROHIBIT
         ),
-        'clonepermissionsfrom' =>  'mod/resourcelib:viewanyrating'
+        //'clonepermissionsfrom' =>  'mod/resourcelib:viewanyrating'
     ), 
         
     'mod/resourcelib:rate' => array(
