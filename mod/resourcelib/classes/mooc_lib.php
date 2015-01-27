@@ -76,7 +76,7 @@ class mooc_renderer extends core_renderer {
         $ratinghtml = ''; //the string we'll return
         
         // check: user can view the aggregate, if he have same permissions or resource has been rated by him
-        if ($rating->rating || $rating->user_can_view_aggregate())
+        if ($rating->rating || $this->user_can_view_aggregate($rating))
         {
             $aggregatelabel = $ratingmanager->get_aggregate_label($rating->settings->aggregationmethod);
             $aggregatestr   = $rating->get_aggregate_string();
@@ -101,6 +101,12 @@ class mooc_renderer extends core_renderer {
             } else {
                 $ratinghtml .= $aggregatehtml;
             }
+        } else {
+            $aggregatelabel = $ratingmanager->get_aggregate_label($rating->settings->aggregationmethod);
+            $aggregatehtml  = html_writer::tag('span', '', array('id' => 'ratingaggregate'.$rating->itemid, 'class' => 'ratingaggregate')).' ';
+            $aggregatehtml .= html_writer::tag('span', '-', array('id'=>"ratingcount{$rating->itemid}", 'class' => 'ratingcount')).' ';
+            $ratinghtml .= html_writer::tag('span', $aggregatelabel, array('class'=>'rating-aggregate-label'));
+            $ratinghtml .= $aggregatehtml;
         }
 
         $formstart = null;
@@ -183,6 +189,27 @@ class mooc_renderer extends core_renderer {
         return $ratinghtml;
     }
     
+    /**
+    * Returns true if the user is able to view the aggregate for this ResourceLib instance
+    *  
+    * @param Rating $rating
+    */
+    private function user_can_view_aggregate(Rating $rating) {
+        if (empty($userid)) {
+            global $USER;
+            $userid = $USER->id;
+        }
+        // if the item doesnt belong to anyone or its another user's items and they can see the aggregate on items they don't own
+        // Note that viewany doesnt mean you can see the aggregate or ratings of your own items
+        if ((empty($rating->itemuserid) or $rating->itemuserid != $userid) && $rating->settings->permissions->viewall && $rating->settings->pluginpermissions->viewall ) {
+            return true;
+        }
+        // if its the current user's item and they have permission to view the aggregate on their own items
+        if ($rating->itemuserid == $userid && $rating->settings->permissions->view && $rating->settings->pluginpermissions->view) {
+            return true;
+        }
+        return false;
+    }
 }  
 
 class mooc_rating_manager extends rating_manager {
