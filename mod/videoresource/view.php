@@ -141,17 +141,6 @@ if (!empty($video->description)) {
     echo '<br>';
 }
 
-/// --- Render chapters
-if (!empty($video->chapters)) {
-    echo html_writer::div(get_string('in_this_video', 'videoresource') . ':', 'video_chapter_header');
-    foreach ($video->chapters as $chapter) {
-        echo html_writer::start_div('video_chapter');
-        $time = videoresource_time_convert($chapter->timecode);
-        echo html_writer::tag('a', $time . ' - ' . $chapter->title, array('onclick'=>'chapter_marker("'.$chapter->timecode.'")'));
-        echo html_writer::end_div();
-    }
-}
-
 /// Reinitialise global $OUTPUT for correct Rating renderer
 $OUTPUT = new mooc_renderer($PAGE, RENDERER_TARGET_MAINTENANCE);
 
@@ -171,6 +160,17 @@ $item = $items[0];
 if(isset($item->rating)) {
     $rate_html = html_writer::tag('div', $OUTPUT->render($item->rating), array('class'=>'forum-post-rating'));
     echo $rate_html;
+}
+
+/// --- Render chapters
+if (!empty($video->chapters)) {
+    echo html_writer::div(get_string('in_this_video', 'videoresource') . ':', 'video_chapter_header');
+    foreach ($video->chapters as $chapter) {
+        echo html_writer::start_div('video_chapter');
+        $time = videoresource_time_convert($chapter->timecode);
+        echo html_writer::tag('a', $time . ' - ' . $chapter->title, array('onclick'=>'chapter_marker("'.$chapter->timecode.'")'));
+        echo html_writer::end_div();
+    }
 }
 
 /// --- Render secondary description field (activity)

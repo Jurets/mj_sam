@@ -448,6 +448,9 @@ function videoresource_extend_navigation(navigation_node $navref, stdclass $cour
  * @param navigation_node $videoresourcenode {@link navigation_node}
  */
 function videoresource_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $videoresourcenode=null) {
+    global $PAGE, $DB;
+    $url = new moodle_url('/mod/videoresource/view.php', array('id'=>$PAGE->cm->id));
+    $videoresourcenode->add(get_string('preview', 'lesson'), $url);
 }
 
 
