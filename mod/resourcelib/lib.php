@@ -461,12 +461,16 @@ function resourcelib_extend_settings_navigation(settings_navigation $settingsnav
     $canedit = has_capability('mod/resourcelib:edit', $PAGE->cm->context);
     
     $url = new moodle_url('/mod/resourcelib/view.php', array('id'=>$PAGE->cm->id));
-    $resourcelibnode->add(get_string('preview', 'lesson'), $url);
+    $resourcelibnode->add(get_string('view'), $url);
 
     if ($canedit) {
         $url = new moodle_url('/mod/resourcelib/edit.php', array('id'=>$PAGE->cm->id));
-        $resourcelibnode->add(get_string('edit'/*, 'lesson'*/), $url);
+        $resourcelibnode->add(get_string('edit'), $url);
     }
+    
+    $url = new moodle_url('/mod/resourcelib/items.php', array());
+    $resourcelibnode->add(get_string('manage_items', 'resourcelib'), $url);
+    
 }
 
 /**

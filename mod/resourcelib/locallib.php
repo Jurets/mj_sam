@@ -101,7 +101,7 @@ function delete_type($data) {
 */
 function resourcelib_get_resources($sort = '', $dir = '') {
     global $DB;
-    $sql = 'SELECT ri.*, rt.name AS type_name, rt.icon_path
+    $sql = 'SELECT ri.*, rt.name AS type_name, rt.icon_path, ri.internal_title
             FROM {resource_items} ri LEFT JOIN {resource_types} rt ON rt.id = ri.type_id';
     if (!empty($sort)) {
         $sql .= ' ORDER BY ri.' . $sort . (!empty($dir) ? ' ' . $dir : '');
@@ -340,7 +340,8 @@ function resourcelib_get_section_items($data) {
     if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
         throw new coding_exception('Invalid $data parameter in get_section_items() detected');
     }
-    $sql = 'SELECT si.id, r.url, r.title, r.description, r.author, r.source, t.name AS type_name, t.icon_path, si.sort_order
+    $sql = 'SELECT si.id, r.url, r.title, r.internal_title, r.description, r.author, r.source, 
+                   t.name AS type_name, t.icon_path, si.sort_order
             FROM {resource_section_items} si 
                 LEFT JOIN {resource_items} r ON r.id = si.resource_item_id
                 LEFT JOIN {resource_types} t ON t.id = r.type_id
@@ -853,7 +854,7 @@ function resourcelib_show_resource_items($items, $returnurl, $buttons = null, $s
         $table = new html_table();
         $table->head = array( //sorting in first column!
             $title_column,
-            //get_string('description'), 
+            get_string('internal_title', 'resourcelib'), 
             get_string('type', 'resourcelib')
         );
         
@@ -888,7 +889,7 @@ function resourcelib_show_resource_items($items, $returnurl, $buttons = null, $s
                 $buttons_column[] = create_editbutton($returnurl, $buttons['edit'], $item->id);
             $table->data[] = array(
                 $item->title, 
-                //$item->description, 
+                $item->internal_title,
                 //$type->icon_path, 
                 html_writer::empty_tag('img', array(
                     'src'=>$item->icon_path, 

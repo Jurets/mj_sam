@@ -57,6 +57,12 @@ class mod_resourcelib_form_edititem extends moodleform {
         $mform->setType('type_id', PARAM_TEXT);                   //Set type of element
         $mform->addRule('type_id', get_string('missingname'), 'required', null, 'client');
 
+        //resourceItem: Internal Namee
+        $mform->addElement('text', 'internal_title', get_string('internal_title', 'resourcelib'), array('style'=>'width: 100%')); // Add elements to your form
+        $mform->setType('internal_title', PARAM_TEXT);                   //Set type of element
+        $mform->addRule('internal_title', get_string('missingname'), 'required', null, 'client');
+        $mform->addRule('internal_title', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+
         //resourceItem: Title
         $mform->addElement('text', 'title', get_string('name'), array('style'=>'width: 100%')); // Add elements to your form
         $mform->setType('title', PARAM_TEXT);                   //Set type of element

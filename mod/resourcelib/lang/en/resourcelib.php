@@ -67,9 +67,9 @@ $string['section'] = 'Section';
 
 $string['settings'] = 'Resource Library Settings';
 $string['administration'] = 'Resource Library Administration';
-$string['manage_types'] = 'Manage Resource Library Types';
-$string['manage_items'] = 'Manage Resource Library Items';
-$string['manage_lists'] = 'Manage Resource Library Lists';
+$string['manage_types'] = 'Manage Resource Types';
+$string['manage_items'] = 'Manage Resource Items';
+$string['manage_lists'] = 'Manage Resource Lists';
 $string['manage_sections'] = 'Manage Resource Library Sections';
 
 $string['addtype'] = 'Add Resource Type';
@@ -95,6 +95,7 @@ $string['edititem'] = 'Edit Resource Item';
 $string['deleteitem'] = 'Delete Resource Item';
 
 $string['type'] = 'Type';
+$string['internal_title'] = 'Internal Name';
 $string['copyright'] = 'Copyright Info';
 $string['author'] = 'Author';
 $string['source'] = 'Source';
