@@ -468,9 +468,9 @@ function videoresource_rating_permissions($contextid, $component, $ratingarea) {
         return null;
     }
     return array(
-        'view'    => true, //has_capability('mod/videoresource:viewrating', $context),
-        'viewany' => true, //has_capability('mod/videoresource:viewanyrating', $context),
-        'viewall' => true, //has_capability('mod/videoresource:viewallratings', $context),
-        'rate'    => true, //has_capability('mod/videoresource:rate', $context)
+        'view'    => has_capability('mod/videoresource:viewrating', $context),
+        'viewany' => has_capability('mod/videoresource:viewanyrating', $context),
+        'viewall' => has_capability('mod/videoresource:viewallratings', $context),
+        'rate'    => has_capability('mod/videoresource:rate', $context)
     );
 }

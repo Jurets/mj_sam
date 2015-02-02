@@ -31,6 +31,8 @@ require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
 
 require_once($CFG->dirroot.'/rating/lib.php');
+// include custom classes for rendering
+require_once(dirname(__FILE__).'/classes/mooc_lib.php');  // New class!!!
 
 //process input params
 $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
@@ -69,7 +71,8 @@ $PAGE->set_context($context);
 
 //include js-script for chapter markers
 $PAGE->requires->js('/mod/videoresource/js/chapter_marker_player.js', true);
-
+// Include CSS file
+$PAGE->requires->css('/mod/videoresource/styles.css');
 
 /*
  * Other things you may want to set - remove if not needed.
@@ -148,6 +151,9 @@ if (!empty($video->chapters)) {
         echo html_writer::end_div();
     }
 }
+
+/// Reinitialise global $OUTPUT for correct Rating renderer
+$OUTPUT = new mooc_renderer($PAGE, RENDERER_TARGET_MAINTENANCE);
 
 //render rating element
 $ratingoptions = new stdClass;

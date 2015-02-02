@@ -39,6 +39,10 @@ $string['videoresource'] = 'Video Resource Library';
 $string['videoresource:addinstance'] = 'Add a new videoresource';
 $string['videoresource:submit'] = 'Submit videoresource';
 $string['videoresource:view'] = 'View videoresource';
+$string['videoresource:viewallratings'] = 'View all raw ratings given by individuals';
+$string['videoresource:viewanyrating'] = 'View total ratings that anyone received';
+$string['videoresource:viewrating'] = 'View the total rating you received';
+$string['videoresource:rate'] = 'Rate entries';
 
 $string['pluginadministration'] = 'videoresource administration';
 $string['pluginname'] = 'Video Resource';
