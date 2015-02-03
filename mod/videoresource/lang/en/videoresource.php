@@ -44,6 +44,10 @@ $string['videoresource:viewanyrating'] = 'View total ratings that anyone receive
 $string['videoresource:viewrating'] = 'View the total rating you received';
 $string['videoresource:rate'] = 'Rate entries';
 
+$string['eventresourceviewed'] = 'Resource was viewed';
+$string['eventpodcastviewed'] = 'Podcast was viewed';
+$string['eventtranscriptviewed'] = 'Transcript was viewed';
+
 $string['pluginadministration'] = 'videoresource administration';
 $string['pluginname'] = 'Video Resource';
 

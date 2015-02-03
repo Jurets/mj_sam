@@ -53,6 +53,7 @@ if ($id) {
 require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 
+// Generate course module view event
 $event = \mod_videoresource\event\course_module_viewed::create(array(
     'objectid' => $PAGE->cm->instance,
     'context' => $PAGE->context,
@@ -124,11 +125,19 @@ EOD;
 echo html_writer::start_div('video_metadata', array('style'=>'text-align: center'));
 $video_metadata = array();
 if (!empty($video->podcast_url)) {
-    $video_metadata[] = html_writer::link($video->podcast_url, get_string('podcast_url', 'videoresource'), array('target'=>'_blank'));
+    $video_metadata[] = html_writer::link($video->podcast_url, get_string('podcast_url', 'videoresource'), array(
+        'target'=>'_blank',
+        'class'=>'podcastlink',
+        'data-objectid'=>$video->id,
+    ));
 }
 if (!empty($video->transcript)) {
     $url = new moodle_url(VR_URL_MAIN, array('action'=>'transcript', 'id'=>$video->id));
-    $video_metadata[] = html_writer::link($url, get_string('transcript', 'videoresource'), array('target'=>'_blank'));
+    $video_metadata[] = html_writer::link($url, get_string('transcript', 'videoresource'), array(
+        'target'=>'_blank',
+        'class'=>'transcriptlink',
+        'data-objectid'=>$video->id,
+    ));
 }
 $video_metadata = implode(' | ', $video_metadata);
 $video_metadata = '[ ' . $video_metadata . ' ]';
@@ -178,6 +187,40 @@ if (!empty($videoresource->activity)) {
     echo html_writer::div($videoresource->activity);
     echo '<br>';
 }
+
+//output of script, this jQuery click process command need for event storing
+$sesskey = sesskey();
+$cm_id = $cm->id;
+$baseurl = $CFG->wwwroot;
+echo <<<EOD
+    <script type="text/javascript">
+    //<![CDATA[
+
+    $(document).ready(function(){
+        $(".podcastlink, .transcriptlink").click(function(){
+            elem = $(this);
+            objectid = elem.attr("data-objectid");
+            if (elem.hasClass("podcastlink"))
+                action = "logpodcast";
+            else 
+                action = "logtranscript";
+            $.ajax({
+              type: "GET",
+              url: "$baseurl/mod/videoresource/ajax.php",
+              data: {"action": action, "id": "$cm_id", "objectid": objectid, "sesskey": "$sesskey"},
+              dataType: "json",
+              success: function(response){
+                if (!response.success)
+                    Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
+                    //alert("Error during AJAX request: " + response.error);
+              }
+            });
+            return true;
+        })
+    });
+    //]]>
+    </script>
+EOD;
 
 // Finish the page.
 echo $OUTPUT->footer();
