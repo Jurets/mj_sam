@@ -165,6 +165,7 @@ if (!empty($video->chapters)) {
         echo html_writer::tag('a', $time . ' - ' . $chapter->title, array(
             'class'=>'chapterlink',
             'data-objectid'=>$chapter->id,
+            'style'=>'cursor: pointer',
             'onclick'=>'chapter_marker("'.$chapter->timecode.'")',
         ));
         echo html_writer::end_div();
