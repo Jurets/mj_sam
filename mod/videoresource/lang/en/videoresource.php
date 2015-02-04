@@ -47,6 +47,7 @@ $string['videoresource:rate'] = 'Rate entries';
 $string['eventresourceviewed'] = 'Resource was viewed';
 $string['eventpodcastviewed'] = 'Podcast was viewed';
 $string['eventtranscriptviewed'] = 'Transcript was viewed';
+$string['eventchapterclicked'] = 'Chapter was clicked';
 
 $string['pluginadministration'] = 'videoresource administration';
 $string['pluginname'] = 'Video Resource';

@@ -48,35 +48,36 @@ require_capability('mod/videoresource:view', $context);
 
 $return = array('success'=>false);
 
-//analize action name param
-switch ($action) {
-    // save resource viewing to log
-    case 'logpodcast':
-        $event = \mod_videoresource\event\podcast_viewed::create(array(
-            'objectid' => $objectid, //$PAGE->cm->instance,
-            'context' => $context,
-        ));
-        break;
-    case 'logtranscript':
-        $event = \mod_videoresource\event\transcript_viewed::create(array(
-            'objectid' => $objectid, //$PAGE->cm->instance,
-            'context' => $context,
-        ));
-        break;
-}
+$classes = array(
+    'logpodcast'=>'\mod_videoresource\event\podcast_viewed',
+    'logtranscript'=>'\mod_videoresource\event\transcript_viewed',
+    'logchapter'=>'\mod_videoresource\event\chapter_clicked',
+);
 
-try {
-    $event->add_record_snapshot('course', $PAGE->course);
-    // In the next line you can use $PAGE->activityrecord if you have set it, or skip this line if you don't have a record.
-    ////////$event->add_record_snapshot($PAGE->cm->modname, $activityrecord);
-    $event->trigger();
-    $return['success'] = true;
-} catch (moodle_exception $e) {
-    //any exception process
+// analize action value
+if (isset($classes[$action]))
+{ 
+    //analize action name param
+    $classname = $classes[$action];//'\mod_videoresource\event\chapter_clicked';
+    // create event instance
+    $event = $classname::create(array(
+        'objectid' => $objectid, //$PAGE->cm->instance,
+        'context' => $context,
+    ));
+    try {
+        $event->add_record_snapshot('course', $PAGE->course);
+        // In the next line you can use $PAGE->activityrecord if you have set it, or skip this line if you don't have a record.
+        ////////$event->add_record_snapshot($PAGE->cm->modname, $activityrecord);
+        $event->trigger();
+        $return['success'] = true;
+    } catch (moodle_exception $e) {
+        //any exception process
+        $return['success'] = false;  //set false to success flag
+        $return['error'] = $e->a;    //set error text
+    }
+} else {
     $return['success'] = false;  //set false to success flag
-    $return['error'] = $e->a;    //set error text
 }
-
 
 echo json_encode($return); //return response
 die;

@@ -100,22 +100,7 @@ $video_chapters = '';
 foreach ($video->chapters as $chapter) {
     $video_chapters .= $chapter->timecode . ': "' . $chapter->title . '",';
 }
-echo <<<EOD
-    <script type="text/javascript">
-    //<![CDATA[
-    ChapterMarkerPlayer.insert({
-      container: 'iframe-session-player',
-      videoId: '$video_id',
-      width: 600,
-      chapters:{ $video_chapters }
-    });
 
-    function chapter_marker(time) {
-        player.seekTo(time);
-    }
-    //]]>
-    </script>
-EOD;
 ///  --- below previous version - throug moodle mediarenderer
 //$mediarenderer = $PAGE->get_renderer('core', 'media');  //previous version
 //$url = 'http://youtu.be/'.$video->video_id;
@@ -177,7 +162,11 @@ if (!empty($video->chapters)) {
     foreach ($video->chapters as $chapter) {
         echo html_writer::start_div('video_chapter');
         $time = videoresource_time_convert($chapter->timecode);
-        echo html_writer::tag('a', $time . ' - ' . $chapter->title, array('onclick'=>'chapter_marker("'.$chapter->timecode.'")'));
+        echo html_writer::tag('a', $time . ' - ' . $chapter->title, array(
+            'class'=>'chapterlink',
+            'data-objectid'=>$chapter->id,
+            'onclick'=>'chapter_marker("'.$chapter->timecode.'")',
+        ));
         echo html_writer::end_div();
     }
 }
@@ -195,15 +184,27 @@ $baseurl = $CFG->wwwroot;
 echo <<<EOD
     <script type="text/javascript">
     //<![CDATA[
+    ChapterMarkerPlayer.insert({
+      container: 'iframe-session-player',
+      videoId: '$video_id',
+      width: 600,
+      chapters:{ $video_chapters }
+    });
+
+    function chapter_marker(time) {
+        player.seekTo(time);
+    }
 
     $(document).ready(function(){
-        $(".podcastlink, .transcriptlink").click(function(){
+        $(".podcastlink, .transcriptlink, .chapterlink").click(function(){
             elem = $(this);
             objectid = elem.attr("data-objectid");
             if (elem.hasClass("podcastlink"))
                 action = "logpodcast";
-            else 
+            else if (elem.hasClass("transcriptlink"))
                 action = "logtranscript";
+            else if (elem.hasClass("chapterlink"))
+                action = "logchapter";
             $.ajax({
               type: "GET",
               url: "$baseurl/mod/videoresource/ajax.php",
