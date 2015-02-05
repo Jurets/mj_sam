@@ -187,8 +187,12 @@ $cm_id = $cm->id;
 $video_id = $video->video_id;
 $baseurl = $CFG->wwwroot;
 echo <<<EOD
-    <script type="text/javascript">
+<script type="text/javascript">
     //<![CDATA[
+    
+    var isChapterClicked = false;
+    var isPauseClicked = false;
+    
     ChapterMarkerPlayer.insert({
       container: 'iframe-session-player',
       videoId: '$video_id',
@@ -196,22 +200,35 @@ echo <<<EOD
       chapters:{ $video_chapters },
       playerOptions: {
         onStateChange: function(event) {
-            //console.log('State is ' + event.data);
+            console.log('State is ' + event.data);
+            if (event.data == YT.PlayerState.PLAYING && isPauseClicked) {
+                isChapterClicked = false;
+            }
             switch (event.data) {
                 case YT.PlayerState.PLAYING:
-                    action = "logvideoplay"; break;
+                    action = "logvideoplay"; 
+                    isPauseClicked = false;
+                    break;
                 case YT.PlayerState.PAUSED:
-                    action = "logvideopause"; break;
+                    action = "logvideopause"; 
+                    isPauseClicked = true;
+                    break;
             }
-            // use object var (see below), if you need to log current time of video playing
-            // event.target.B.currentTime
-            objectid = $("#iframe-session-player").data("objectid");
-            ajaxSend(action, objectid);
+            if (!isChapterClicked) {
+                objectid = $("#iframe-session-player").data("objectid");
+                // use object var (see below), if you need to log current time of video playing
+                // event.target.B.currentTime
+                ajaxSend(action, objectid);
+            } 
+            if (event.data == YT.PlayerState.PLAYING) {
+                isChapterClicked = false;
+            }
         }
       }
     });
 
     function chapter_marker(time) {
+        isChapterClicked = true;
         player.seekTo(time);
     }
 
@@ -244,8 +261,9 @@ echo <<<EOD
             return true;
         })
     });
+    
     //]]>
-    </script>
+</script>
 EOD;
 
 // Finish the page.
