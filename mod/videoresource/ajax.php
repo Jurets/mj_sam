@@ -52,6 +52,8 @@ $classes = array(
     'logpodcast'=>'\mod_videoresource\event\podcast_viewed',
     'logtranscript'=>'\mod_videoresource\event\transcript_viewed',
     'logchapter'=>'\mod_videoresource\event\chapter_clicked',
+    'logvideoplay'=>'\mod_videoresource\event\video_played',
+    'logvideopause'=>'\mod_videoresource\event\video_paused',
 );
 
 // analize action value

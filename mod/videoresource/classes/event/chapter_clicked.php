@@ -53,7 +53,6 @@ class chapter_clicked extends \core\event\base
  
     // get description of logged event (used for the page /report/log/index.php)
     public function get_description() {
-        global $DB;
         return 'The user with id '.$this->userid.' click Chapter of VideoResource (id: '.$this->objectid.').';
     }
  

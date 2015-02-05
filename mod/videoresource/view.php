@@ -94,8 +94,11 @@ if ($videoresource->intro) {
 $video = videoresource_get_video($videoresource->resource_videos_id);
 
 /// --- Render media frame
-echo html_writer::div('', 'mediaplugin mediaplugin_youtube', array('id'=>'iframe-session-player'));
-$video_id = $video->video_id;
+echo html_writer::div('', 'mediaplugin mediaplugin_youtube', array(
+    'id'=>'iframe-session-player',
+    'data-objectid'=>$video->id,
+));
+
 $video_chapters = '';
 foreach ($video->chapters as $chapter) {
     $video_chapters .= $chapter->timecode . ': "' . $chapter->title . '",';
@@ -181,6 +184,7 @@ if (!empty($videoresource->activity)) {
 //output of script, this jQuery click process command need for event storing
 $sesskey = sesskey();
 $cm_id = $cm->id;
+$video_id = $video->video_id;
 $baseurl = $CFG->wwwroot;
 echo <<<EOD
     <script type="text/javascript">
@@ -189,13 +193,43 @@ echo <<<EOD
       container: 'iframe-session-player',
       videoId: '$video_id',
       width: 600,
-      chapters:{ $video_chapters }
+      chapters:{ $video_chapters },
+      playerOptions: {
+        onStateChange: function(event) {
+            //console.log('State is ' + event.data);
+            switch (event.data) {
+                case YT.PlayerState.PLAYING:
+                    action = "logvideoplay"; break;
+                case YT.PlayerState.PAUSED:
+                    action = "logvideopause"; break;
+            }
+            // use object var (see below), if you need to log current time of video playing
+            // event.target.B.currentTime
+            objectid = $("#iframe-session-player").data("objectid");
+            ajaxSend(action, objectid);
+        }
+      }
     });
 
     function chapter_marker(time) {
         player.seekTo(time);
     }
 
+    function ajaxSend(action, objectid) {
+        $.ajax({
+          type: "GET",
+          url: "$baseurl/mod/videoresource/ajax.php",
+          data: {"action": action, "id": "$cm_id", "objectid": objectid, "sesskey": "$sesskey"},
+          dataType: "json",
+          success: function(response){
+            if (!response.success)
+                Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
+                //alert("Error during AJAX request: " + response.error);
+          }
+        });
+        return true;
+    }
+    
     $(document).ready(function(){
         $(".podcastlink, .transcriptlink, .chapterlink").click(function(){
             elem = $(this);
@@ -206,17 +240,7 @@ echo <<<EOD
                 action = "logtranscript";
             else if (elem.hasClass("chapterlink"))
                 action = "logchapter";
-            $.ajax({
-              type: "GET",
-              url: "$baseurl/mod/videoresource/ajax.php",
-              data: {"action": action, "id": "$cm_id", "objectid": objectid, "sesskey": "$sesskey"},
-              dataType: "json",
-              success: function(response){
-                if (!response.success)
-                    Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
-                    //alert("Error during AJAX request: " + response.error);
-              }
-            });
+            ajaxSend(action, objectid);
             return true;
         })
     });

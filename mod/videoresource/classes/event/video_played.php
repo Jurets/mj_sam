@@ -39,7 +39,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
  
-class podcast_viewed extends \core\event\base
+class video_played extends \core\event\base
 {
     protected function init() {
         $this->data['crud'] = 'r'; // c(reate), r(ead), u(pdate), d(elete)
@@ -48,12 +48,12 @@ class podcast_viewed extends \core\event\base
     }
  
     public static function get_name() {
-        return get_string('eventpodcastviewed', 'videoresource');
+        return get_string('eventvideoplayed', 'videoresource');
     }
  
     // get description of logged event (used for the page /report/log/index.php)
     public function get_description() {
-        return 'The user with id '.$this->userid.' view Podcast of VideoResource (id: '.$this->objectid.').';
+        return 'The user with id '.$this->userid.' play the video of VideoResource (id: '.$this->objectid.').';
     }
  
     public function get_url() {

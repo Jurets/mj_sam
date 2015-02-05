@@ -48,6 +48,8 @@ $string['eventresourceviewed'] = 'Resource was viewed';
 $string['eventpodcastviewed'] = 'Podcast was viewed';
 $string['eventtranscriptviewed'] = 'Transcript was viewed';
 $string['eventchapterclicked'] = 'Chapter was clicked';
+$string['eventvideoplayed'] = 'Video was played';
+$string['eventvideopaused'] = 'Video was paused';
 
 $string['pluginadministration'] = 'videoresource administration';
 $string['pluginname'] = 'Video Resource';
