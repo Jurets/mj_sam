@@ -34,7 +34,7 @@ require_once ('lib.php');
 
 $site = get_site ();
 $systemcontext = context_system::instance();
-
+//DebugBreak();
 $id = required_param ( 'id', PARAM_INT ); // course id
 $course = $DB->get_record ( 'course', array ('id' => $id ), '*', MUST_EXIST );
 $context =  context_course::instance($course->id, MUST_EXIST);
@@ -62,7 +62,7 @@ $enrolid = 999;
 		redirect ( "$CFG->wwwroot/enrol/apply/apply.php?id=" . $id . "&enrolid=" . $enrolid );
 	}
 }*/
-DebugBreak();
+//DebugBreak();
 //include form for survey
 require_once("$CFG->dirroot/enrol/survey/locallib.php");
 
@@ -70,10 +70,14 @@ $plugin = enrol_get_plugin('survey');
 $instanceid = optional_param('instance', 0, PARAM_INT);
 $instance = $DB->get_record('enrol', array('courseid'=>$course->id, 'enrol'=>'survey', 'id'=>$instanceid), '*', MUST_EXIST);
 
-$form = new user_survey_form(null, array(
+// get list of questions
+$questions = enrol_survey_get_questions($instance);
+
+$form = new enrol_survey_user_form(null, array(
     'instance'=>$instance, 
     'plugin'=>$plugin, 
     'context'=>$context,
+    'questions'=>$questions,
 ));
 
 if ($data = $form->get_data()) {
@@ -91,7 +95,7 @@ if ($data = $form->get_data()) {
         $roleid = $role->id;
     }
 
-    $this->enrol_user($instance, $USER->id, $roleid, $timestart, $timeend,1);
+    $plugin->enrol_user($instance, $USER->id, $roleid, $timestart, $timeend,1);
     //sendConfirmMailToTeachers($instance->courseid, $instance->id, $data->applydescription);
     //sendConfirmMailToManagers($instance->courseid,$data->applydescription);
     
@@ -99,7 +103,10 @@ if ($data = $form->get_data()) {
     redirect("$CFG->wwwroot/course/view.php?id=$instance->courseid");
 }
 
-echo $OUTPUT->header ();
+echo $OUTPUT->header();
+
+$form->display();
+
 
 /*echo '<form id="frmenrol" method="post" action="apply.php?id=' . $id . '&enrolid=' . $enrolid . '">';
 echo '<input type="checkbox" name="enrolid[]" value="' . $enrolid . '">';
@@ -134,7 +141,7 @@ echo '<p align="center"><input type="button" value="' . get_string ( 'btnconfirm
 echo '</form>';
 echo '<script>function doSubmit(type){if(type=="cancel"){document.getElementById("type").value=type;}document.getElementById("frmenrol").submit();}</script>';
 */
-echo $OUTPUT->footer ();
+echo $OUTPUT->footer();
 
 
 /*function get_user_picture($userid){

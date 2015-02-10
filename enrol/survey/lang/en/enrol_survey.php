@@ -37,6 +37,7 @@ $string['comment'] = 'Comment';
 
 $string['survey:unenrol'] = 'Cancel users from course';
 
+$string['notification'] = '<b>You are enrolled successfully to this course</b>. <br/><br/>You will be informed by email as soon as your enrollment has been confirmed. If you want to enroll to other courses, please click "course catalogue" in the top menu.';
 
 /*$string['confirmmailsubject'] = 'Confirm mail subject';
 $string['confirmmailcontent'] = 'Confirm mail content';
@@ -60,8 +61,6 @@ $string['survey:config'] = 'Configure apply enrol instances';
 $string['survey:manage'] = 'Manage apply enrolment';
 $string['survey:unenrolapply'] = 'Cancel self from the course';
  
-$string['notification'] = '<b>Enrollment Application successfully sent</b>. <br/><br/>You will be informed by email as soon as your enrollment has been confirmed. If you want to enroll to other courses, please click "course catalogue" in the top menu.';
-
 $string['sendmailtoteacher'] = 'Send email notification to teachers';
 $string['sendmailtomanager'] = 'Send email notification to managers';
 $string['mailtoteacher_suject'] = 'New Enrollment request!';

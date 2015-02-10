@@ -40,6 +40,8 @@ class enrol_survey_enrol_form extends moodleform {
     }
 
     public function definition() {
+        //global $DB, $USER, $OUTPUT;
+        
         $mform = $this->_form;
         $instance = $this->_customdata;
         $this->instance = $instance;
@@ -48,6 +50,14 @@ class enrol_survey_enrol_form extends moodleform {
         $heading = $plugin->get_instance_name($instance);
         $mform->addElement('header', 'selfheader', $heading);
 
+        /*if ($DB->record_exists('user_enrolments', array('userid'=>$USER->id, 'enrolid'=>$instance->id))) {
+            //TODO: maybe we should tell them they are already enrolled, but can not access the course
+            //return null;
+            $message = $OUTPUT->notification(get_string('notification', 'enrol_survey'));
+            $mform->addElement('static', 'error', $message);
+            return;
+        }*/
+        
         if ($instance->password) {
             $heading = $plugin->get_instance_name($instance);
             $mform->addElement('header', 'selfheader', $heading);
@@ -113,7 +123,7 @@ class enrol_survey_enrol_form extends moodleform {
     }
 }
 
-class user_survey_form extends moodleform {
+class enrol_survey_user_form extends moodleform {
 
     function definition() {
         $mform = $this->_form;
@@ -121,36 +131,123 @@ class user_survey_form extends moodleform {
         //list($instance, $plugin, $context) = $this->_customdata;
         $instance = $this->_customdata['instance'];
         $plugin = $this->_customdata['plugin'];
+        $questions = isset($this->_customdata['questions']) ? $this->_customdata['questions']: array();
 
-        $mform->addElement('header', 'header', get_string('pluginname', 'enrol_apply'));
+        //$mform->addElement('header', 'header', get_string('pluginname', 'enrol_apply'));
 
-        $mform->addElement('text', 'name', get_string('custominstancename', 'enrol'));
-        $mform->setType('name', PARAM_TEXT);
+        //$mform->addElement('text', 'name', get_string('custominstancename', 'enrol'));
+        //$mform->setType('name', PARAM_TEXT);
 
-        $options = array(ENROL_INSTANCE_ENABLED  => get_string('yes'),
-                         ENROL_INSTANCE_DISABLED => get_string('no'));
-        $mform->addElement('select', 'status', get_string('status', 'enrol_apply'), $options);
-        $mform->addHelpButton('status', 'status', 'enrol_apply');
-        $mform->setDefault('status', $plugin->get_config('status'));
+        //$options = array(ENROL_INSTANCE_ENABLED  => get_string('yes'),
+        //                 ENROL_INSTANCE_DISABLED => get_string('no'));
+        // $mform->addElement('select', 'status', get_string('status', 'enrol_apply'), $options);
+        //$mform->addHelpButton('status', 'status', 'enrol_apply');
+        //$mform->setDefault('status', $plugin->get_config('status'));
 
         /*if ($instance->id) {
             $roles = get_default_enrol_roles($context, $instance->roleid);
         } else {
             $roles = get_default_enrol_roles($context, $plugin->get_config('roleid'));
         }*/
-        $mform->addElement('select', 'roleid', get_string('defaultrole', 'role'), $roles);
-        $mform->setDefault('roleid', $plugin->get_config('roleid'));
+        //$mform->addElement('select', 'roleid', get_string('defaultrole', 'role'), $roles);
+        //$mform->setDefault('roleid', $plugin->get_config('roleid'));
 
-        $mform->addElement('textarea', 'customtext1', get_string('editdescription', 'enrol_apply'));
+        //$mform->addElement('textarea', 'customtext1', get_string('editdescription', 'enrol_apply'));
     
-
-        $mform->addElement('hidden', 'id');
+        //DebugBreak();
+        $instanceid = $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
-        $mform->addElement('hidden', 'courseid');
-        $mform->setType('courseid', PARAM_INT);
+        $instanceid->setValue($instance->courseid);
+        
+        $courseid = $mform->addElement('hidden', 'instance');
+        $mform->setType('instance', PARAM_INT);
+        $courseid->setValue($instance->id);
 
+        //$this->add_action_buttons(true, ($instance->id ? null : get_string('addinstance', 'enrol')));
+
+        ///////$this->set_data($instance);
+        
+        // show question items (survey)
+        foreach($questions as $key=>$question) {
+            $label = ($key + 1) . '. ' . $question->label;
+            if (isset($question->items) && is_array($question->items)) {
+                $items = $question->items;
+            } else {
+                $items = null;
+            }
+            
+            if ($question->type == 'radio') {
+                if (isset($question->items) && is_array($question->items)) {
+                    $radioarray = array();
+                    foreach($question->items as $key=>$item) {
+                        //$radioarray[] =& $mform->createElement('radio', $question->name, '', get_string('yes'), 1, $attributes);
+                        $radioarray[] =& $mform->createElement('radio', $question->name, $label, $item, $key, array()/*$attributes*/);
+                    }
+                }
+                $mform->addGroup($radioarray, 'radioar', $label, array(' '), false);
+            } else if ($question->type == 'select') {
+                $items = array('0'=>'');
+                if (isset($question->items) && is_array($question->items)) {
+                    foreach($question->items as $key=>$value) {
+                            $items[$key] = $value;
+                    }
+                }
+                $mform->addElement('select', $question->name, $label, $items);
+                //$mform->setType($question->name, PARAM_TEXT);
+            } else if ($question->type == 'text') {
+                $mform->addElement('text', $question->name, $label);
+                //$mform->setType($question->name, PARAM_TEXT);
+            }
+            //if (isset($question->default) && !empty($question->default)) {
+            //    $mform->addHelpButton($question->name, 'status', 'enrol_apply');
+            //}
+            if (isset($question->default) && !empty($question->default)) {
+                $mform->setDefault($question->name, $question->default);
+            }
+            //
+            $mform->setType($question->name, PARAM_TEXT);
+        }
         $this->add_action_buttons(true, ($instance->id ? null : get_string('addinstance', 'enrol')));
-
-        $this->set_data($instance);
     }
+}
+
+/**
+* get list of questions, wich attached to course enrol plugin
+* 
+* @param mixed $instance - instance of enrol
+*/
+function enrol_survey_get_questions($instance = null) {
+    global $DB;
+    //$DB->get_records(...);
+    
+    //dummy
+    $result = array();
+    //example of Text entry
+    $question = new stdClass();
+    $question->id = 1;
+    $question->name = 'question1';
+    $question->type = 'text';
+    $question->label = 'Example of Text entry';
+    $question->required = true;
+    $result[] = $question;
+    //example of Dropdown
+    $question = new stdClass();
+    $question->id = 2;
+    $question->name = 'question2';
+    $question->type = 'select';
+    $question->label = 'Example of Dropdown';
+    $question->items = array(1=>'First item', 2=>'Second item', 3=>'Third item');
+    $question->required = true;
+    $result[] = $question;
+    //example of Radio
+    $question = new stdClass();
+    $question->id = 3;
+    $question->name = 'question3';
+    $question->type = 'radio';
+    $question->label = 'Example of Radio';
+    $question->items = array(1=>'First item', 2=>'Second item', 3=>'Third item');
+    $question->required = false;
+    $result[] = $question;
+    // result
+    return $result;
 }
