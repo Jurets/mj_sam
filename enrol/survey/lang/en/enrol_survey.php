@@ -31,14 +31,18 @@ $string['enrolname'] = 'Survey Enrollment';
 $string['pluginname'] = 'Survey Enrollment';
 $string['pluginname_desc'] = 'Administrator should be able to set up any number of questions of the different types. Users should be enrolled in the course when they have successfully completed the survey.';
 
-$string['confirmenrol'] = 'Manage application';
+$string['manage_questions'] = 'Manage questions';
 $string['enrolusers'] = 'Enrol users';
+
 $string['comment'] = 'Comment';
+$string['type'] = 'Type';
+$string['label'] = 'Label';
 
 $string['survey:unenrol'] = 'Cancel users from course';
 
 $string['notification'] = '<b>You are enrolled successfully to this course</b>. <br/><br/>You will be informed by email as soon as your enrollment has been confirmed. If you want to enroll to other courses, please click "course catalogue" in the top menu.';
-
+$string['missinanswer'] = 'Missing answer';
+ 
 /*$string['confirmmailsubject'] = 'Confirm mail subject';
 $string['confirmmailcontent'] = 'Confirm mail content';
 $string['cancelmailsubject'] = 'Cancel mail subject';

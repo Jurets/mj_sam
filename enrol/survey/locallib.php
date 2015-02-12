@@ -128,33 +128,13 @@ class enrol_survey_user_form extends moodleform {
     function definition() {
         $mform = $this->_form;
 
-        //list($instance, $plugin, $context) = $this->_customdata;
+        // get main instances
         $instance = $this->_customdata['instance'];
         $plugin = $this->_customdata['plugin'];
         $questions = isset($this->_customdata['questions']) ? $this->_customdata['questions']: array();
 
         //$mform->addElement('header', 'header', get_string('pluginname', 'enrol_apply'));
 
-        //$mform->addElement('text', 'name', get_string('custominstancename', 'enrol'));
-        //$mform->setType('name', PARAM_TEXT);
-
-        //$options = array(ENROL_INSTANCE_ENABLED  => get_string('yes'),
-        //                 ENROL_INSTANCE_DISABLED => get_string('no'));
-        // $mform->addElement('select', 'status', get_string('status', 'enrol_apply'), $options);
-        //$mform->addHelpButton('status', 'status', 'enrol_apply');
-        //$mform->setDefault('status', $plugin->get_config('status'));
-
-        /*if ($instance->id) {
-            $roles = get_default_enrol_roles($context, $instance->roleid);
-        } else {
-            $roles = get_default_enrol_roles($context, $plugin->get_config('roleid'));
-        }*/
-        //$mform->addElement('select', 'roleid', get_string('defaultrole', 'role'), $roles);
-        //$mform->setDefault('roleid', $plugin->get_config('roleid'));
-
-        //$mform->addElement('textarea', 'customtext1', get_string('editdescription', 'enrol_apply'));
-    
-        //DebugBreak();
         $instanceid = $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
         $instanceid->setValue($instance->courseid);
@@ -162,12 +142,8 @@ class enrol_survey_user_form extends moodleform {
         $courseid = $mform->addElement('hidden', 'instance');
         $mform->setType('instance', PARAM_INT);
         $courseid->setValue($instance->id);
-
-        //$this->add_action_buttons(true, ($instance->id ? null : get_string('addinstance', 'enrol')));
-
-        ///////$this->set_data($instance);
-        
-        // show question items (survey)
+        //DebugBreak();
+        /// Show question items (survey)
         foreach($questions as $key=>$question) {
             $label = ($key + 1) . '. ' . $question->label;
             if (isset($question->items) && is_array($question->items)) {
@@ -181,15 +157,17 @@ class enrol_survey_user_form extends moodleform {
                     $radioarray = array();
                     foreach($question->items as $key=>$item) {
                         //$radioarray[] =& $mform->createElement('radio', $question->name, '', get_string('yes'), 1, $attributes);
-                        $radioarray[] =& $mform->createElement('radio', $question->name, $label, $item, $key, array()/*$attributes*/);
+                        $radioarray[] =& $mform->createElement('radio', $question->name, $label, $item->label, $item->id, array()/*$attributes*/);
+                        //$radioarray[] =& $mform->createElement('radio', $question->name, $label, $item, $key, array()/*$attributes*/);
                     }
                 }
                 $mform->addGroup($radioarray, 'radioar', $label, array(' '), false);
             } else if ($question->type == 'select') {
-                $items = array('0'=>'');
+                $items = array(''=>'');
                 if (isset($question->items) && is_array($question->items)) {
                     foreach($question->items as $key=>$value) {
-                            $items[$key] = $value;
+                        //$items[$key] = $value;
+                        $items[$value->id] = $value->label;
                     }
                 }
                 $mform->addElement('select', $question->name, $label, $items);
@@ -206,6 +184,9 @@ class enrol_survey_user_form extends moodleform {
             }
             //
             $mform->setType($question->name, PARAM_TEXT);
+            if (isset($question->required) && $question->required) {
+                $mform->addRule($question->name, get_string('missinanswer', 'enrol_survey'), 'required', null, 'client');
+            }
         }
         $this->add_action_buttons(true, ($instance->id ? null : get_string('addinstance', 'enrol')));
     }
@@ -218,10 +199,9 @@ class enrol_survey_user_form extends moodleform {
 */
 function enrol_survey_get_questions($instance = null) {
     global $DB;
-    //$DB->get_records(...);
-    
+
     //dummy
-    $result = array();
+    /*$result = array();
     //example of Text entry
     $question = new stdClass();
     $question->id = 1;
@@ -247,7 +227,172 @@ function enrol_survey_get_questions($instance = null) {
     $question->label = 'Example of Radio';
     $question->items = array(1=>'First item', 2=>'Second item', 3=>'Third item');
     $question->required = false;
-    $result[] = $question;
+    $result[] = $question;*/
+    //return $result;
+    //DebugBreak();
+    // 
+    $questions = $DB->get_records('enrol_survey_questions', array('enrolid'=>$instance->id));
+    foreach ($questions as $question) {
+        $question->items = array();
+        $question->items = $DB->get_records('enrol_survey_options', array('questionid'=>$question->id));
+        /*$options = $DB->get_records('enrol_survey_options', array('questionid'=>$question->id));
+        foreach ($options as $option) {
+            $question->items
+        }*/
+    }
     // result
-    return $result;
+    return $questions;
+}
+
+/**
+* show Resource items in HTML table
+* 
+* @param mixed $items - array of resource instances
+*/
+function enrol_survey_show_questions($items, $returnurl, $buttons = null, $sort = '', $dir = '') {
+    global $OUTPUT;
+    $strmoveup = get_string('moveup');
+    $strmovedown = get_string('movedown');
+    
+    if (!$items || empty($items)) {
+        echo $OUTPUT->notification(get_string('no_resources', 'resourcelib'), 'redirectmessage');
+    } else {
+        if (!isset($buttons)) //default buttons
+            $buttons = array('delete'=>'delete', 'edit'=>'edit');
+        
+        // take sorting column, if need
+        $title_column = enrol_survey_get_column_title($returnurl, 'label', get_string('label', 'enrol_survey'), $sort, $dir);
+
+        // build table header
+        $table = new html_table();
+        $table->head = array( //sorting in first column!
+            $title_column,
+            get_string('name'), 
+            get_string('type', 'enrol_survey'),
+        );
+        
+        $first_item = reset($items);
+        $last_item = end($items);
+        
+        /*if (isset($first_item->sort_order)) {
+            $table->size[2] = '120px';
+        } else {
+            $table->size[2] = '80px';
+        }*/
+        
+        foreach ($items as $item) {
+            $buttons_column = array();
+            if (isset($item->sort_order)) {
+                // Move up.
+                if ($item->sort_order != $first_item->sort_order) {
+                    $buttons_column[] = get_action_icon($returnurl . '?action=moveup&amp;id=' . $item->id . '&amp;sesskey=' . sesskey(), 'up', $strmoveup, $strmoveup);
+                } else {
+                    $buttons_column[] = get_spacer();
+                }
+                // Move down.
+                if (isset($item->sort_order) && ($item->sort_order != $last_item->sort_order)) {
+                    $buttons_column[] = get_action_icon($returnurl . '?action=movedown&amp;id=' . $item->id . '&amp;sesskey=' . sesskey(), 'down', $strmovedown, $strmovedown);
+                } else {
+                    $buttons_column[] = get_spacer();
+                }
+            }
+            if (key_exists('delete', $buttons))
+                $buttons_column[] = create_deletebutton($returnurl, $buttons['delete'], $item->id);
+            if (key_exists('edit', $buttons))
+                $buttons_column[] = create_editbutton($returnurl, $buttons['edit'], $item->id);
+            $table->data[] = array(
+                $item->label, 
+                $item->name, 
+                $item->type,
+                //$type->icon_path, 
+                /*html_writer::empty_tag('img', array(
+                    'src'=>$item->icon_path, 
+                    'alt'=>$item->icon_path, 
+                    'title'=>$item->type_name,
+                    'class'=>'iconsmall', 
+                    'style'=>'width: 30px; height: 30px;')),*/
+                implode(' ', $buttons_column) 
+            );
+        }
+        echo html_writer::table($table);
+    }
+}
+
+/**
+* take sorting column, if need
+* 
+* @param mixed $returnurl
+* @param mixed $title
+* @param mixed $sort
+* @param mixed $dir
+* @return string
+*/
+function enrol_survey_get_column_title($returnurl, $columnname, $columntitle, $sort = '', $dir = '') {
+    global $OUTPUT;
+    
+    if (!empty($sort)) {
+        if ($sort != $columnname) {
+            $columnicon = '';
+            $columndir = "ASC";
+        } else {
+            $columnicon = ($dir == "ASC") ? "sort_asc" : "sort_desc";
+            $columnicon = "<img class='iconsort' src=\"" . $OUTPUT->pix_url('t/' . $columnicon) . "\" alt=\"\" />";
+            $dir = !empty($dir) ? $dir : 'ASC';
+            $columndir = $dir == "ASC" ? "DESC":"ASC";
+        }
+        $column_title = html_writer::link(new moodle_url($returnurl, array('sort'=>$columnname, 'dir'=>$columndir)), $columntitle . $columnicon);
+    } else {
+        $column_title = $columntitle;
+    }
+    return $column_title;
+}
+
+/**
+* create a delete button for data table
+* 
+* @param mixed $url
+* @param mixed $action
+* @param mixed $id
+* @return string
+*/
+function create_deletebutton($url, $action, $id) {
+    global $OUTPUT;
+    
+    $strdelete = get_string('delete');
+    return html_writer::link(
+        new moodle_url($url, array('action'=>$action, 'id'=>$id, 'sesskey'=>sesskey())), 
+        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), 
+        array('title'=>$strdelete)
+    );
+}
+
+/**
+* create a edit button for data table
+* 
+* @param mixed $url
+* @param mixed $action
+* @param mixed $id
+* @return string
+*/
+function create_editbutton($url, $action, $id) {
+    global $OUTPUT;
+    
+    $stredit   = get_string('edit');
+    return html_writer::link(
+        new moodle_url($url, array('action'=>'edit', 'id'=>$id)), 
+        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/editstring'), 'alt'=>$stredit, 'class'=>'iconsmall')), 
+        array('title'=>$stredit)
+    );
+}
+
+//
+function get_action_icon($url, $icon, $alt, $tooltip) {
+    global $OUTPUT;
+    return '<a title="' . $tooltip . '" href="'. $url . '">' .
+            '<img src="' . $OUTPUT->pix_url('t/' . $icon) . '" class="iconsmall" alt="' . $alt . '" /></a> ';
+}
+
+function get_spacer() {
+    global $OUTPUT;
+    return '<img src="' . $OUTPUT->pix_url('spacer') . '" class="iconsmall" alt="" /> ';
 }

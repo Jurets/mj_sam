@@ -28,7 +28,7 @@
 
  defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2015020901;         // The current module version (Date: YYYYMMDDXX)
+$plugin->version  = 2015020900;         // The current module version (Date: YYYYMMDDXX)
 $plugin->requires = 2014051200;         // Requires this Moodle version
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = 'Course Enrol Surveyy Plugin Version 0.1';

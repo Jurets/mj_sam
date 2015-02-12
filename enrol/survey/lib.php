@@ -154,15 +154,16 @@ class enrol_survey_plugin extends enrol_plugin {
             $icons[] = $OUTPUT->action_icon($editlink, new pix_icon('t/edit', get_string('edit'), 'core', array('class' => 'iconsmall')));
         }
 
-		if (has_capability('enrol/manual:manage', $context)) {
-			$managelink = new moodle_url("/enrol/survey/survey.php", array('id'=>$_GET['id'],'enrolid'=>$instance->id));
-			$icons[] = $OUTPUT->action_icon($managelink, new pix_icon('i/users', get_string('confirmenrol', 'enrol_survey'), 'core', array('class'=>'iconsmall')));
+        //if (has_capability('enrol/manual:manage', $context)) {
+		if (has_capability('enrol/survey:manage', $context)) {
+			$managelink = new moodle_url("/enrol/survey/questions.php", array(/*'id'=>$_GET['id'],*/ 'enrolid'=>$instance->id));
+			$icons[] = $OUTPUT->action_icon($managelink, new pix_icon('i/edit', get_string('manage_questions', 'enrol_survey'), 'core', array('class'=>'iconsmall')));
 		}
 
-		if (has_capability("enrol/manual:enrol", $context)) {
+		/*if (has_capability("enrol/manual:enrol", $context)) {
 			$enrollink = new moodle_url("/enrol/survey/enroluser.php", array('enrolid'=>$instance->id));
 			$icons[] = $OUTPUT->action_icon($enrollink, new pix_icon('t/enrolusers', get_string('enrolusers', 'enrol_survey'), 'core', array('class'=>'iconsmall')));
-		}
+		}*/
 		
 		return $icons;
 	}
