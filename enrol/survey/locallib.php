@@ -205,7 +205,7 @@ class enrol_survey_question_form extends moodleform {
             $data = $this->get_submitted_data();
             $question_type = $data->type;
         } else {
-            $question_type = $_POST['type'];  //crutch
+            $question_type = $_POST['type'];  //crutch... !TODO: use moodleform methods instedd $_POST
         }
         
         if ($question_type <> 'text') {
@@ -232,7 +232,7 @@ class enrol_survey_user_form extends moodleform {
         $mform = $this->_form;
 
         // get main instances
-        $instance = $this->_customdata['instance'];
+        $enrol = $this->_customdata['enrol'];
         $plugin = $this->_customdata['plugin'];
         $questions = isset($this->_customdata['questions']) ? $this->_customdata['questions']: array();
 
@@ -240,15 +240,20 @@ class enrol_survey_user_form extends moodleform {
 
         $instanceid = $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
-        $instanceid->setValue($instance->courseid);
+        $instanceid->setValue($enrol->courseid);
         
-        $courseid = $mform->addElement('hidden', 'instance');
-        $mform->setType('instance', PARAM_INT);
-        $courseid->setValue($instance->id);
-        //DebugBreak();
+        $courseid = $mform->addElement('hidden', 'enrolid');
+        $mform->setType('enrolid', PARAM_INT);
+        $courseid->setValue($enrol->id);
+        
         /// Show question items (survey)
+        $item_num = 0;
         foreach($questions as $key=>$question) {
-            $label = ($key + 1) . '. ' . $question->label;
+            //build name of form element
+            $name = "questions[$question->id]";
+            //build label
+            $label = (++$item_num) . '. ' . $question->label;
+            
             if (isset($question->items) && is_array($question->items)) {
                 $items = $question->items;
             } else {
@@ -259,9 +264,7 @@ class enrol_survey_user_form extends moodleform {
                 if (isset($question->items) && is_array($question->items)) {
                     $radioarray = array();
                     foreach($question->items as $key=>$item) {
-                        //$radioarray[] =& $mform->createElement('radio', $question->name, '', get_string('yes'), 1, $attributes);
-                        $radioarray[] =& $mform->createElement('radio', $question->name, $label, $item->label, $item->id, array()/*$attributes*/);
-                        //$radioarray[] =& $mform->createElement('radio', $question->name, $label, $item, $key, array()/*$attributes*/);
+                        $radioarray[] =& $mform->createElement('radio', $name, ''/*$label*/, $item->label, $item->id, array()/*$attributes*/);
                     }
                 }
                 $mform->addGroup($radioarray, 'radioar', $label, array(' '), false);
@@ -269,29 +272,30 @@ class enrol_survey_user_form extends moodleform {
                 $items = array(''=>'');
                 if (isset($question->items) && is_array($question->items)) {
                     foreach($question->items as $key=>$value) {
-                        //$items[$key] = $value;
                         $items[$value->id] = $value->label;
                     }
                 }
-                $mform->addElement('select', $question->name, $label, $items);
-                //$mform->setType($question->name, PARAM_TEXT);
+                $mform->addElement('select', $name, $label, $items);
             } else if ($question->type == 'text') {
-                $mform->addElement('text', $question->name, $label);
-                //$mform->setType($question->name, PARAM_TEXT);
+                $mform->addElement('text', $name, $label);
             }
-            //if (isset($question->default) && !empty($question->default)) {
             //    $mform->addHelpButton($question->name, 'status', 'enrol_apply');
-            //}
             if (isset($question->default) && !empty($question->default)) {
                 $mform->setDefault($question->name, $question->default);
             }
-            //
-            $mform->setType($question->name, PARAM_TEXT);
+            $mform->setType($name, PARAM_TEXT);
             if (isset($question->required) && $question->required) {
-                $mform->addRule($question->name, get_string('missinanswer', 'enrol_survey'), 'required', null, 'client');
+                //$mform->addRule($question->name, get_string('missinanswer', 'enrol_survey'), 'required', null, 'client');
+                $mform->addRule($name, get_string('missinanswer', 'enrol_survey'), 'required');
             }
         }
-        $this->add_action_buttons(true, ($instance->id ? null : get_string('addinstance', 'enrol')));
+        /*$radioarray=array();
+        $radioarray[] =& $mform->createElement('radio', 'yesno', '', get_string('yes'), 1);
+        $radioarray[] =& $mform->createElement('radio', 'yesno', '', get_string('no'), 0);
+        $mform->addGroup($radioarray, 'radioar', '', array(' '), false);
+        $mform->addRule('yesno', get_string('missinanswer', 'enrol_survey'), 'required');*/
+
+        $this->add_action_buttons(true, ($enrol->id ? null : get_string('addinstance', 'enrol')));
     }
 }
 
@@ -351,13 +355,13 @@ function enrol_survey_show_questions($items, $returnurl, $buttons = null, $sort 
             if (isset($item->sort_order)) {
                 // Move up.
                 if ($item->sort_order != $first_item->sort_order) {
-                    $buttons_column[] = get_action_icon($returnurl . '?action=moveup&amp;id=' . $item->id . '&amp;sesskey=' . sesskey(), 'up', $strmoveup, $strmoveup);
+                    $buttons_column[] = get_action_icon($returnurl . '&action=moveup&amp;id=' . $item->id . '&amp;sesskey=' . sesskey(), 'up', $strmoveup, $strmoveup);
                 } else {
                     $buttons_column[] = get_spacer();
                 }
                 // Move down.
                 if (isset($item->sort_order) && ($item->sort_order != $last_item->sort_order)) {
-                    $buttons_column[] = get_action_icon($returnurl . '?action=movedown&amp;id=' . $item->id . '&amp;sesskey=' . sesskey(), 'down', $strmovedown, $strmovedown);
+                    $buttons_column[] = get_action_icon($returnurl . '&action=movedown&amp;id=' . $item->id . '&amp;sesskey=' . sesskey(), 'down', $strmovedown, $strmovedown);
                 } else {
                     $buttons_column[] = get_spacer();
                 }
@@ -471,58 +475,112 @@ function get_spacer() {
 function enrol_survey_get_questions($instance = null) {
     global $DB;
 
-    //dummy
-    /*$result = array();
-    //example of Text entry
-    $question = new stdClass();
-    $question->id = 1;
-    $question->name = 'question1';
-    $question->type = 'text';
-    $question->label = 'Example of Text entry';
-    $question->required = true;
-    $result[] = $question;
-    //example of Dropdown
-    $question = new stdClass();
-    $question->id = 2;
-    $question->name = 'question2';
-    $question->type = 'select';
-    $question->label = 'Example of Dropdown';
-    $question->items = array(1=>'First item', 2=>'Second item', 3=>'Third item');
-    $question->required = true;
-    $result[] = $question;
-    //example of Radio
-    $question = new stdClass();
-    $question->id = 3;
-    $question->name = 'question3';
-    $question->type = 'radio';
-    $question->label = 'Example of Radio';
-    $question->items = array(1=>'First item', 2=>'Second item', 3=>'Third item');
-    $question->required = false;
-    $result[] = $question;*/
-    //return $result;
-    //DebugBreak();
-    // 
-    $questions = $DB->get_records('enrol_survey_questions', array('enrolid'=>$instance->id));
+    if ($questions = $DB->get_records('enrol_survey_questions', array('enrolid'=>$instance->id), 'sort_order ASC')) {
     foreach ($questions as $question) {
-        $question->items = array();
-        $question->items = $DB->get_records('enrol_survey_options', array('questionid'=>$question->id));
-        /*$options = $DB->get_records('enrol_survey_options', array('questionid'=>$question->id));
-        foreach ($options as $option) {
-            $question->items
-        }*/
+            $question->items = array();
+            $question->items = $DB->get_records('enrol_survey_options', array('questionid'=>$question->id));
+            /*$options = $DB->get_records('enrol_survey_options', array('questionid'=>$question->id));
+            foreach ($options as $option) {
+                $question->items
+            }*/
+        }
+    } else {
+        $questions = array();
     }
     // result
     return $questions;
 }
 
+/**
+* Delete question
+* 
+* @param mixed $question
+*/
+function enrol_survey_delete_question($question = null) {
+    global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($question, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in enrol_survey_delete_question() detected');
+    }
+    // Better not trust the parameter and fetch the latest info this will be very expensive anyway.
+    if (!$question = $DB->get_record('enrol_survey_questions', array('id' => $question->id))) {
+        debugging('Attempt to delete unknown Question.');
+        return false;
+    }
+    try {
+        $transaction = $DB->start_delegated_transaction();    // start transaction         //delete:
+        $DB->delete_records('enrol_survey_options', array('questionid' => $question->id)); // choices
+        $DB->delete_records('enrol_survey_questions', array('id' => $question->id));       // question
+        $transaction->allow_commit();
+        $success = true;
+    } catch(Exception $e) {
+        $transaction->rollback($e);
+        $success = false;
+    } 
+    return $success;
+}
+
+/**
+* Move question down 
+* 
+* @param mixed $question
+* @return bool
+*/
+function enrol_survey_question_move_down($question) {
+    return move_question($question, 'down');
+}
+
+/**
+* Move question up 
+* 
+* @param mixed $question
+* @return bool
+*/
+function enrol_survey_question_move_up($question) {
+    return move_question($question, 'up');
+}
+
+/**
+* Move question
+* 
+* @param mixed $question
+* @param mixed $direction - direction of moving ("down" or "up")
+* @return bool
+*/
+function move_question($question, $direction = 'down') {
+    global $DB;
+    $sql = 'SELECT * FROM {enrol_survey_questions}
+            WHERE enrolid = ? 
+                  AND sort_order ' . ($direction == 'down' ? '>' : '<') . ' ?
+            ORDER BY sort_order ' . ($direction == 'down' ? 'ASC' : 'DESC') . '
+            LIMIT 1';
+    $other_question = $DB->get_record_sql($sql, array($question->enrolid, $question->sort_order));
+    if (!$other_question) { //if other question not exists - return false
+        return false;
+    }
+    $result = $DB->set_field('enrol_survey_questions', 'sort_order', $other_question->sort_order, array('id' => $question->id))
+           && $DB->set_field('enrol_survey_questions', 'sort_order', $question->sort_order,  array('id' => $other_question->id));
+    return $result;
+}
+
+
+/**
+* Save question (insert or edit)
+* 
+* @param mixed $question
+*/
 function enrol_survey_save_question($question = null) {
     global $DB, $USER;
     $success = false;
     // process possible answer strings
-    $answers = $question->answers;
-    $answers = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $answers);
-    $answers = trim($answers);
-    $answers = explode("\n", $answers);
+    if (isset($question->answers) && !empty($question->answers)) {
+        $answers = $question->answers;
+        $answers = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $answers);
+        $answers = trim($answers);
+        $answers = explode("\n", $answers);
+    } else {
+        $answers = array();
+    }
     unset($question->answers);
     // analize ID of question
     if (isset($question->id)) {  //edit question
@@ -568,4 +626,71 @@ function enrol_survey_save_question($question = null) {
         } 
     }
     return $success;
+}
+
+/**
+* Save question (insert or edit)
+* 
+* @param mixed $question
+*/
+function enrol_survey_save_user_answers($enroldata = null) {//DebugBreak();
+    global $DB, $USER;
+    //insert answer records
+    $timecreated = time();   //set time
+    $creatorid = $USER->id;  //set user who created
+    // get user answers
+    $user_answers = $enroldata->questions;
+    if (!is_array($user_answers) || empty($user_answers)) {
+        return false;
+    }
+    // get questions
+    $enrol = $DB->get_record('enrol', array('id'=>$enroldata->enrolid), '*', MUST_EXIST);
+    $questions = enrol_survey_get_questions($enrol);
+    
+    try {
+        $transaction = $DB->start_delegated_transaction(); 
+        //$question->sort_order = $DB->get_field_select('enrol_survey_questions', 'MAX(sort_order) + 1', 'enrolid = ?', array($question->enrolid));
+        //$question_id = $DB->insert_record('enrol_survey_questions', $question);
+        //insert answers
+        foreach($user_answers as $question_id=>$user_answer) {
+            $answer = new stdClass();
+            $answer->courseid = $enrol->courseid;
+            $answer->enrolid = $enrol->id;
+            $answer->userid = $creatorid;
+            $answer->timecreated = $timecreated;
+            $answer->questionid = $question_id;
+            $question = $questions[$question_id];  // question object
+            // analize question type
+            $option = null;
+            if (isset($question->items) && is_array($question->items) && !empty($question->items)) {
+                $items = $question->items;          //check: if options exists
+                if (isset($items[$user_answer]))    // check: if option selected
+                    $option = $items[$user_answer];
+            } 
+            if (isset($option)) {
+                $answer->answertext = $option->label;
+                $answer->optionid = $option->id;
+            } else {
+                $answer->answertext = $user_answer;
+                $answer->optionid = null;
+            }
+            $DB->insert_record('enrol_survey_answers', $answer);
+        }
+        $transaction->allow_commit();
+        $success = true;
+    } catch(Exception $e) {
+        $transaction->rollback($e);
+        $success = false;
+    } 
+    
+}
+
+/**
+* Save question (insert or edit)
+* 
+* @param mixed $question
+*/
+function enrol_survey_delete_user_answers($enrol, $user) {
+    global $DB;
+    return $DB->delete_records('enrol_survey_answers', array('enrolid'=>$enrol->id, 'userid'=>$user->id));
 }

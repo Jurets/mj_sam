@@ -47,13 +47,13 @@ $capabilities = array(
         )
     ),
 
-    'enrol/survey:unenrolapply' => array(
+    /*'enrol/survey:unenrolapply' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => array(
             'student' => CAP_ALLOW,
         )
-    ),
+    ),*/
 
     'enrol/survey:unenrol' => array(
         'captype' => 'write',

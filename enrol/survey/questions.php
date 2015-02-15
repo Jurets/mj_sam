@@ -37,6 +37,10 @@ $systemcontext = context_system::instance();
 // get instance of enrolment
 $enrolid = optional_param('enrolid', 0, PARAM_INT);
 $instance = $DB->get_record('enrol', array('id'=>$enrolid), '*', MUST_EXIST);
+$confirm = optional_param('confirm', '', PARAM_ALPHANUM);   //md5 confirmation hash
+
+// get question id
+$id = optional_param('id', 0, PARAM_INT); //admin action for mooc-settings
 
 // get course
 $course = $DB->get_record('course', array('id'=>$instance->courseid), '*', MUST_EXIST);
@@ -58,6 +62,8 @@ $actionIndex = 'index';
 $actionAdd = 'add';
 $actionEdit = 'edit';
 $actionDelete = 'delete';
+$actionMoveDown = 'movedown';
+$actionMoveUp = 'moveup';
 
 //URL settings
 $returnurl = new moodle_url($CFG->wwwroot.'/enrol/survey/questions.php', array('enrolid'=>$enrolid));
@@ -119,38 +125,28 @@ switch($action) {
             $PAGE->navbar->add(get_string('edit_question', 'enrol_survey'));
             $actionurl = new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$id));
             $questionid = optional_param('questionid', 0, PARAM_INT);
-            $question = $DB->get_record('enrol_survey_questions', array('id'=>$questionid)); //get data from DB
+            $question = $DB->get_record('enrol_survey_questions', array('id'=>$id)); //get data from DB
         }
-        //DebugBreak();
-        
+        // run question edit form
         $editform = new enrol_survey_question_form($actionurl->out(false), array(
             'enrolid'=>$enrolid, 
-            //'type'=>$data->type
             'question'=>$question,
         )); //create form instance
-                       //$editform->validation($editform->get_submitted_data())
         if ($editform->is_cancelled()) {  //in cancel form case - redirect to previous page
             $url = new moodle_url($returnurl, array('action' => $actionIndex));
             redirect($url);
-        } else if ($data = $editform->get_data()) {//DebugBreak();
-            //if ($action == $actionAdd) 
-            {
-                $data->enrolid = $enrolid;
-                $data->courseid = $course->id;
-                $success = enrol_survey_save_question($data);
-            }
-            // else if (isset($enrolid)){
-            //    $success = edit_resource($data);
-            //}
-            if ($success){  //call create Resource Type function
+        } else if ($question = $editform->get_data()) {// if form data received
+            $question->enrolid = $enrolid;
+            $question->courseid = $course->id;
+            $success = enrol_survey_save_question($question);
+            if ($success) {
                 $url = new moodle_url($returnurl, array('action' => $actionIndex));
                 redirect($url);
             }
-        } else if ($editform->is_submitted()) {
+        } /*else if ($editform->is_submitted()) {
             $data = $editform->get_submitted_data();
             $question->type = $data->type;
-            //$editform->_customdata['question'] = $question;
-        }
+        }*/
         
         //show form page
         echo $OUTPUT->header();
@@ -159,7 +155,26 @@ switch($action) {
         echo $OUTPUT->footer();
         break;
         
-    case $actionDelete: 
+    // Move Section Up in section List
+    case $actionMoveUp:
+    case $actionMoveDown:
+        // get section in list
+        $question = $DB->get_record('enrol_survey_questions', array('id'=>$id)); //get data from DB
+        // build url for return
+        $url = new moodle_url($returnurl);
+        if (confirm_sesskey()) {
+            if ($action == $actionMoveDown)
+                $result = enrol_survey_question_move_down($question);  //move down
+            else if ($action == $actionMoveUp)
+                $result = enrol_survey_question_move_up($question);    //move up
+            if (!$result) {
+                print_error('cannotmove', 'enrol_survey', $url->out(false), $id);
+            }
+        }
+        redirect($url);
+        break;
+
+    case $actionDelete:
         //breadcrumbs
         $str_delete = get_string('delete_question', 'enrol_survey');
         $PAGE->navbar->add($str_delete);
@@ -178,11 +193,11 @@ switch($action) {
                     echo $OUTPUT->notification($str);
                 } else*/ {
                     $optionsyes = array('action'=>$actionDelete, 'id'=>$id, 'confirm'=>md5($id), 'sesskey'=>sesskey());
-                    echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$item->title'"), new moodle_url($returnurl, $optionsyes), $returnurl);
+                    echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$question->name'"), new moodle_url($returnurl, $optionsyes), $returnurl);
                 }
                 echo $OUTPUT->footer();
             } else if (data_submitted() /*&& !$data->deleted*/){
-                if (delete_resource($item)) {
+                if (enrol_survey_delete_question($question)) {
                     $url = new moodle_url($returnurl, array('action' => $actionIndex));
                     redirect($url);
                 } else {

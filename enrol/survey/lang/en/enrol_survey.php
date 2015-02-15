@@ -33,6 +33,7 @@ $string['pluginname_desc'] = 'Administrator should be able to set up any number 
 
 $string['manage_questions'] = 'Manage questions';
 $string['enrolusers'] = 'Enrol users';
+$string['delete_question'] = 'Delete question';
 
 $string['comment'] = 'Comment';
 $string['type'] = 'Type';
@@ -47,6 +48,7 @@ $string['survey:unenrol'] = 'Cancel users from course';
 $string['notification'] = '<b>You are enrolled successfully to this course</b>. <br/><br/>You will be informed by email as soon as your enrollment has been confirmed. If you want to enroll to other courses, please click "course catalogue" in the top menu.';
 $string['missinanswer'] = 'Missing answer';
 $string['missing_value'] = 'Missing value! Please enter';
+$string['cannotmove'] = 'Can not move this item with ID {$a}';
  
 /*$string['confirmmailsubject'] = 'Confirm mail subject';
 $string['confirmmailcontent'] = 'Confirm mail content';

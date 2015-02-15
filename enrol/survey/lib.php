@@ -126,7 +126,7 @@ class enrol_survey_plugin extends enrol_plugin {
                 $formSurvey->display();
                 echo $OUTPUT->footer();
                 return;*/
-                $url = new moodle_url("$CFG->wwwroot/enrol/survey/survey.php", array('id'=>$data->id, 'instance'=>$data->instance));
+                $url = new moodle_url("$CFG->wwwroot/enrol/survey/survey.php", array('enrolid'=>$data->instance));
                 redirect($url);
 			}
 		}
@@ -196,49 +196,3 @@ function getAllEnrolment1($id = null){
 	}
 	return $userenrolments;
 }
-/*
-function confirmEnrolment($enrols){
-	global $DB;
-	global $CFG;
-	foreach ($enrols as $enrol){
-		@$enroluser->id = $enrol;
-		@$enroluser->status = 0;
-
-		if($DB->update_record('user_enrolments',$enroluser)){
-			$userenrolments = $DB->get_record_sql('select * from '.$CFG->prefix.'user_enrolments where id='.$enrol);
-			$role = $DB->get_record_sql("select * from ".$CFG->prefix."role where archetype='student' limit 1");
-			@$roleAssignments->userid = $userenrolments->userid;
-			@$roleAssignments->roleid = $role->id;
-			@$roleAssignments->contextid = 3;
-			@$roleAssignments->timemodified = time();
-			@$roleAssignments->modifierid = 2;
-			$DB->insert_record('role_assignments',$roleAssignments);
-			$info = getRelatedInfo($enrol);
-			sendConfirmMail($info);
-		}
-	}
-}
-
-function cancelEnrolment($enrols){
-	global $DB;
-	foreach ($enrols as $enrol){
-		$info = getRelatedInfo($enrol);
-		if($DB->delete_records('user_enrolments',array('id'=>$enrol))){
-			sendCancelMail($info);
-		}
-	}
-}
-
-function getRelatedInfo($enrolid){
-	global $DB;
-	global $CFG;
-	return $DB->get_record_sql('select u.*,c.fullname as coursename from '.$CFG->prefix.'user_enrolments as ue left join '.$CFG->prefix.'user as u on ue.userid=u.id left join '.$CFG->prefix.'enrol as e on ue.enrolid=e.id left
-	join '.$CFG->prefix.'course as c on e.courseid=c.id where ue.id='.$enrolid);
-}
-
-function updateMailContent($content,$replace){
-	foreach ($replace as $key=>$val) {
-		$content = str_replace("{".$key."}",$val,$content);
-	}
-	return $content;
-}*/

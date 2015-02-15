@@ -34,9 +34,13 @@ require_once ('lib.php');
 
 $site = get_site();
 //$systemcontext = context_system::instance();
-//DebugBreak();
-$id = required_param('id', PARAM_INT); // course id
-$course = $DB->get_record ('course', array ('id' => $id ), '*', MUST_EXIST);
+
+$enrolid = optional_param('enrolid', 0, PARAM_INT);
+//$enrol = $DB->get_record('enrol', array('courseid'=>$course->id, 'enrol'=>'survey', 'id'=>$enrolid), '*', MUST_EXIST);
+$enrol = $DB->get_record('enrol', array('id'=>$enrolid), '*', MUST_EXIST);
+//$id = required_param('id', PARAM_INT); // course id
+//$course = $DB->get_record('course', array ('id' => $id ), '*', MUST_EXIST);
+$course = $DB->get_record('course', array('id'=>$enrol->courseid), '*', MUST_EXIST);
 $context = context_course::instance($course->id, MUST_EXIST);
 
 require_login($course);
@@ -47,44 +51,45 @@ $PAGE->set_url('/enrol/apply.php', array('id' => $course->id ));
 $PAGE->set_pagelayout('admin');
 $PAGE->set_heading($course->fullname);
 
-$PAGE->navbar->add(get_string('confirmusers', 'enrol_survey'));
+$PAGE->navbar->add(get_string('enrolusers', 'enrol_survey'));
 $PAGE->set_title("$site->shortname: " . get_string('confirmusers', 'enrol_apply'));
 
 //include form for survey
 require_once("$CFG->dirroot/enrol/survey/locallib.php");
 
 $plugin = enrol_get_plugin('survey');
-$instanceid = optional_param('instance', 0, PARAM_INT);
-$instance = $DB->get_record('enrol', array('courseid'=>$course->id, 'enrol'=>'survey', 'id'=>$instanceid), '*', MUST_EXIST);
 
 // get list of questions
-$questions = enrol_survey_get_questions($instance);
-
+$questions = enrol_survey_get_questions($enrol);
+//DebugBreak();
 $form = new enrol_survey_user_form(null, array(
-    'instance'=>$instance, 
+    'enrol'=>$enrol, 
     'plugin'=>$plugin, 
     'context'=>$context,
     'questions'=>$questions,
 ));
 
-if ($data = $form->get_data()) {DebugBreak();
-    //$enrol = enrol_get_plugin('self');
+if ($enroldata = $form->get_data()) {
+    //
+    enrol_survey_save_user_answers($enroldata);
+    
+    // enrol user who complete survey
     $timestart = time();
-    if ($instance->enrolperiod) {
-        $timeend = $timestart + $instance->enrolperiod;
+    if ($enrol->enrolperiod) {
+        $timeend = $timestart + $enrol->enrolperiod;
     } else {
         $timeend = 0;
     }
 
-    $roleid = $instance->roleid;
+    $roleid = $enrol->roleid;
     if(!$roleid){
         $role = $DB->get_record_sql("select * from ".$CFG->prefix."role where archetype='student' limit 1");
         $roleid = $role->id;
     }
-    // run user enrol procedure
-    $plugin->enrol_user($instance, $USER->id, $roleid, $timestart, $timeend,1);
+    // run user enrol procedure (status = null for enrol activity)
+    $plugin->enrol_user($enrol, $USER->id, $roleid, $timestart, $timeend, null);
     // redirect to course view main page
-    redirect("$CFG->wwwroot/course/view.php?id=$instance->courseid");
+    redirect("$CFG->wwwroot/course/view.php?id=$enrol->courseid");
 }
 
 echo $OUTPUT->header();

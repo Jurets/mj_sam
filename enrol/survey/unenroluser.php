@@ -41,7 +41,7 @@ $course = $DB->get_record('course', array('id'=>$instance->courseid), '*', MUST_
 $context = context_course::instance($course->id);
 
 // set up PAGE url first!
-$PAGE->set_url('/enrol/unenroluser.php', array('ue'=>$ueid, 'ifilter'=>$filter));
+$PAGE->set_url('/enrol/survey/unenroluser.php', array('ue'=>$ueid, 'ifilter'=>$filter));
 
 require_login($course);
 
@@ -66,6 +66,11 @@ navigation_node::override_active_url($usersurl);
 
 // If the unenrolment has been confirmed and the sesskey is valid unenrol the user.
 if ($confirm && confirm_sesskey()) {
+    //include form for survey
+    require_once("$CFG->dirroot/enrol/survey/locallib.php");
+    // delete user answers
+    enrol_survey_delete_user_answers($instance, $user);
+    // unenrol user
     $plugin->unenrol_user($instance, $ue->userid);
     redirect($returnurl);
 }
