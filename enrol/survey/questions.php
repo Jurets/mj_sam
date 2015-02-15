@@ -106,10 +106,9 @@ switch($action) {
         
     case $actionAdd:
     case $actionEdit:
-        //require_once($CFG->dirroot.'/mod/resourcelib/form_edititem.php'); //include form_edittype.php  
-        //DebugBreak();
+        //
         $head_str = ($action == $actionAdd) ? get_string('add_question', 'enrol_survey') : get_string('edit_question', 'enrol_survey');
-        //DebugBreak();
+        //
         if ($action == $actionAdd) { //add new type
             $PAGE->navbar->add($head_str);
             $actionurl = new moodle_url($returnurl, array('action' => $actionAdd));
@@ -125,7 +124,7 @@ switch($action) {
             $PAGE->navbar->add(get_string('edit_question', 'enrol_survey'));
             $actionurl = new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$id));
             $questionid = optional_param('questionid', 0, PARAM_INT);
-            $question = $DB->get_record('enrol_survey_questions', array('id'=>$id)); //get data from DB
+            $question = enrol_survey_get_one_question($id); //get data from DB
         }
         // run question edit form
         $editform = new enrol_survey_question_form($actionurl->out(false), array(
@@ -143,10 +142,7 @@ switch($action) {
                 $url = new moodle_url($returnurl, array('action' => $actionIndex));
                 redirect($url);
             }
-        } /*else if ($editform->is_submitted()) {
-            $data = $editform->get_submitted_data();
-            $question->type = $data->type;
-        }*/
+        } 
         
         //show form page
         echo $OUTPUT->header();

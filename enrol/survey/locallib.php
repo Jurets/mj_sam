@@ -166,6 +166,16 @@ class enrol_survey_question_form extends moodleform {
         $enrolid = $this->_customdata['enrolid'];
         $question = $this->_customdata['question'];
         
+        //DebugBreak();
+        if (!isset($question->id) && (!isset($question->type) || empty($question->type))) {
+            if ($this->is_submitted()) {
+                $data = $this->get_submitted_data();
+                $question->type = $data->type;
+            } else if (isset($_POST['type'])) {
+                $question->type = $_POST['type'];  //crutch... !TODO: use moodleform methods instedd $_POST
+            }
+        }
+
         $enrol = $mform->addElement('hidden', 'enrolid');
         $mform->setType('enrolid', PARAM_INT);
         $enrol->setValue($enrolid);
@@ -188,29 +198,20 @@ class enrol_survey_question_form extends moodleform {
         $mform->addRule('required', get_string('missing_value', 'enrol_survey'), 'required', null, 'client');
         //$mform->addHelpButton('reqgroup', 'required', 'questionnaire');
         
-        /*$qtypes = array('text'=>'text', 'select'=>'select', 'radio'=>'radio');
-        $mform->addElement('select', 'type', get_string('type', 'enrol_survey'), $qtypes);
-        $mform->setType('type', PARAM_TEXT);                   //Set type of element
-        $mform->addRule('type', get_string('missingtype'), 'required', null, 'client');*/
-       
-        /*$addqgroup = array();
-        $addqgroup[] =& $mform->createElement('select', 'type', '', $qtypes);
-        $addqgroup[] =& $mform->createElement('submit', 'addqbutton', get_string('addselqtype', 'questionnaire'));
-        $mform->addGroup($addqgroup, 'addqgroup', '', ' ', false);*/
-        
         $mform->addElement('text', 'label', get_string('label', 'enrol_survey'), array('style'=>'width: 100%'));
         $mform->setType('label', PARAM_TEXT);
-        
-        if ($this->is_submitted()) {
-            $data = $this->get_submitted_data();
-            $question_type = $data->type;
-        } else {
-            $question_type = $_POST['type'];  //crutch... !TODO: use moodleform methods instedd $_POST
-        }
-        
-        if ($question_type <> 'text') {
-            $mform->addElement('textarea', 'answers', get_string('possible_answers', 'enrol_survey'), array('rows'=>8, 'style'=>'width: 100%')); // Add elements to your form
+
+        if ($question->type <> 'text') {
+            $answers = $mform->addElement('textarea', 'answers', get_string('possible_answers', 'enrol_survey'), array('rows'=>8, 'style'=>'width: 100%')); // Add elements to your form
             $mform->setType('answers', PARAM_TEXT);                   //Set type of element
+            
+            if (isset($question->id)) {
+                $answers_text = '';
+                foreach ($question->items as $item) {
+                    $answers_text .= $item->label . "\n";
+                }
+                $answers->setValue($answers_text);
+            }
         }
         
         //if (isset($question)) 
@@ -492,6 +493,22 @@ function enrol_survey_get_questions($instance = null) {
 }
 
 /**
+* get one question
+* 
+* @param mixed $instance - instance of enrol
+*/
+function enrol_survey_get_one_question($id = null) {
+    global $DB;
+    if ($question = $DB->get_record('enrol_survey_questions', array('id'=>$id))) {
+        $question->items = $DB->get_records('enrol_survey_options', array('questionid'=>$question->id));
+    } else {
+        //$question->items = array();
+    }
+    // result
+    return $question;
+}
+
+/**
 * Delete question
 * 
 * @param mixed $question
@@ -649,8 +666,6 @@ function enrol_survey_save_user_answers($enroldata = null) {//DebugBreak();
     
     try {
         $transaction = $DB->start_delegated_transaction(); 
-        //$question->sort_order = $DB->get_field_select('enrol_survey_questions', 'MAX(sort_order) + 1', 'enrolid = ?', array($question->enrolid));
-        //$question_id = $DB->insert_record('enrol_survey_questions', $question);
         //insert answers
         foreach($user_answers as $question_id=>$user_answer) {
             $answer = new stdClass();
@@ -686,9 +701,9 @@ function enrol_survey_save_user_answers($enroldata = null) {//DebugBreak();
 }
 
 /**
-* Save question (insert or edit)
+* Delete all user answers
 * 
-* @param mixed $question
+* @param mixed $enrol
 */
 function enrol_survey_delete_user_answers($enrol, $user) {
     global $DB;

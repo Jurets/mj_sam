@@ -42,6 +42,7 @@ $string['required'] = 'Response is required Help with Response is required';
 $string['possible_answers'] = 'Possible answers';
 
 $string['add_question'] = 'Add Question';
+$string['edit_question'] = 'Edit Question';
 
 $string['survey:unenrol'] = 'Cancel users from course';
 

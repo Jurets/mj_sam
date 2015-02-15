@@ -36,10 +36,7 @@ $site = get_site();
 //$systemcontext = context_system::instance();
 
 $enrolid = optional_param('enrolid', 0, PARAM_INT);
-//$enrol = $DB->get_record('enrol', array('courseid'=>$course->id, 'enrol'=>'survey', 'id'=>$enrolid), '*', MUST_EXIST);
 $enrol = $DB->get_record('enrol', array('id'=>$enrolid), '*', MUST_EXIST);
-//$id = required_param('id', PARAM_INT); // course id
-//$course = $DB->get_record('course', array ('id' => $id ), '*', MUST_EXIST);
 $course = $DB->get_record('course', array('id'=>$enrol->courseid), '*', MUST_EXIST);
 $context = context_course::instance($course->id, MUST_EXIST);
 
