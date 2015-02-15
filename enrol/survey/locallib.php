@@ -123,6 +123,109 @@ class enrol_survey_enrol_form extends moodleform {
     }
 }
 
+/**
+* form for starting of new question process
+*/
+class enrol_survey_addquestion_form extends moodleform {
+
+    function definition() {
+        $mform = $this->_form;
+        
+        $enrolid = $this->_customdata['enrolid'];
+        
+        $enrol = $mform->addElement('hidden', 'enrolid');
+        $mform->setType('enrolid', PARAM_INT);
+        $enrol->setValue($enrolid);
+
+        $qtypes = array('text'=>'text', 'select'=>'select', 'radio'=>'radio');
+        /*$mform->addElement('select', 'type', get_string('type', 'enrol_survey'), $qtypes);
+        $mform->setType('type', PARAM_TEXT);                   //Set type of element
+        $mform->addRule('type', get_string('missingtype'), 'required', null, 'client');*/
+       
+        $addqgroup = array();
+        $addqgroup[] =& $mform->createElement('select', 'type', '', $qtypes);
+        // The 'sticky' type_id value for further new questions.
+        /*if (isset($SESSION->questionnaire->type_id)) {
+                $mform->setDefault('type_id', $SESSION->questionnaire->type_id);
+        }*/
+        $addqgroup[] =& $mform->createElement('submit', 'addqbutton', get_string('addselqtype', 'questionnaire'));
+        //$questionnairehasdependencies = questionnaire_has_dependencies($questionnaire->questions);
+        $mform->addGroup($addqgroup, 'addqgroup', '', ' ', false);
+    }
+}
+
+/**
+* form for question editing
+*/
+class enrol_survey_question_form extends moodleform {
+
+    function definition() {
+        $mform = $this->_form;
+        
+        // set main data
+        $enrolid = $this->_customdata['enrolid'];
+        $question = $this->_customdata['question'];
+        
+        $enrol = $mform->addElement('hidden', 'enrolid');
+        $mform->setType('enrolid', PARAM_INT);
+        $enrol->setValue($enrolid);
+
+        $mform->addElement('hidden', 'type');
+        $mform->setType('type', PARAM_TEXT);
+        
+        $stryes = get_string('yes');
+        $strno  = get_string('no');
+
+        $mform->addElement('text', 'name', get_string('name'), array('size'=>'30', 'maxlength'=>'30'));
+        $mform->setType('name', PARAM_TEXT);
+        $mform->addRule('name', get_string('missingname'), 'required', null, 'client');
+        //$mform->addHelpButton('name', 'optionalname', 'questionnaire');
+
+        $reqgroup = array();
+        $reqgroup[] =& $mform->createElement('radio', 'required', '', $stryes, '1');
+        $reqgroup[] =& $mform->createElement('radio', 'required', '', $strno, '0');
+        $mform->addGroup($reqgroup, 'required', get_string('required', 'enrol_survey'), ' ', false);
+        $mform->addRule('required', get_string('missing_value', 'enrol_survey'), 'required', null, 'client');
+        //$mform->addHelpButton('reqgroup', 'required', 'questionnaire');
+        
+        /*$qtypes = array('text'=>'text', 'select'=>'select', 'radio'=>'radio');
+        $mform->addElement('select', 'type', get_string('type', 'enrol_survey'), $qtypes);
+        $mform->setType('type', PARAM_TEXT);                   //Set type of element
+        $mform->addRule('type', get_string('missingtype'), 'required', null, 'client');*/
+       
+        /*$addqgroup = array();
+        $addqgroup[] =& $mform->createElement('select', 'type', '', $qtypes);
+        $addqgroup[] =& $mform->createElement('submit', 'addqbutton', get_string('addselqtype', 'questionnaire'));
+        $mform->addGroup($addqgroup, 'addqgroup', '', ' ', false);*/
+        
+        $mform->addElement('text', 'label', get_string('label', 'enrol_survey'), array('style'=>'width: 100%'));
+        $mform->setType('label', PARAM_TEXT);
+        
+        if ($this->is_submitted()) {
+            $data = $this->get_submitted_data();
+            $question_type = $data->type;
+        } else {
+            $question_type = $_POST['type'];  //crutch
+        }
+        
+        if ($question_type <> 'text') {
+            $mform->addElement('textarea', 'answers', get_string('possible_answers', 'enrol_survey'), array('rows'=>8, 'style'=>'width: 100%')); // Add elements to your form
+            $mform->setType('answers', PARAM_TEXT);                   //Set type of element
+        }
+        
+        //if (isset($question)) 
+        {
+            $this->set_data($question);
+        }
+        
+        $this->add_action_buttons();
+        
+    }
+}
+
+/**
+*  form for user answering
+*/
 class enrol_survey_user_form extends moodleform {
 
     function definition() {
@@ -193,56 +296,19 @@ class enrol_survey_user_form extends moodleform {
 }
 
 /**
-* get list of questions, wich attached to course enrol plugin
+* Show add button (usually near data table)
 * 
-* @param mixed $instance - instance of enrol
+* @param mixed $url
+* @param mixed $label
+* @param mixed $attributes
 */
-function enrol_survey_get_questions($instance = null) {
-    global $DB;
-
-    //dummy
-    /*$result = array();
-    //example of Text entry
-    $question = new stdClass();
-    $question->id = 1;
-    $question->name = 'question1';
-    $question->type = 'text';
-    $question->label = 'Example of Text entry';
-    $question->required = true;
-    $result[] = $question;
-    //example of Dropdown
-    $question = new stdClass();
-    $question->id = 2;
-    $question->name = 'question2';
-    $question->type = 'select';
-    $question->label = 'Example of Dropdown';
-    $question->items = array(1=>'First item', 2=>'Second item', 3=>'Third item');
-    $question->required = true;
-    $result[] = $question;
-    //example of Radio
-    $question = new stdClass();
-    $question->id = 3;
-    $question->name = 'question3';
-    $question->type = 'radio';
-    $question->label = 'Example of Radio';
-    $question->items = array(1=>'First item', 2=>'Second item', 3=>'Third item');
-    $question->required = false;
-    $result[] = $question;*/
-    //return $result;
-    //DebugBreak();
-    // 
-    $questions = $DB->get_records('enrol_survey_questions', array('enrolid'=>$instance->id));
-    foreach ($questions as $question) {
-        $question->items = array();
-        $question->items = $DB->get_records('enrol_survey_options', array('questionid'=>$question->id));
-        /*$options = $DB->get_records('enrol_survey_options', array('questionid'=>$question->id));
-        foreach ($options as $option) {
-            $question->items
-        }*/
-    }
-    // result
-    return $questions;
+function enrol_survey_show_addbutton($url, $label, $attributes = array('class' => 'mdl-right')) {
+    global $OUTPUT;
+    echo html_writer::start_tag('div', $attributes);
+    echo html_writer::tag('a', $OUTPUT->pix_icon('t/add', '') . ' ' . $label, array('href' => $url->out(false)));
+    echo html_writer::end_tag('div');
 }
+
 
 /**
 * show Resource items in HTML table
@@ -395,4 +461,111 @@ function get_action_icon($url, $icon, $alt, $tooltip) {
 function get_spacer() {
     global $OUTPUT;
     return '<img src="' . $OUTPUT->pix_url('spacer') . '" class="iconsmall" alt="" /> ';
+}
+
+/**
+* get list of questions, wich attached to course enrol plugin
+* 
+* @param mixed $instance - instance of enrol
+*/
+function enrol_survey_get_questions($instance = null) {
+    global $DB;
+
+    //dummy
+    /*$result = array();
+    //example of Text entry
+    $question = new stdClass();
+    $question->id = 1;
+    $question->name = 'question1';
+    $question->type = 'text';
+    $question->label = 'Example of Text entry';
+    $question->required = true;
+    $result[] = $question;
+    //example of Dropdown
+    $question = new stdClass();
+    $question->id = 2;
+    $question->name = 'question2';
+    $question->type = 'select';
+    $question->label = 'Example of Dropdown';
+    $question->items = array(1=>'First item', 2=>'Second item', 3=>'Third item');
+    $question->required = true;
+    $result[] = $question;
+    //example of Radio
+    $question = new stdClass();
+    $question->id = 3;
+    $question->name = 'question3';
+    $question->type = 'radio';
+    $question->label = 'Example of Radio';
+    $question->items = array(1=>'First item', 2=>'Second item', 3=>'Third item');
+    $question->required = false;
+    $result[] = $question;*/
+    //return $result;
+    //DebugBreak();
+    // 
+    $questions = $DB->get_records('enrol_survey_questions', array('enrolid'=>$instance->id));
+    foreach ($questions as $question) {
+        $question->items = array();
+        $question->items = $DB->get_records('enrol_survey_options', array('questionid'=>$question->id));
+        /*$options = $DB->get_records('enrol_survey_options', array('questionid'=>$question->id));
+        foreach ($options as $option) {
+            $question->items
+        }*/
+    }
+    // result
+    return $questions;
+}
+
+function enrol_survey_save_question($question = null) {
+    global $DB, $USER;
+    $success = false;
+    // process possible answer strings
+    $answers = $question->answers;
+    $answers = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $answers);
+    $answers = trim($answers);
+    $answers = explode("\n", $answers);
+    unset($question->answers);
+    // analize ID of question
+    if (isset($question->id)) {  //edit question
+        //insert question record
+        $question->timemodified = time();   //set time
+        $question->modifierid = $USER->id;  //set user who created
+        try {
+            $transaction = $DB->start_delegated_transaction(); 
+            $question_id = $DB->insert_record('enrol_survey_questions', $question);
+            //insert answers
+            foreach($answers as $label) {
+                $answer = new stdClass();
+                $answer->questionid = $question_id;
+                $answer->label = $label;
+                $DB->insert_record('enrol_survey_options', $answer);
+            }
+            $transaction->allow_commit();
+            $success = true;
+        } catch(Exception $e) {
+            $transaction->rollback($e);
+            $success = false;
+        } 
+    } else { //add question
+        //insert question record
+        $question->timecreated = time();   //set time
+        $question->creatorid = $USER->id;  //set user who created
+        try {
+            $transaction = $DB->start_delegated_transaction(); 
+            $question->sort_order = $DB->get_field_select('enrol_survey_questions', 'MAX(sort_order) + 1', 'enrolid = ?', array($question->enrolid));
+            $question_id = $DB->insert_record('enrol_survey_questions', $question);
+            //insert answers
+            foreach($answers as $label) {
+                $answer = new stdClass();
+                $answer->questionid = $question_id;
+                $answer->label = $label;
+                $DB->insert_record('enrol_survey_options', $answer);
+            }
+            $transaction->allow_commit();
+            $success = true;
+        } catch(Exception $e) {
+            $transaction->rollback($e);
+            $success = false;
+        } 
+    }
+    return $success;
 }

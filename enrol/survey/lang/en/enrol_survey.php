@@ -37,11 +37,16 @@ $string['enrolusers'] = 'Enrol users';
 $string['comment'] = 'Comment';
 $string['type'] = 'Type';
 $string['label'] = 'Label';
+$string['required'] = 'Response is required Help with Response is required';
+$string['possible_answers'] = 'Possible answers';
+
+$string['add_question'] = 'Add Question';
 
 $string['survey:unenrol'] = 'Cancel users from course';
 
 $string['notification'] = '<b>You are enrolled successfully to this course</b>. <br/><br/>You will be informed by email as soon as your enrollment has been confirmed. If you want to enroll to other courses, please click "course catalogue" in the top menu.';
 $string['missinanswer'] = 'Missing answer';
+$string['missing_value'] = 'Missing value! Please enter';
  
 /*$string['confirmmailsubject'] = 'Confirm mail subject';
 $string['confirmmailcontent'] = 'Confirm mail content';

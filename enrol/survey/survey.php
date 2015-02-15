@@ -47,7 +47,7 @@ $PAGE->set_url('/enrol/apply.php', array('id' => $course->id ));
 $PAGE->set_pagelayout('admin');
 $PAGE->set_heading($course->fullname);
 
-$PAGE->navbar->add(get_string('confirmusers', 'enrol_apply'));
+$PAGE->navbar->add(get_string('confirmusers', 'enrol_survey'));
 $PAGE->set_title("$site->shortname: " . get_string('confirmusers', 'enrol_apply'));
 
 //include form for survey
