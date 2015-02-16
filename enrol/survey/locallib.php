@@ -620,7 +620,7 @@ function enrol_survey_save_question($question = null) {
         $question->creatorid = $USER->id;  //set user who created
         try {
             $transaction = $DB->start_delegated_transaction(); 
-            $question->sort_order = $DB->get_field_select('enrol_survey_questions', 'MAX(sort_order) + 1', 'enrolid = ?', array($question->enrolid));
+            $question->sort_order = $DB->get_field_select('enrol_survey_questions', 'COALESCE(MAX(sort_order) + 1, 1)', 'enrolid = ?', array($question->enrolid));
             $question_id = $DB->insert_record('enrol_survey_questions', $question);
             //insert answers
             foreach($answers as $label) {

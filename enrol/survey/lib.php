@@ -83,49 +83,13 @@ class enrol_survey_plugin extends enrol_plugin {
 				return $OUTPUT->notification(get_string('maxenrolledreached', 'enrol_self'));
 			}
 		}
-
 		require_once("$CFG->dirroot/enrol/survey/locallib.php");
         //DebugBreak();
-		//$url = new moodle_url("$CFG->wwwroot/enrol/survey/survey.php", array());
-        //$form = new enrol_survey_enrol_form($url, $instance);
         $form = new enrol_survey_enrol_form(null, $instance);
-
-        /*$plugin = enrol_get_plugin('survey');
-        
-        $formSurvey = new user_survey_form(null, array(
-            'instance'=>$instance, 
-            'plugin'=>$plugin, 
-            //'context'=>$context,
-        ));*/
-        
+        //
 		$instanceid = optional_param('instance', 0, PARAM_INT);
 		if ($instance->id == $instanceid) {
-			/*if ($data = $formSurvey->get_data()) {
-                $enrol = enrol_get_plugin('self');
-                $timestart = time();
-                if ($instance->enrolperiod) {
-                    $timeend = $timestart + $instance->enrolperiod;
-                } else {
-                    $timeend = 0;
-                }
-
-                $roleid = $instance->roleid;
-                if(!$roleid){
-                    $role = $DB->get_record_sql("select * from ".$CFG->prefix."role where archetype='student' limit 1");
-                    $roleid = $role->id;
-                }
-
-                $this->enrol_user($instance, $USER->id, $roleid, $timestart, $timeend,1);
-                //sendConfirmMailToTeachers($instance->courseid, $instance->id, $data->applydescription);
-                //sendConfirmMailToManagers($instance->courseid,$data->applydescription);
-                
-                add_to_log($instance->courseid, 'course', 'enrol', '../enrol/users.php?id='.$instance->courseid, $instance->courseid); //there should be userid somewhere!
-                redirect("$CFG->wwwroot/course/view.php?id=$instance->courseid");
-            } else*/ if ($data = $form->get_data()) {//DebugBreak();
-				/*echo $OUTPUT->header();
-                $formSurvey->display();
-                echo $OUTPUT->footer();
-                return;*/
+            if ($data = $form->get_data()) {
                 $url = new moodle_url("$CFG->wwwroot/enrol/survey/survey.php", array('enrolid'=>$data->instance));
                 redirect($url);
 			}

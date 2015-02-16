@@ -27,6 +27,8 @@
  */
 
  // The name of your plugin. Displayed on admin menus.
+$string['enrol_survey'] = 'enrol_survey';
+
 $string['enrolname'] = 'Survey Enrollment';
 $string['pluginname'] = 'Survey Enrollment';
 $string['pluginname_desc'] = 'Administrator should be able to set up any number of questions of the different types. Users should be enrolled in the course when they have successfully completed the survey.';
@@ -53,37 +55,4 @@ $string['missing_value'] = 'Missing value! Please enter';
 $string['cannotmove'] = 'Can not move this item with ID {$a}';
 $string['no_questions'] = 'There is no Questions in this Enrolment';
  
-/*$string['confirmmailsubject'] = 'Confirm mail subject';
-$string['confirmmailcontent'] = 'Confirm mail content';
-$string['cancelmailsubject'] = 'Cancel mail subject';
-$string['cancelmailcontent'] = 'Cancel mail sontent';
-$string['confirmmailcontent_desc'] = 'Please use special marks designated email content replaced.<br>{firstname}:Registration name; {content}:Course name;{lastname}:The last name of the user;{username}:Registration name';
-$string['cancelmailcontent_desc'] = 'Please use special marks designated email content replaced.<br>{firstname}:Registration name; {content}:Course name;{lastname}:The last name of the user;{username}:Registration name';
-
-$string['confirmusers'] = 'Enrol Confirm';
-
-$string['coursename'] = 'Course';
-$string['applyuser'] = 'First name / Surname';
-$string['applyusermail'] = 'Email';
-$string['applydate'] = 'Enrol date';
-$string['btnconfirm'] = 'Confirm';
-$string['btncancel'] = 'Cancel';
-
-$string['status'] = 'Allow Course enrol confirmation';
-
-$string['survey:config'] = 'Configure apply enrol instances';
-$string['survey:manage'] = 'Manage apply enrolment';
-$string['survey:unenrolapply'] = 'Cancel self from the course';
- 
-$string['sendmailtoteacher'] = 'Send email notification to teachers';
-$string['sendmailtomanager'] = 'Send email notification to managers';
-$string['mailtoteacher_suject'] = 'New Enrollment request!';
-$string['editdescription'] = 'Textarea description';
-$string['applymanage'] = 'Manage enrolment applications';
-
-$string['status_desc'] = 'Allow course access of internally enrolled users.';
-
-$string['status_help'] = 'If disabled all existing self enrolments are suspended and new users can not enrol.'; */
-$string['enrol_survey'] = 'enrol_survey';
-
 ?>

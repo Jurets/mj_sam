@@ -67,9 +67,8 @@ $form = new enrol_survey_user_form(null, array(
 ));
 
 if ($enroldata = $form->get_data()) {
-    //
+    // save user answers into database
     enrol_survey_save_user_answers($enroldata);
-    
     // enrol user who complete survey
     $timestart = time();
     if ($enrol->enrolperiod) {
@@ -77,7 +76,7 @@ if ($enroldata = $form->get_data()) {
     } else {
         $timeend = 0;
     }
-
+    // set role
     $roleid = $enrol->roleid;
     if(!$roleid){
         $role = $DB->get_record_sql("select * from ".$CFG->prefix."role where archetype='student' limit 1");
