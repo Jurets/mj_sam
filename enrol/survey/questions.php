@@ -89,11 +89,10 @@ $PAGE->navbar->add(get_string('enrolname', 'enrol_survey') /*, new moodle_url($C
 
 /// ------------- main process --------------
 switch($action) {
-    case $actionIndex://    DebugBreak();
+    case $actionIndex:
         echo $OUTPUT->header();
         echo $OUTPUT->heading(get_string('manage_questions', 'enrol_survey'));
-        //add type button
-        //enrol_survey_show_addbutton(new moodle_url($returnurl, array('action' => $actionAdd)), get_string('add_question', 'resourcelib'));
+        // show add question form
         $url = new moodle_url($returnurl, array('action' => $actionAdd));
         $form = new enrol_survey_addquestion_form($url->out(false), array('enrolid'=>$enrolid));
         $form->display();

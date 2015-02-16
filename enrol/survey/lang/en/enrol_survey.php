@@ -32,6 +32,7 @@ $string['pluginname'] = 'Survey Enrollment';
 $string['pluginname_desc'] = 'Administrator should be able to set up any number of questions of the different types. Users should be enrolled in the course when they have successfully completed the survey.';
 
 $string['manage_questions'] = 'Manage questions';
+$string['addselqtype'] = 'Add selected question type';
 $string['enrolusers'] = 'Enrol users';
 $string['delete_question'] = 'Delete question';
 
@@ -50,6 +51,7 @@ $string['notification'] = '<b>You are enrolled successfully to this course</b>. 
 $string['missinanswer'] = 'Missing answer';
 $string['missing_value'] = 'Missing value! Please enter';
 $string['cannotmove'] = 'Can not move this item with ID {$a}';
+$string['no_questions'] = 'There is no Questions in this Enrolment';
  
 /*$string['confirmmailsubject'] = 'Confirm mail subject';
 $string['confirmmailcontent'] = 'Confirm mail content';

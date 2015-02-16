@@ -136,20 +136,16 @@ class enrol_survey_addquestion_form extends moodleform {
         $enrol = $mform->addElement('hidden', 'enrolid');
         $mform->setType('enrolid', PARAM_INT);
         $enrol->setValue($enrolid);
-
+        // question types
         $qtypes = array('text'=>'text', 'select'=>'select', 'radio'=>'radio');
-        /*$mform->addElement('select', 'type', get_string('type', 'enrol_survey'), $qtypes);
-        $mform->setType('type', PARAM_TEXT);                   //Set type of element
-        $mform->addRule('type', get_string('missingtype'), 'required', null, 'client');*/
-       
+        // group of dropdown and submit button
         $addqgroup = array();
         $addqgroup[] =& $mform->createElement('select', 'type', '', $qtypes);
         // The 'sticky' type_id value for further new questions.
         /*if (isset($SESSION->questionnaire->type_id)) {
                 $mform->setDefault('type_id', $SESSION->questionnaire->type_id);
         }*/
-        $addqgroup[] =& $mform->createElement('submit', 'addqbutton', get_string('addselqtype', 'questionnaire'));
-        //$questionnairehasdependencies = questionnaire_has_dependencies($questionnaire->questions);
+        $addqgroup[] =& $mform->createElement('submit', 'addqbutton', get_string('addselqtype', 'enrol_survey'));
         $mform->addGroup($addqgroup, 'addqgroup', '', ' ', false);
     }
 }
@@ -161,11 +157,9 @@ class enrol_survey_question_form extends moodleform {
 
     function definition() {
         $mform = $this->_form;
-        
         // set main data
         $enrolid = $this->_customdata['enrolid'];
         $question = $this->_customdata['question'];
-        
         //DebugBreak();
         if (!isset($question->id) && (!isset($question->type) || empty($question->type))) {
             if ($this->is_submitted()) {
@@ -326,7 +320,7 @@ function enrol_survey_show_questions($items, $returnurl, $buttons = null, $sort 
     $strmovedown = get_string('movedown');
     
     if (!$items || empty($items)) {
-        echo $OUTPUT->notification(get_string('no_resources', 'resourcelib'), 'redirectmessage');
+        echo $OUTPUT->notification(get_string('no_questions', 'enrol_survey'), 'redirectmessage');
     } else {
         if (!isset($buttons)) //default buttons
             $buttons = array('delete'=>'delete', 'edit'=>'edit');
