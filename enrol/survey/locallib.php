@@ -259,10 +259,10 @@ class enrol_survey_user_form extends moodleform {
                 if (isset($question->items) && is_array($question->items)) {
                     $radioarray = array();
                     foreach($question->items as $key=>$item) {
-                        $radioarray[] =& $mform->createElement('radio', $name, ''/*$label*/, $item->label, $item->id, array()/*$attributes*/);
+                        $radioarray[] =& $mform->createElement('radio', $name, '', $item->label, $item->id, array()/*$attributes*/);
                     }
-                }
-                $mform->addGroup($radioarray, 'radioar', $label, array(' '), false);
+                }  // must be same name in radio elements and in group
+                $mform->addGroup($radioarray, $name, $label, array(' '), false);
             } else if ($question->type == 'select') {
                 $items = array(''=>'');
                 if (isset($question->items) && is_array($question->items)) {
@@ -284,12 +284,7 @@ class enrol_survey_user_form extends moodleform {
                 $mform->addRule($name, get_string('missinanswer', 'enrol_survey'), 'required');
             }
         }
-        /*$radioarray=array();
-        $radioarray[] =& $mform->createElement('radio', 'yesno', '', get_string('yes'), 1);
-        $radioarray[] =& $mform->createElement('radio', 'yesno', '', get_string('no'), 0);
-        $mform->addGroup($radioarray, 'radioar', '', array(' '), false);
-        $mform->addRule('yesno', get_string('missinanswer', 'enrol_survey'), 'required');*/
-
+        // add buttons
         $this->add_action_buttons(true, ($enrol->id ? null : get_string('addinstance', 'enrol')));
     }
 }
