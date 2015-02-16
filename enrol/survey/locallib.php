@@ -137,7 +137,7 @@ class enrol_survey_addquestion_form extends moodleform {
         $mform->setType('enrolid', PARAM_INT);
         $enrol->setValue($enrolid);
         // question types
-        $qtypes = array('text'=>'text', 'select'=>'select', 'radio'=>'radio');
+        $qtypes = array('text'=>'text', 'select'=>'select', 'radio'=>'radio', 'selectother'=>'selectother');
         // group of dropdown and submit button
         $addqgroup = array();
         $addqgroup[] =& $mform->createElement('select', 'type', '', $qtypes);
@@ -160,8 +160,12 @@ class enrol_survey_question_form extends moodleform {
         // set main data
         $enrolid = $this->_customdata['enrolid'];
         $question = $this->_customdata['question'];
-        //DebugBreak();
-        if (!isset($question->id) && (!isset($question->type) || empty($question->type))) {
+        //
+        if (isset($question->id)){
+            $mform->addElement('hidden', 'id');
+            $mform->setType('id', PARAM_INT);
+            //$enrol->setValue($enrolid);
+        } else if (!isset($question->type) || empty($question->type)) {
             if ($this->is_submitted()) {
                 $data = $this->get_submitted_data();
                 $question->type = $data->type;
@@ -580,29 +584,44 @@ function enrol_survey_save_question($question = null) {
     $success = false;
     // process possible answer strings
     if (isset($question->answers) && !empty($question->answers)) {
-        $answers = $question->answers;
-        $answers = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $answers);
-        $answers = trim($answers);
-        $answers = explode("\n", $answers);
+        $form_answers = $question->answers;
+        $form_answers = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $form_answers);
+        $form_answers = trim($form_answers);
+        $form_answers = explode("\n", $form_answers);
     } else {
-        $answers = array();
+        $form_answers = array();
     }
-    unset($question->answers);
+    unset($question->answers);unset($question->submitbutton);
     // analize ID of question
-    if (isset($question->id)) {  //edit question
+    if (isset($question->id)) {//edit question
         //insert question record
         $question->timemodified = time();   //set time
         $question->modifierid = $USER->id;  //set user who created
         try {
             $transaction = $DB->start_delegated_transaction(); 
-            $question_id = $DB->insert_record('enrol_survey_questions', $question);
-            //insert answers
-            foreach($answers as $label) {
+            // update answers
+            $num = 0;
+            $db_answers = $DB->get_records('enrol_survey_options', array('questionid'=>$question->id));
+            foreach ($db_answers as $db_answer) {
+                if (isset($form_answers[$num])) { // if option text is different
+                    if ($form_answers[$num] <> $db_answer->label) {
+                        $db_answer->label = $form_answers[$num];    //update it
+                        $DB->update_record('enrol_survey_options', $db_answer);
+                    }
+                } else {  // if option not in form response - delete it
+                    $DB->delete_records('enrol_survey_options', array('id'=>$db_answer->id));
+                }
+                $num++;
+            }
+            // insert new option, if it's there are in form response
+            for ($n = $num; $n < count($form_answers); $n++) {
                 $answer = new stdClass();
-                $answer->questionid = $question_id;
-                $answer->label = $label;
+                $answer->questionid = $question->id;
+                $answer->label = $form_answers[$n];
                 $DB->insert_record('enrol_survey_options', $answer);
             }
+            //update question record
+            $DB->update_record('enrol_survey_questions', $question);
             $transaction->allow_commit();
             $success = true;
         } catch(Exception $e) {
@@ -618,7 +637,7 @@ function enrol_survey_save_question($question = null) {
             $question->sort_order = $DB->get_field_select('enrol_survey_questions', 'COALESCE(MAX(sort_order) + 1, 1)', 'enrolid = ?', array($question->enrolid));
             $question_id = $DB->insert_record('enrol_survey_questions', $question);
             //insert answers
-            foreach($answers as $label) {
+            foreach($form_answers as $label) {
                 $answer = new stdClass();
                 $answer->questionid = $question_id;
                 $answer->label = $label;

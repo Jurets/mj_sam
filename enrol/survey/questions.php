@@ -105,7 +105,7 @@ switch($action) {
         
     case $actionAdd:
     case $actionEdit:
-        //
+        // header string
         $head_str = ($action == $actionAdd) ? get_string('add_question', 'enrol_survey') : get_string('edit_question', 'enrol_survey');
         //
         if ($action == $actionAdd) { //add new type
