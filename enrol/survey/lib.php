@@ -42,6 +42,18 @@ class enrol_survey_plugin extends enrol_plugin {
 		return true;
 	}
 
+    /**
+     * Does this plugin allow manual changes in user_enrolments table?
+     *
+     * All plugins allowing this must implement 'enrol/xxx:manage' capability
+     *
+     * @param stdClass $instance course enrol instance
+     * @return bool - true means it is possible to change enrol period and status in user_enrolments table
+     */
+    public function allow_manage(stdClass $instance) {
+        return true;
+    }
+
 	public function get_newinstance_link($courseid) {
 		$context =  context_course::instance($courseid, MUST_EXIST);
 
@@ -103,6 +115,12 @@ class enrol_survey_plugin extends enrol_plugin {
 
 	}
 
+    /**
+    * Action Icons, which shown in grid on page "course->Users->Enrolment methods"
+    * 
+    * @param stdClass $instance
+    * @return []
+    */
 	public function get_action_icons(stdClass $instance) {
 		global $OUTPUT;
 
@@ -117,21 +135,25 @@ class enrol_survey_plugin extends enrol_plugin {
             $editlink = new moodle_url("/enrol/survey/edit.php", array('courseid'=>$instance->courseid, 'id'=>$instance->id));
             $icons[] = $OUTPUT->action_icon($editlink, new pix_icon('t/edit', get_string('edit'), 'core', array('class' => 'iconsmall')));
         }
-
         //if (has_capability('enrol/manual:manage', $context)) {
 		if (has_capability('enrol/survey:manage', $context)) {
 			$managelink = new moodle_url("/enrol/survey/questions.php", array(/*'id'=>$_GET['id'],*/ 'enrolid'=>$instance->id));
 			$icons[] = $OUTPUT->action_icon($managelink, new pix_icon('i/edit', get_string('manage_questions', 'enrol_survey'), 'core', array('class'=>'iconsmall')));
 		}
-
 		/*if (has_capability("enrol/manual:enrol", $context)) {
 			$enrollink = new moodle_url("/enrol/survey/enroluser.php", array('enrolid'=>$instance->id));
 			$icons[] = $OUTPUT->action_icon($enrollink, new pix_icon('t/enrolusers', get_string('enrolusers', 'enrol_survey'), 'core', array('class'=>'iconsmall')));
 		}*/
-		
 		return $icons;
 	}
 
+    /**
+    * Action Icons, which shown in grid on page "course->Users->Enrolled Users"
+    * 
+    * @param course_enrolment_manager $manager
+    * @param mixed $ue
+    * @return user_enrolment_action[]
+    */
 	public function get_user_enrolment_actions(course_enrolment_manager $manager, $ue) {
 		$actions = array();
 		$context = $manager->get_context();
@@ -143,9 +165,14 @@ class enrol_survey_plugin extends enrol_plugin {
 			$actions[] = new user_enrolment_action(new pix_icon('t/delete', ''), get_string('unenrol', 'enrol'), $url, array('class'=>'unenrollink', 'rel'=>$ue->id));
 		}
 		if ($this->allow_manage($instance) && has_capability("enrol/survey:manage", $context)) {
-			$url = new moodle_url('/enrol/survey/editenrolment.php', $params);
+			$url = new moodle_url('/enrol/editenrolment.php', $params);
 			$actions[] = new user_enrolment_action(new pix_icon('t/edit', ''), get_string('edit'), $url, array('class'=>'editenrollink', 'rel'=>$ue->id));
 		}
+        if ($this->allow_manage($instance) && has_capability("enrol/survey:manage", $context)) {
+            $str = get_string('user_answers', 'enrol_survey');
+            $url = new moodle_url('/enrol/survey/answers.php', /*$params*/ array('action'=>'view', 'ue'=>$ue->id));
+            $actions[] = new user_enrolment_action(new pix_icon('t/switch_whole', '', '', array('title'=>$str)), $str, $url, array('class'=>'unenrollink', 'rel'=>$ue->id));
+        }
 		return $actions;
 	}
 }

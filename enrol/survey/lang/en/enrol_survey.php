@@ -36,16 +36,22 @@ $string['pluginname_desc'] = 'Administrator should be able to set up any number 
 $string['manage_questions'] = 'Manage questions';
 $string['addselqtype'] = 'Add selected question type';
 $string['enrolusers'] = 'Enrol users';
+
+$string['add_question'] = 'Add Question';
+$string['edit_question'] = 'Edit Question';
 $string['delete_question'] = 'Delete question';
 
 $string['comment'] = 'Comment';
 $string['type'] = 'Type';
 $string['label'] = 'Label';
+$string['is_required'] = 'Is required';
+$string['question_text'] = 'Question Text';
+$string['question_type'] = 'Question Type';
+$string['answer_text'] = 'Answer Text';
+
 $string['required'] = 'Response is required Help with Response is required';
 $string['possible_answers'] = 'Possible answers';
-
-$string['add_question'] = 'Add Question';
-$string['edit_question'] = 'Edit Question';
+$string['user_answers'] = 'User answers';
 
 $string['survey:unenrol'] = 'Cancel users from course';
 

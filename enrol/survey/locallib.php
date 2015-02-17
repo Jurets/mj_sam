@@ -171,6 +171,8 @@ class enrol_survey_question_form extends moodleform {
                 $question->type = $data->type;
             } else if (isset($_POST['type'])) {
                 $question->type = $_POST['type'];  //crutch... !TODO: use moodleform methods instedd $_POST
+            } else {
+                $question->type = 'text';
             }
         }
 
@@ -716,4 +718,20 @@ function enrol_survey_save_user_answers($enroldata = null) {//DebugBreak();
 function enrol_survey_delete_user_answers($enrol, $user) {
     global $DB;
     return $DB->delete_records('enrol_survey_answers', array('enrolid'=>$enrol->id, 'userid'=>$user->id));
+}
+
+/**
+* get list of questions, wich attached to course enrol plugin
+* 
+* @param mixed $instance - instance of enrol
+*/
+function enrol_survey_get_user_answers($enrol, $user) {
+    global $DB;
+    $sql = 'SELECT sa.id AS answerid, sq.id AS questionid, 
+                   sq.label as questiontext, sq.type AS questiontype, sq.required, sa.answertext, sa.optionid
+            FROM {enrol_survey_questions} sq LEFT JOIN
+                 {enrol_survey_answers} sa ON sa.questionid = sq.id AND sa.userid = ?
+            WHERE sq.enrolid = ?';
+    $answers = $DB->get_records_sql($sql, array($user->id, $enrol->id));
+    return $answers;
 }

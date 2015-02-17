@@ -31,7 +31,7 @@ require_once ('lib.php');
 require_once('locallib.php');
 
 
-$site = get_site ();
+$site = get_site();
 $systemcontext = context_system::instance();
 
 // get instance of enrolment
@@ -79,7 +79,7 @@ $PAGE->set_title("$site->shortname: " . get_string ('manage_questions', 'enrol_s
 
 //breadcrumbs
 $PAGE->navbar->add(get_string('enrolmentinstances', 'enrol'), new moodle_url($CFG->wwwroot.'/enrol/instances.php', array('id'=>$course->id))); 
-$PAGE->navbar->add(get_string('enrolname', 'enrol_survey') /*, new moodle_url($CFG->wwwroot.'/admin/settings.php', array('section'=>'modsettingresourcelib'))*/); 
+$PAGE->navbar->add(get_string('enrolname', 'enrol_survey'), new moodle_url($returnurl));
 /*if ($action == $actionIndex) {
     $PAGE->navbar->add(get_string('manage_items', 'resourcelib'));
 } else {
