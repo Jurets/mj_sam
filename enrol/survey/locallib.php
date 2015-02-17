@@ -186,7 +186,6 @@ class enrol_survey_question_form extends moodleform {
 
         $mform->addElement('text', 'name', get_string('name'), array('size'=>'30', 'maxlength'=>'30'));
         $mform->setType('name', PARAM_TEXT);
-        $mform->addRule('name', get_string('missingname'), 'required', null, 'client');
         //$mform->addHelpButton('name', 'optionalname', 'questionnaire');
 
         $reqgroup = array();
@@ -198,6 +197,7 @@ class enrol_survey_question_form extends moodleform {
         
         $mform->addElement('text', 'label', get_string('label', 'enrol_survey'), array('style'=>'width: 100%'));
         $mform->setType('label', PARAM_TEXT);
+        $mform->addRule('label', get_string('missing_value', 'enrol_survey'), 'required', null, 'client');
 
         if ($question->type <> 'text') {
             $answers = $mform->addElement('textarea', 'answers', get_string('possible_answers', 'enrol_survey'), array('rows'=>8, 'style'=>'width: 100%')); // Add elements to your form
