@@ -79,13 +79,11 @@ $PAGE->set_title("$site->shortname: " . get_string ('manage_questions', 'enrol_s
 
 //breadcrumbs
 $PAGE->navbar->add(get_string('enrolmentinstances', 'enrol'), new moodle_url($CFG->wwwroot.'/enrol/instances.php', array('id'=>$course->id))); 
-$PAGE->navbar->add(get_string('enrolname', 'enrol_survey'), new moodle_url($returnurl));
-/*if ($action == $actionIndex) {
-    $PAGE->navbar->add(get_string('manage_items', 'resourcelib'));
+if ($action == $actionIndex) {
+    $PAGE->navbar->add(get_string('enrolname', 'enrol_survey'));
 } else {
-    $PAGE->navbar->add(get_string('manage_items', 'resourcelib'), new moodle_url($returnurl));
-}*/
-
+    $PAGE->navbar->add(get_string('enrolname', 'enrol_survey'), new moodle_url($returnurl));
+}
 
 /// ------------- main process --------------
 switch($action) {
@@ -107,7 +105,7 @@ switch($action) {
     case $actionEdit:
         // header string
         $head_str = ($action == $actionAdd) ? get_string('add_question', 'enrol_survey') : get_string('edit_question', 'enrol_survey');
-        //
+        // analize action name
         if ($action == $actionAdd) { //add new type
             $PAGE->navbar->add($head_str);
             $actionurl = new moodle_url($returnurl, array('action' => $actionAdd));
@@ -142,7 +140,6 @@ switch($action) {
                 redirect($url);
             }
         } 
-        
         //show form page
         echo $OUTPUT->header();
         echo $OUTPUT->heading($head_str);

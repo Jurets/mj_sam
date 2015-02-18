@@ -58,7 +58,7 @@ $plugin = enrol_get_plugin('survey');
 
 // get list of questions
 $questions = enrol_survey_get_questions($enrol);
-//DebugBreak();
+// build survey form
 $form = new enrol_survey_user_form(null, array(
     'enrol'=>$enrol, 
     'plugin'=>$plugin, 

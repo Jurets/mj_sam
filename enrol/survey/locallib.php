@@ -164,7 +164,6 @@ class enrol_survey_question_form extends moodleform {
         if (isset($question->id)){
             $mform->addElement('hidden', 'id');
             $mform->setType('id', PARAM_INT);
-            //$enrol->setValue($enrolid);
         } else if (!isset($question->type) || empty($question->type)) {
             if ($this->is_submitted()) {
                 $data = $this->get_submitted_data();
@@ -213,13 +212,8 @@ class enrol_survey_question_form extends moodleform {
                 $answers->setValue($answers_text);
             }
         }
-        
-        //if (isset($question)) 
-        {
-            $this->set_data($question);
-        }
-        
-        $this->add_action_buttons();
+        $this->set_data($question);   // set form data
+        $this->add_action_buttons();  // form buttons
         
     }
 }
@@ -335,16 +329,13 @@ function enrol_survey_show_questions($items, $returnurl, $buttons = null, $sort 
             $title_column,
             get_string('name'), 
             get_string('type', 'enrol_survey'),
+            get_string('is_required', 'enrol_survey'),
+            get_string('actions'),
+            
         );
         
         $first_item = reset($items);
         $last_item = end($items);
-        
-        /*if (isset($first_item->sort_order)) {
-            $table->size[2] = '120px';
-        } else {
-            $table->size[2] = '80px';
-        }*/
         
         foreach ($items as $item) {
             $buttons_column = array();
@@ -362,21 +353,15 @@ function enrol_survey_show_questions($items, $returnurl, $buttons = null, $sort 
                     $buttons_column[] = get_spacer();
                 }
             }
-            if (key_exists('delete', $buttons))
-                $buttons_column[] = create_deletebutton($returnurl, $buttons['delete'], $item->id);
             if (key_exists('edit', $buttons))
                 $buttons_column[] = create_editbutton($returnurl, $buttons['edit'], $item->id);
+            if (key_exists('delete', $buttons))
+                $buttons_column[] = create_deletebutton($returnurl, $buttons['delete'], $item->id);
             $table->data[] = array(
                 $item->label, 
                 $item->name, 
                 $item->type,
-                //$type->icon_path, 
-                /*html_writer::empty_tag('img', array(
-                    'src'=>$item->icon_path, 
-                    'alt'=>$item->icon_path, 
-                    'title'=>$item->type_name,
-                    'class'=>'iconsmall', 
-                    'style'=>'width: 30px; height: 30px;')),*/
+                $item->required ? html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/check'))) : '', 
                 implode(' ', $buttons_column) 
             );
         }
@@ -470,21 +455,15 @@ function get_spacer() {
 */
 function enrol_survey_get_questions($instance = null) {
     global $DB;
-
     if ($questions = $DB->get_records('enrol_survey_questions', array('enrolid'=>$instance->id), 'sort_order ASC')) {
     foreach ($questions as $question) {
             $question->items = array();
             $question->items = $DB->get_records('enrol_survey_options', array('questionid'=>$question->id));
-            /*$options = $DB->get_records('enrol_survey_options', array('questionid'=>$question->id));
-            foreach ($options as $option) {
-                $question->items
-            }*/
         }
     } else {
         $questions = array();
     }
-    // result
-    return $questions;
+    return $questions; // result
 }
 
 /**

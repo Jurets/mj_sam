@@ -64,7 +64,13 @@ class enrol_survey_plugin extends enrol_plugin {
 		return new moodle_url('/enrol/survey/edit.php', array('courseid'=>$courseid));
 	}
 
-	public function enrol_page_hook(stdClass $instance) {//DebugBreak();
+    /**
+    * Hook before user enrol process
+    * 
+    * @param stdClass $instance
+    * @return string
+    */
+	public function enrol_page_hook(stdClass $instance) {
 		global $CFG, $OUTPUT, $SESSION, $USER, $DB;
 
 		if (isguestuser()) {
@@ -76,17 +82,14 @@ class enrol_survey_plugin extends enrol_plugin {
 			//return null;
 			return $OUTPUT->notification(get_string('notification', 'enrol_survey'));
 		}
-
 		if ($instance->enrolstartdate != 0 and $instance->enrolstartdate > time()) {
 			//TODO: inform that we can not enrol yet
 			return null;
 		}
-
 		if ($instance->enrolenddate != 0 and $instance->enrolenddate < time()) {
 			//TODO: inform that enrolment is not possible any more
 			return null;
 		}
-
 		if ($instance->customint3 > 0) {
 			// max enrol limit specified
 			$count = $DB->count_records('user_enrolments', array('enrolid'=>$instance->id));
@@ -96,7 +99,7 @@ class enrol_survey_plugin extends enrol_plugin {
 			}
 		}
 		require_once("$CFG->dirroot/enrol/survey/locallib.php");
-        //DebugBreak();
+        // build survey form for user enrolment
         $form = new enrol_survey_enrol_form(null, $instance);
         //
 		$instanceid = optional_param('instance', 0, PARAM_INT);
@@ -106,13 +109,10 @@ class enrol_survey_plugin extends enrol_plugin {
                 redirect($url);
 			}
 		}
-
 		ob_start();
-		$form->display();
+		$form->display(); // show survey form for user enrolment
 		$output = ob_get_clean();
-
 		return $OUTPUT->box($output);
-
 	}
 
     /**
@@ -135,15 +135,10 @@ class enrol_survey_plugin extends enrol_plugin {
             $editlink = new moodle_url("/enrol/survey/edit.php", array('courseid'=>$instance->courseid, 'id'=>$instance->id));
             $icons[] = $OUTPUT->action_icon($editlink, new pix_icon('t/edit', get_string('edit'), 'core', array('class' => 'iconsmall')));
         }
-        //if (has_capability('enrol/manual:manage', $context)) {
 		if (has_capability('enrol/survey:manage', $context)) {
-			$managelink = new moodle_url("/enrol/survey/questions.php", array(/*'id'=>$_GET['id'],*/ 'enrolid'=>$instance->id));
-			$icons[] = $OUTPUT->action_icon($managelink, new pix_icon('i/edit', get_string('manage_questions', 'enrol_survey'), 'core', array('class'=>'iconsmall')));
+			$managelink = new moodle_url("/enrol/survey/questions.php", array('enrolid'=>$instance->id));
+			$icons[] = $OUTPUT->action_icon($managelink, new pix_icon('i/report', get_string('manage_questions', 'enrol_survey'), 'core', array('class'=>'iconsmall')));
 		}
-		/*if (has_capability("enrol/manual:enrol", $context)) {
-			$enrollink = new moodle_url("/enrol/survey/enroluser.php", array('enrolid'=>$instance->id));
-			$icons[] = $OUTPUT->action_icon($enrollink, new pix_icon('t/enrolusers', get_string('enrolusers', 'enrol_survey'), 'core', array('class'=>'iconsmall')));
-		}*/
 		return $icons;
 	}
 
