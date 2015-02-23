@@ -724,11 +724,15 @@ function enrol_survey_delete_user_answers($enrol, $user) {
 */
 function enrol_survey_get_user_answers($enrol, $user) {
     global $DB;
-    $sql = 'SELECT sa.id AS answerid, sq.id AS questionid, 
+    $sql = 'SELECT sa.id AS answerid, sq.id AS questionid, sa.timecreated, 
                    sq.label as questiontext, sq.type AS questiontype, sq.required, sa.answertext, sa.optionid
             FROM {enrol_survey_questions} sq LEFT JOIN
                  {enrol_survey_answers} sa ON sa.questionid = sq.id AND sa.userid = ?
             WHERE sq.enrolid = ?';
-    $answers = $DB->get_records_sql($sql, array($user->id, $enrol->id));
+    $answers = array();
+    $db_answers = $DB->get_records_sql($sql, array($user->id, $enrol->id));
+    foreach ($db_answers as $answer) {
+        $answers[$answer->timecreated][] = $answer;
+    }
     return $answers;
 }

@@ -89,27 +89,31 @@ switch($action) {
         
     case $actionView:
         echo $OUTPUT->header();
-        echo $OUTPUT->heading(get_string('user_answers', 'enrol_survey') . ': ' . fullname($user, true));
+        echo $OUTPUT->heading(get_string('user_answers', 'enrol_survey') . ': ' . fullname($user, true), 2);
         //get answer data
-        $answers = enrol_survey_get_user_answers($enrol, $user);
-
-        $table = new html_table();
-        $table->head = array(
-            get_string('question_text', 'enrol_survey'),
-            get_string('question_type', 'enrol_survey'),
-            get_string('is_required', 'enrol_survey'),
-            get_string('answer_text', 'enrol_survey'),
-        );
-        
-        foreach ($answers as $answer) {
-            $table->data[] = array(
-                $answer->questiontext, 
-                $answer->questiontype, 
-                $answer->required ? html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/check'))) : '', 
-                $answer->answertext, 
+        $answers_group = enrol_survey_get_user_answers($enrol, $user);
+        // show answers by datetime of 
+        foreach ($answers_group as $timecreated=>$answers)
+        {
+            echo $OUTPUT->heading(date('Y-m-d h:i:s', $timecreated), 3, 'helptitle', 'timecreated'.$timecreated);
+            $table = new html_table();
+            $table->head = array(
+                get_string('question_text', 'enrol_survey'),
+                get_string('question_type', 'enrol_survey'),
+                get_string('is_required', 'enrol_survey'),
+                get_string('answer_text', 'enrol_survey'),
             );
+            
+            foreach ($answers as $answer) {
+                $table->data[] = array(
+                    $answer->questiontext, 
+                    $answer->questiontype, 
+                    $answer->required ? html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/check'))) : '', 
+                    $answer->answertext, 
+                );
+            }
+            echo html_writer::table($table);
         }
-        echo html_writer::table($table);
         echo $OUTPUT->footer();
         break;
         
