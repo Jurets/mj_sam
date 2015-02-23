@@ -68,8 +68,12 @@ navigation_node::override_active_url($usersurl);
 if ($confirm && confirm_sesskey()) {
     //include form for survey
     require_once("$CFG->dirroot/enrol/survey/locallib.php");
-    // delete user answers
-    enrol_survey_delete_user_answers($instance, $user);
+    //$isdeleteanswers = $DB->get_field('enrol', 'COALESCE(customint1, 0)', array(''=>$instance->id));
+    $isdeleteanswers = (isset($instance->customint1) && $instance->customint1 == 1);
+    if ($isdeleteanswers) {
+        // delete user answers
+        enrol_survey_delete_user_answers($instance, $user);
+    }
     // unenrol user
     $plugin->unenrol_user($instance, $ue->userid);
     redirect($returnurl);

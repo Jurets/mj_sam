@@ -185,9 +185,13 @@ class enrol_survey_question_form extends moodleform {
         $stryes = get_string('yes');
         $strno  = get_string('no');
 
+        $mform->addElement('text', 'group_label', get_string('group'), array('size'=>'30', 'maxlength'=>'30'));
+        $mform->setType('group_label', PARAM_TEXT);
+        $mform->addHelpButton('group_label', 'optional_group', 'enrol_survey');
+
         $mform->addElement('text', 'name', get_string('name'), array('size'=>'30', 'maxlength'=>'30'));
         $mform->setType('name', PARAM_TEXT);
-        //$mform->addHelpButton('name', 'optionalname', 'questionnaire');
+        $mform->addHelpButton('name', 'optional_name', 'enrol_survey');
 
         $reqgroup = array();
         $reqgroup[] =& $mform->createElement('radio', 'required', '', $stryes, '1');
@@ -196,13 +200,16 @@ class enrol_survey_question_form extends moodleform {
         $mform->addRule('required', get_string('missing_value', 'enrol_survey'), 'required', null, 'client');
         //$mform->addHelpButton('reqgroup', 'required', 'questionnaire');
         
-        $mform->addElement('text', 'label', get_string('label', 'enrol_survey'), array('style'=>'width: 100%'));
+        $mform->addElement('text', 'label', get_string('question_text', 'enrol_survey'), array('style'=>'width: 100%'));
         $mform->setType('label', PARAM_TEXT);
         $mform->addRule('label', get_string('missing_value', 'enrol_survey'), 'required', null, 'client');
-
+        $mform->addHelpButton('label', 'required_question', 'enrol_survey');
+        
         if ($question->type <> 'text') {
             $answers = $mform->addElement('textarea', 'answers', get_string('possible_answers', 'enrol_survey'), array('rows'=>8, 'style'=>'width: 100%')); // Add elements to your form
             $mform->setType('answers', PARAM_TEXT);                   //Set type of element
+            $mform->addRule('answers', get_string('missing_value', 'enrol_survey'), 'required', null, 'client');
+            $mform->addHelpButton('answers', 'required_answers', 'enrol_survey');
             
             if (isset($question->id)) {
                 $answers_text = '';
@@ -243,7 +250,13 @@ class enrol_survey_user_form extends moodleform {
         
         /// Show question items (survey)
         $item_num = 0;
+        $current_group = '';
         foreach($questions as $key=>$question) {
+            if ($question->group_label <> $current_group) {
+                $mform->addElement('header', 'header', $question->group_label);
+                $current_group = $question->group_label;
+            }
+            
             //build name of form element
             $name = "questions[$question->id]";
             //build label
@@ -328,6 +341,7 @@ function enrol_survey_show_questions($items, $returnurl, $buttons = null, $sort 
         $table->head = array( //sorting in first column!
             $title_column,
             get_string('name'), 
+            get_string('group'), 
             get_string('type', 'enrol_survey'),
             get_string('is_required', 'enrol_survey'),
             get_string('actions'),
@@ -360,6 +374,7 @@ function enrol_survey_show_questions($items, $returnurl, $buttons = null, $sort 
             $table->data[] = array(
                 $item->label, 
                 $item->name, 
+                $item->group_label, 
                 $item->type,
                 $item->required ? html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/check'))) : '', 
                 implode(' ', $buttons_column) 
@@ -455,10 +470,13 @@ function get_spacer() {
 */
 function enrol_survey_get_questions($instance = null) {
     global $DB;
-    if ($questions = $DB->get_records('enrol_survey_questions', array('enrolid'=>$instance->id), 'sort_order ASC')) {
-    foreach ($questions as $question) {
+    if ($questions = $DB->get_records('enrol_survey_questions', array('enrolid'=>$instance->id), 'group_label ASC, sort_order ASC')) {
+        foreach ($questions as $question) {
             $question->items = array();
             $question->items = $DB->get_records('enrol_survey_options', array('questionid'=>$question->id));
+            if (!isset($question->group_label) || empty($question->group_label)) {
+                $question->group_label = 'Other questions';
+            }
         }
     } else {
         $questions = array();

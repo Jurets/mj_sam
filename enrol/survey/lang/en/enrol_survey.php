@@ -37,6 +37,16 @@ $string['manage_questions'] = 'Manage questions';
 $string['addselqtype'] = 'Add selected question type';
 $string['enrolusers'] = 'Enrol users';
 
+$string['status'] = 'Allow Course enrol confirmation';
+$string['status_desc'] = 'Allow course access of internally enrolled users.';
+$string['status_help'] = 'If disabled all existing self enrolments are suspended and new users can not enrol.';
+
+$string['isdeleteanswers'] = 'Delete User Answers';
+$string['isdeleteanswers_desc'] = 'Delete User Answers';
+$string['isdeleteanswers_help'] = 'Whether delete or not User survey answers if User have unenrolled from course';
+
+$string['editdescription'] = 'Textarea description';
+
 $string['add_question'] = 'Add Question';
 $string['edit_question'] = 'Edit Question';
 $string['delete_question'] = 'Delete question';
@@ -61,4 +71,17 @@ $string['missing_value'] = 'Missing value! Please enter';
 $string['cannotmove'] = 'Can not move this item with ID {$a}';
 $string['no_questions'] = 'There is no Questions in this Enrolment';
  
+// help buttons
+$string['optional_group'] = 'Group label field';
+$string['optional_group_help'] = 'Optional parameter. Fill this field if you want to group several questions under a common heading';
+
+$string['optional_name'] = 'Name for question';
+$string['optional_name_help'] = 'Optional parameter. Helps to allocate each question for different operations, for example during its removal';
+
+$string['required_question'] = 'Question text';
+$string['required_question_help'] = 'Required parameter. This text will be displayed for user as question text in survey form';
+
+$string['required_answers'] = 'Possible answers';
+$string['required_answers_help'] = 'Required parameter. Fill list of possible answers. It will be paragraph separated text: each answer must begin from new string.';
+
 ?>

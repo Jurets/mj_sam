@@ -33,15 +33,15 @@ class enrol_self_edit_form extends moodleform {
 
         list($instance, $plugin, $context) = $this->_customdata;
 
-        $mform->addElement('header', 'header', get_string('pluginname', 'enrol_apply'));
+        $mform->addElement('header', 'header', get_string('pluginname', 'enrol_survey'));
 
         $mform->addElement('text', 'name', get_string('custominstancename', 'enrol'));
         $mform->setType('name', PARAM_TEXT);
 
         $options = array(ENROL_INSTANCE_ENABLED  => get_string('yes'),
                          ENROL_INSTANCE_DISABLED => get_string('no'));
-        $mform->addElement('select', 'status', get_string('status', 'enrol_apply'), $options);
-        $mform->addHelpButton('status', 'status', 'enrol_apply');
+        $mform->addElement('select', 'status', get_string('status', 'enrol_survey'), $options);
+        $mform->addHelpButton('status', 'status', 'enrol_survey');
         $mform->setDefault('status', $plugin->get_config('status'));
 
         if ($instance->id) {
@@ -52,8 +52,12 @@ class enrol_self_edit_form extends moodleform {
         $mform->addElement('select', 'roleid', get_string('defaultrole', 'role'), $roles);
         $mform->setDefault('roleid', $plugin->get_config('roleid'));
 
-		$mform->addElement('textarea', 'customtext1', get_string('editdescription', 'enrol_apply'));
-	
+        $options = array(1 => get_string('yes'), 0 => get_string('no'));
+        $mform->addElement('select', 'customint1', get_string('isdeleteanswers', 'enrol_survey'), $options);
+        $mform->addHelpButton('customint1', 'isdeleteanswers', 'enrol_survey');
+        $mform->setDefault('customint1', 0/*$plugin->get_config('customint1')*/);
+		
+        $mform->addElement('textarea', 'customtext1', get_string('editdescription', 'enrol_survey'));
 
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
