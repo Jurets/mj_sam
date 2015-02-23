@@ -62,7 +62,9 @@ $string['answer_text'] = 'Answer Text';
 $string['required'] = 'Response is required Help with Response is required';
 $string['possible_answers'] = 'Possible answers';
 $string['user_answers'] = 'User answers';
+$string['my_answers'] = 'My Survey';
 
+$string['survey:manage'] = 'Manage Survey Enrolment';
 $string['survey:unenrol'] = 'Cancel users from course';
 
 $string['notification'] = '<b>You are enrolled successfully to this course</b>. <br/><br/>You will be informed by email as soon as your enrollment has been confirmed. If you want to enroll to other courses, please click "course catalogue" in the top menu.';

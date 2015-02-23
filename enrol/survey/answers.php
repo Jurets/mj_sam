@@ -59,7 +59,9 @@ $context = context_course::instance($course->id, MUST_EXIST);
 
 /// Security
 require_login($course);
-require_capability('enrol/survey:manage', context_system::instance());
+if ($USER->id <> $user->id) {
+    require_capability('enrol/survey:manage', context_system::instance());
+}
 
 //actions list
 $actionIndex = 'index';

@@ -165,20 +165,55 @@ class enrol_survey_plugin extends enrol_plugin {
 		}
         if ($this->allow_manage($instance) && has_capability("enrol/survey:manage", $context)) {
             $str = get_string('user_answers', 'enrol_survey');
-            $url = new moodle_url('/enrol/survey/answers.php', /*$params*/ array('action'=>'view', 'ue'=>$ue->id));
+            $url = new moodle_url('/enrol/survey/answers.php', array('action'=>'view', 'ue'=>$ue->id));
             $actions[] = new user_enrolment_action(new pix_icon('t/switch_whole', '', '', array('title'=>$str)), $str, $url, array('class'=>'unenrollink', 'rel'=>$ue->id));
         }
 		return $actions;
 	}
-}
+    
+    /**
+     * Adds navigation links into course admin block.
+     *
+     * By defaults looks for manage links only.
+     *
+     * @param navigation_node $instancesnode
+     * @param stdClass $instance
+     * @return void
+     */
+    public function add_course_navigation($instancesnode, stdClass $instance) {
+        global $USER, $DB;
+        // usually adds manage users
+        if ($instance->enrol !== 'survey') {
+             throw new coding_exception('Invalid enrol instance type!');
+        }
+        
+        $context = context_course::instance($instance->courseid);
+        if (has_capability('enrol/survey:manage', $context)) {
+            $menu_label = get_string('pluginname', 'enrol_'.$this->get_name());
+            $managelink = new moodle_url('/enrol/survey/edit.php', array('courseid'=>$instance->courseid, 'id'=>$instance->id));
+            $instancesnode->add($this->get_instance_name($instance), $managelink, navigation_node::TYPE_SETTING);
+                
+            $node = $instancesnode->parent;
+            $survey_node = $node->add($menu_label, $managelink, navigation_node::TYPE_SETTING);
+            $survey_node->collapse = true;
+            
+            $managelink = new moodle_url('/enrol/survey/edit.php', array('courseid'=>$instance->courseid, 'id'=>$instance->id));
+            $str = get_string('settings');
+            $survey_node->add($str, $managelink, navigation_node::TYPE_SETTING, null, null, new pix_icon('t/edit', '', '', array('title'=>$str)));
+            
+            $managelink = new moodle_url('/enrol/survey/questions.php', array('action'=>'index', 'enrolid'=>$instance->id));
+            $str = get_string('manage_questions', 'enrol_survey');
+            $survey_node->add($str, $managelink, navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', '', '', array('title'=>$str)));
+        } else {
+            // check: if current user is enrolled by survey
+            $enrol_user = $DB->get_record('user_enrolments', array('enrolid'=>$instance->id, 'userid'=>$USER->id));
+            if (isset($enrol_user)) {
+                $node = $instancesnode->parent->parent;
+                $str = get_string('my_answers', 'enrol_survey');
+                $link = new moodle_url('/enrol/survey/answers.php', array('action'=>'view', 'ue'=>$enrol_user->id));
+                $node->add($str, $link, navigation_node::TYPE_SETTING, null, null, new pix_icon('t/switch_whole', '', '', array('title'=>$str)));
+            }
+        }
+    }
 
-function getAllEnrolment1($id = null){
-	global $DB;
-	global $CFG;
-	if($id){
-		$userenrolments = $DB->get_records_sql('select ue.userid,ue.id,u.firstname,u.lastname,u.email,u.picture,c.fullname as course,ue.timecreated from '.$CFG->prefix.'user_enrolments as ue left join '.$CFG->prefix.'user as u on ue.userid=u.id left join '.$CFG->prefix.'enrol as e on ue.enrolid=e.id left join '.$CFG->prefix.'course as c on e.courseid=c.id where ue.status=1 and e.courseid='.$id);
-	}else{
-		$userenrolments = $DB->get_records_sql('select ue.id,ue.userid,u.firstname,u.lastname,u.email,u.picture,c.fullname as course,ue.timecreated from '.$CFG->prefix.'user_enrolments as ue left join '.$CFG->prefix.'user as u on ue.userid=u.id left join '.$CFG->prefix.'enrol as e on ue.enrolid=e.id left join '.$CFG->prefix.'course as c on e.courseid=c.id where ue.status=1');
-	}
-	return $userenrolments;
 }
