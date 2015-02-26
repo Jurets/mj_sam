@@ -243,8 +243,11 @@ class enrol_survey_question_form extends moodleform {
 */
 class enrol_survey_user_form extends moodleform {
 
+    private $mform;
+    
+    // form definition function
     function definition() {
-        $mform = $this->_form;
+        $this->mform = $this->_form;
 
         // get main instances
         $enrol = $this->_customdata['enrol'];
@@ -253,65 +256,85 @@ class enrol_survey_user_form extends moodleform {
 
         //$mform->addElement('header', 'header', get_string('pluginname', 'enrol_apply'));
 
-        $instanceid = $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
+        $instanceid = $this->mform->addElement('hidden', 'id');
+        $this->mform->setType('id', PARAM_INT);
         $instanceid->setValue($enrol->courseid);
         
-        $courseid = $mform->addElement('hidden', 'enrolid');
-        $mform->setType('enrolid', PARAM_INT);
+        $courseid = $this->mform->addElement('hidden', 'enrolid');
+        $this->mform->setType('enrolid', PARAM_INT);
         $courseid->setValue($enrol->id);
         
         /// Show question items (survey)
         $item_num = 0;
         $current_group = '';
-        foreach($questions as $key=>$question) {
-            if ($question->group_label <> $current_group) {
-                $mform->addElement('header', 'header', $question->group_label);
-                $current_group = $question->group_label;
-            }
-            
-            //build name of form element
-            $name = "questions[$question->id]";
-            //build label
-            $label = (++$item_num) . '. ' . $question->label;
-            
-            if (isset($question->items) && is_array($question->items)) {
-                $items = $question->items;
-            } else {
-                $items = null;
-            }
-            
-            if ($question->type == 'radio') {
-                if (isset($question->items) && is_array($question->items)) {
-                    $radioarray = array();
-                    foreach($question->items as $key=>$item) {
-                        $radioarray[] =& $mform->createElement('radio', $name, '', $item->label, $item->id, array()/*$attributes*/);
-                    }
-                }  // must be same name in radio elements and in group
-                $mform->addGroup($radioarray, $name, $label, array(' '), false);
-            } else if ($question->type == 'select') {
-                $items = array(''=>'');
-                if (isset($question->items) && is_array($question->items)) {
-                    foreach($question->items as $key=>$value) {
-                        $items[$value->id] = $value->label;
-                    }
+        // rebuild question list according groups
+        foreach($questions as $id=>$question) {
+            if (isset($question->parentid) && !empty($question->parentid)) {
+                $parent = &$questions[$question->parentid];
+                if (!isset($parent->children)) {
+                    $parent->children = array();
                 }
-                $mform->addElement('select', $name, $label, $items);
-            } else if ($question->type == 'text') {
-                $mform->addElement('text', $name, $label);
-            }
-            //    $mform->addHelpButton($question->name, 'status', 'enrol_apply');
-            if (isset($question->default) && !empty($question->default)) {
-                $mform->setDefault($question->name, $question->default);
-            }
-            $mform->setType($name, PARAM_TEXT);
-            if (isset($question->required) && $question->required) {
-                //$mform->addRule($question->name, get_string('missinanswer', 'enrol_survey'), 'required', null, 'client');
-                $mform->addRule($name, get_string('missinanswer', 'enrol_survey'), 'required');
+                $parent->children[] = $question;
+                unset($questions[$id]);
             }
         }
-        // add buttons
-        $this->add_action_buttons(true, ($enrol->id ? null : get_string('addinstance', 'enrol')));
+        // show question cycle
+        foreach($questions as $key=>$question) {
+            //build label
+            $label = (++$item_num) . '. ' . $question->label;
+            // analize - if group type
+            if ($question->type == 'group' && isset($question->children) && is_array($question->children)) {
+                //$this->mform->addElement('header', 'header'.$item_num, $label, array('style'=>'font-size: 14px;'));
+                $this->mform->addElement('static', 'group'.$item_num, $label, '');
+                foreach($question->children as $child_question) {
+                    $this->one_question($child_question, $child_question->label);
+                }
+            } else {
+                $this->one_question($question, $label);
+            }
+        }
+        $this->add_action_buttons(true, ($enrol->id ? null : get_string('addinstance', 'enrol'))); // add buttons
+    }
+    
+    // create one question (not group type)
+    private function one_question($question, $label) {
+        //build name of form element
+        $name = "questions[$question->id]";
+        // analize options existance
+        if (isset($question->items) && is_array($question->items)) {
+            $items = $question->items;
+        } else {
+            $items = null;
+        }
+        // analize question type
+        if ($question->type == 'radio') {
+            if (isset($question->items) && is_array($question->items)) {
+                $radioarray = array();
+                foreach($question->items as $key=>$item) {
+                    $radioarray[] =& $this->mform->createElement('radio', $name, '', $item->label, $item->id, array()/*$attributes*/);
+                }
+            }  // must be same name in radio elements and in group
+            $this->mform->addGroup($radioarray, $name, $label, array(' '), false);
+        } else if ($question->type == 'select') {
+            $items = array(''=>'');
+            if (isset($question->items) && is_array($question->items)) {
+                foreach($question->items as $key=>$value) {
+                    $items[$value->id] = $value->label;
+                }
+            }
+            $this->mform->addElement('select', $name, $label, $items);
+        } else if ($question->type == 'text') {
+            $this->mform->addElement('text', $name, $label);
+        }
+        //    $mform->addHelpButton($question->name, 'status', 'enrol_apply');
+        if (isset($question->default) && !empty($question->default)) {
+            $this->mform->setDefault($question->name, $question->default);
+        }
+        $this->mform->setType($name, PARAM_TEXT);
+        if (isset($question->required) && $question->required) {
+            //$mform->addRule($question->name, get_string('missinanswer', 'enrol_survey'), 'required', null, 'client');
+            $this->mform->addRule($name, get_string('missinanswer', 'enrol_survey'), 'required');
+        }
     }
 }
 
@@ -486,7 +509,7 @@ function enrol_survey_get_questions($instance = null) {
     try {
         $transaction = $DB->start_delegated_transaction();    // start transaction         //delete:
         // get questions
-        $sql = 'SELECT q.id, q.name, q.label, q.type, q.required, q.sort_order, qg.name as group_name
+        $sql = 'SELECT q.id, q.name, q.label, q.type, q.required, q.sort_order, q.parentid, qg.name as group_name
                 FROM {enrol_survey_questions} q LEFT JOIN
                      {enrol_survey_questions} qg ON qg.id = q.parentid 
                 WHERE q.enrolid = ?
