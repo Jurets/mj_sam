@@ -123,10 +123,13 @@ switch($action) {
             $questionid = optional_param('questionid', 0, PARAM_INT);
             $question = enrol_survey_get_one_question($id); //get data from DB
         }
+        //get qeustion with "group" type
+        $group_questions = $DB->get_records_menu('enrol_survey_questions', array('type'=>'group'), '', 'id,name');
         // run question edit form
         $editform = new enrol_survey_question_form($actionurl->out(false), array(
             'enrolid'=>$enrolid, 
             'question'=>$question,
+            'group_questions'=>$group_questions,
         )); //create form instance
         if ($editform->is_cancelled()) {  //in cancel form case - redirect to previous page
             $url = new moodle_url($returnurl, array('action' => $actionIndex));
