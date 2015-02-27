@@ -207,7 +207,7 @@ class enrol_survey_plugin extends enrol_plugin {
         } else {
             // check: if current user is enrolled by survey
             $enrol_user = $DB->get_record('user_enrolments', array('enrolid'=>$instance->id, 'userid'=>$USER->id));
-            if (isset($enrol_user)) {
+            if ($enrol_user && isset($enrol_user)) {
                 $node = $instancesnode->parent->parent;
                 $str = get_string('my_answers', 'enrol_survey');
                 $link = new moodle_url('/enrol/survey/answers.php', array('action'=>'view', 'ue'=>$enrol_user->id));

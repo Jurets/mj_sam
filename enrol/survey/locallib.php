@@ -253,6 +253,11 @@ class enrol_survey_user_form extends moodleform {
         $enrol = $this->_customdata['enrol'];
         $plugin = $this->_customdata['plugin'];
         $questions = isset($this->_customdata['questions']) ? $this->_customdata['questions']: array();
+        if (isset($this->_customdata['answer'])) {
+            $answer = $this->_customdata['answer'];
+        } else {
+            $answer = null;
+        }
 
         //$mform->addElement('header', 'header', get_string('pluginname', 'enrol_apply'));
 
@@ -266,16 +271,19 @@ class enrol_survey_user_form extends moodleform {
         
         /// Show question items (survey)
         $item_num = 0;
-        $current_group = '';
         // rebuild question list according groups
         foreach($questions as $id=>$question) {
             if (isset($question->parentid) && !empty($question->parentid)) {
-                $parent = &$questions[$question->parentid];
-                if (!isset($parent->children)) {
-                    $parent->children = array();
+                if (isset($questions[$question->parentid])) {
+                    $parent = &$questions[$question->parentid];
                 }
-                $parent->children[] = $question;
-                unset($questions[$id]);
+                if (isset($parent)) {
+                    if (!isset($parent->children)) {
+                        $parent->children = array();
+                    }
+                    $parent->children[] = $question;
+                    unset($questions[$id]);
+                }
             }
         }
         // show question cycle
@@ -287,17 +295,17 @@ class enrol_survey_user_form extends moodleform {
                 //$this->mform->addElement('header', 'header'.$item_num, $label, array('style'=>'font-size: 14px;'));
                 $this->mform->addElement('static', 'group'.$item_num, $label, '');
                 foreach($question->children as $child_question) {
-                    $this->one_question($child_question, $child_question->label);
+                    $this->one_question($child_question, $child_question->label, $answer);
                 }
             } else {
-                $this->one_question($question, $label);
+                $this->one_question($question, $label, $answer);
             }
         }
         $this->add_action_buttons(true, ($enrol->id ? null : get_string('addinstance', 'enrol'))); // add buttons
     }
     
     // create one question (not group type)
-    private function one_question($question, $label) {
+    private function one_question($question, $label, $answer) {
         //build name of form element
         $name = "questions[$question->id]";
         // analize options existance
@@ -313,6 +321,9 @@ class enrol_survey_user_form extends moodleform {
                 foreach($question->items as $key=>$item) {
                     $radioarray[] =& $this->mform->createElement('radio', $name, '', $item->label, $item->id, array()/*$attributes*/);
                 }
+                if (isset($answer) && is_object($answer)) { //set answer (choice) if present
+                    $this->mform->setDefault($name, $answer->optionid);
+                }
             }  // must be same name in radio elements and in group
             $this->mform->addGroup($radioarray, $name, $label, array(' '), false);
         } else if ($question->type == 'select') {
@@ -321,10 +332,16 @@ class enrol_survey_user_form extends moodleform {
                 foreach($question->items as $key=>$value) {
                     $items[$value->id] = $value->label;
                 }
+                if (isset($answer) && is_object($answer)) { //set answer (choice) if present
+                    $this->mform->setDefault($name, $answer->optionid);
+                }
             }
             $this->mform->addElement('select', $name, $label, $items);
         } else if ($question->type == 'text') {
             $this->mform->addElement('text', $name, $label);
+            if (isset($answer) && is_object($answer)) { //set answer (choice) if present
+                $this->mform->setDefault($name, $answer->answertext);
+            }
         }
         //    $mform->addHelpButton($question->name, 'status', 'enrol_apply');
         if (isset($question->default) && !empty($question->default)) {

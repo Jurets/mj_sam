@@ -62,6 +62,7 @@ $string['answer_text'] = 'Answer Text';
 $string['required'] = 'Response is required Help with Response is required';
 $string['possible_answers'] = 'Possible answers';
 $string['user_answers'] = 'User answers';
+$string['edit_user_answers'] = 'Edit user answers';
 $string['my_answers'] = 'My Survey';
 
 $string['survey:manage'] = 'Manage Survey Enrolment';

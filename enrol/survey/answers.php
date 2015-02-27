@@ -45,13 +45,7 @@ $ue_id = optional_param('ue', 0, PARAM_INT);
 $ue = $DB->get_record('user_enrolments', array('id'=>$ue_id), '*', MUST_EXIST);
 $user = $DB->get_record('user', array('id'=>$ue->userid), '*', MUST_EXIST);
 $enrol = $DB->get_record('enrol', array('id'=>$ue->enrolid), '*', MUST_EXIST);
-
-/*$enrolid = optional_param('enrolid', 0, PARAM_INT);
-$instance = $DB->get_record('enrol', array('id'=>$enrolid), '*', MUST_EXIST);
-$confirm = optional_param('confirm', '', PARAM_ALPHANUM);*/   //md5 confirmation hash
-
-// get question id
-//$id = optional_param('id', 0, PARAM_INT); //admin action for mooc-settings
+$plugin = enrol_get_plugin('survey');
 
 // get course
 $course = $DB->get_record('course', array('id'=>$enrol->courseid), '*', MUST_EXIST);
@@ -66,10 +60,10 @@ if ($USER->id <> $user->id) {
 //actions list
 $actionIndex = 'index';
 $actionView = 'view';
+$actionEdit = 'edit';
 
 //URL settings
-$returnurl = new moodle_url($CFG->wwwroot.'/enrol/survey/answers.php', array('action'=>$action));
-$returnurl = $returnurl->out(false);
+$returnurl = new moodle_url($CFG->wwwroot.'/enrol/survey/answers.php', array('action'=>$action, 'ue'=>$ue_id));
 
 $PAGE->set_url('/enrol/survey/answers.php');
 //$PAGE->set_context($systemcontext);
@@ -82,10 +76,52 @@ $PAGE->navbar->add(get_string('user_answers', 'enrol_survey'));
 
 /// ------------- main process --------------
 switch($action) {
-    case $actionIndex:
+    case $actionEdit:
+        require_capability('enrol/survey:manage', context_system::instance());
+        // get answer
+        $answer_id = optional_param('answerid', 0, PARAM_INT);
+        if ($answer = $DB->get_record('enrol_survey_answers', array('id'=>$answer_id))) {
+            // get question
+            $question = enrol_survey_get_one_question($answer->questionid);
+            
+            // put question into array (for work with survey form)
+            $questions[$question->id] = $question;
+            $returnurl->param('answerid', $answer_id);
+            $form = new enrol_survey_user_form($returnurl->out(false), array(
+                'enrol'=>$enrol, 
+                'plugin'=>$plugin, 
+                'context'=>$context,
+                'questions'=>$questions,
+                'answer'=>$answer,
+            ));
+            if ($enroldata = $form->get_data()) {
+                //$answer->answertext = $data->id;
+                $user_answers = $enroldata->questions;
+                $user_answer = $user_answers[$question->id];
+                // analize question type
+                $option = null;
+                if (isset($question->items) && is_array($question->items) && !empty($question->items)) {
+                    $items = $question->items;          //check: if options exists
+                    if (isset($items[$user_answer]))    // check: if option selected
+                        $option = $items[$user_answer];
+                } 
+                if (isset($option)) {
+                    $answer->answertext = $option->label;
+                    $answer->optionid = $option->id;
+                } else {
+                    $answer->answertext = $user_answer;
+                    $answer->optionid = null;
+                }
+                if ($DB->update_record('enrol_survey_answers', $answer)) {
+                    $url = new moodle_url($CFG->wwwroot.'/enrol/survey/answers.php', array('action'=>$actionView, 'ue'=>$ue_id));
+                    redirect($url->out(false));
+                }
+            }
+        }
+        // show survey form page (with one question) for user answer editing
         echo $OUTPUT->header();
-        echo $OUTPUT->heading(get_string('user_answers', 'enrol_survey'));
-        // ...
+        echo $OUTPUT->heading(get_string('edit_user_answers', 'enrol_survey'));
+        $form->display();
         echo $OUTPUT->footer();
         break;
         
@@ -97,7 +133,8 @@ switch($action) {
         // show answers by datetime of 
         foreach ($answers_group as $timecreated=>$answers)
         {
-            echo $OUTPUT->heading(date('Y-m-d h:i:s', $timecreated), 3, 'helptitle', 'timecreated'.$timecreated);
+            $str = $timecreated ? date('Y-m-d h:i:s', $timecreated) : 'Non answered';
+            echo $OUTPUT->heading($str, 3, 'helptitle', 'timecreated'.$timecreated);
             $table = new html_table();
             $table->head = array(
                 get_string('question_text', 'enrol_survey'),
@@ -105,17 +142,36 @@ switch($action) {
                 get_string('is_required', 'enrol_survey'),
                 get_string('answer_text', 'enrol_survey'),
             );
-            
+            $stredit = get_string('edit');
             foreach ($answers as $answer) {
-                $table->data[] = array(
+                $buttons_column = array(
+                    //create_editbutton($returnurl->out(false), get_string('edit'), $answer->answerid)
+                    html_writer::link(
+                        new moodle_url($returnurl->out(false), array('action'=>'edit', 'answerid'=>$answer->answerid)), 
+                        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/editstring'), 'alt'=>$stredit, 'class'=>'iconsmall')), 
+                        array('title'=>$stredit)
+                    ),
+                );
+                $data = array(
                     $answer->questiontext, 
                     $answer->questiontype, 
                     $answer->required ? html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/check'))) : '', 
                     $answer->answertext, 
                 );
+                if (has_capability('enrol/survey:manage', context_system::instance())) {
+                    $data[] = implode(' ', $buttons_column);
+                }
+                $table->data[] = $data;
             }
             echo html_writer::table($table);
         }
+        echo $OUTPUT->footer();
+        break;
+        
+    case $actionIndex:
+        echo $OUTPUT->header();
+        echo $OUTPUT->heading(get_string('user_answers', 'enrol_survey'));
+        // ...
         echo $OUTPUT->footer();
         break;
         
