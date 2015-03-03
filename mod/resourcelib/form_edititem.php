@@ -90,6 +90,17 @@ class mod_resourcelib_form_edititem extends moodleform {
         $mform->setType('copyright', PARAM_TEXT);                   //Set type of element
         $mform->addRule('copyright', get_string('maximumchars', '', 64), 'maxlength', 64, 'client');
 
+        //resourceItem: Length
+        $mform->addElement('text', 'length', get_string('length', 'resourcelib'), array('style'=>'width: 100%')); // Add elements to your form
+        $mform->setType('length', PARAM_TEXT);                   //Set type of element
+        $mform->addRule('length', get_string('maximumchars', '', 20), 'maxlength', 20, 'client');
+
+        //resourceItem: Publication Date
+        //$mform->addElement('date_time_selector', 'public_date', get_string('public_date', 'resourcelib')); // Add elements to your form
+        $mform->addElement('text', 'public_date', get_string('public_date', 'resourcelib'), array('style'=>'width: 100%')); // Add elements to your form
+        $mform->setType('public_date', PARAM_TEXT);                   //Set type of element
+        $mform->addRule('public_date', get_string('maximumchars', '', 30), 'maxlength', 30, 'client');
+
         //resourceItem: Time Estimate
         $mform->addElement('text', 'time_estimate', get_string('time_estimate', 'resourcelib'), array(
             'placeholder'=>get_string('enter_estimated_time', 'resourcelib'),

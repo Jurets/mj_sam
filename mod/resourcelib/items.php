@@ -96,7 +96,7 @@ switch($action) {
         } else if (isset($id)){     //edit existing type ($id parameter must be present in URL)
             $PAGE->navbar->add(get_string('edititem', 'resourcelib'));
             $actionurl = new moodle_url($returnurl, array('action' => $actionEdit, 'id'=>$id));
-            $item = get_resource($id); //get data from DB
+            $item = resourcelib_get_resource($id); //get data from DB
         }
         
         //get Resource Types List
@@ -109,10 +109,10 @@ switch($action) {
             redirect($url);
         } else if ($data = $editform->get_data()) {
             if ($action == $actionAdd) {
-                $inserted_id = add_resource($data);
+                $inserted_id = resourcelib_add_resource($data);
                 $success = isset($id);
             } else if (isset($id)){
-                $success = edit_resource($data);
+                $success = resourcelib_edit_resource($data);
             }
             if ($success){  //call create Resource Type function
                 $url = new moodle_url($returnurl, array('action' => $actionIndex));
@@ -131,7 +131,7 @@ switch($action) {
         $PAGE->navbar->add(get_string('deleteitem', 'resourcelib'));
         
         if (isset($id) && confirm_sesskey()) { // Delete a selected resource item, after confirmation
-            $item = get_resource($id); //get data from DB
+            $item = resourcelib_get_resource($id); //get data from DB
 
             if ($confirm != md5($id)) {
                 echo $OUTPUT->header();
@@ -146,7 +146,7 @@ switch($action) {
                 }
                 echo $OUTPUT->footer();
             } else if (data_submitted() /*&& !$data->deleted*/){
-                if (delete_resource($item)) {
+                if (resourcelib_delete_resource($item)) {
                     $url = new moodle_url($returnurl, array('action' => $actionIndex));
                     redirect($url);
                 } else {

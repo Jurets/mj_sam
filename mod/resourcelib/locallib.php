@@ -114,7 +114,7 @@ function resourcelib_get_resources($sort = '', $dir = '') {
 * 
 * @param mixed $id - Resource ID
 */
-function get_resource($id) {
+function resourcelib_get_resource($id) {
     global $DB;
     return $DB->get_record_sql('
         SELECT r.*, t.name AS type_name, t.icon_path,
@@ -129,7 +129,7 @@ function get_resource($id) {
 * 
 * @param mixed $data - Resource Instance
 */
-function add_resource($data) {
+function resourcelib_add_resource($data) {
     global $DB;
     return $DB->insert_record('resource_items', $data);
 }
@@ -139,7 +139,7 @@ function add_resource($data) {
 * 
 * @param mixed $data - Resource Instance
 */
-function edit_resource($data) {
+function resourcelib_edit_resource($data) {
     global $DB;
     return $DB->update_record('resource_items', $data);
 }
@@ -150,11 +150,11 @@ function edit_resource($data) {
 * @param mixed $data - instance of Resource
 * @return bool
 */
-function delete_resource($data) {
+function resourcelib_delete_resource($data) {
     global $DB;
     // Make sure nobody sends bogus record type as parameter.
     if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
-        throw new coding_exception('Invalid $data parameter in delete_resource() detected');
+        throw new coding_exception('Invalid $data parameter in resourcelib_delete_resource() detected');
     }
     // Better not trust the parameter and fetch the latest info this will be very expensive anyway.
     if (!$type = $DB->get_record('resource_items', array('id' => $data->id))) {
