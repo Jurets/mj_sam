@@ -124,7 +124,7 @@ switch($action) {
             $question = enrol_survey_get_one_question($id); //get data from DB
         }
         //get qeustion with "group" type
-        $group_questions = $DB->get_records_menu('enrol_survey_questions', array('type'=>'group'), '', 'id,name');
+        $group_questions = $DB->get_records_menu('enrol_survey_questions', array('type'=>'group', 'enrolid'=>$enrolid), '', 'id,name');
         // run question edit form
         $editform = new enrol_survey_question_form($actionurl->out(false), array(
             'enrolid'=>$enrolid, 
