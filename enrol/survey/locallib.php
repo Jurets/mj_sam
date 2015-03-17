@@ -134,7 +134,7 @@ class enrol_survey_addquestion_form extends moodleform {
         $mform->setType('enrolid', PARAM_INT);
         $enrol->setValue($enrolid);
         // question types
-        $qtypes = array('text'=>'text', 'select'=>'select', 'radio'=>'radio', 'selectother'=>'selectother', 'group'=>'group');
+        $qtypes = array('text'=>'Text Question', 'select'=>'Select from a list', 'radio'=>'Radio Buttons', 'selectother'=>'Select from a list w/ Other Option', 'group'=>'Select Group');
         // group of dropdown and submit button
         $addqgroup = array();
         $addqgroup[] =& $mform->createElement('select', 'type', '', $qtypes);
