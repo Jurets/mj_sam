@@ -24,7 +24,7 @@ window.ChapterMarkerPlayer = {
     var YOUTUBE_CONTROLS_HEIGHT = 30;
     // Assume a 9:16 (width:height) ratio when we need to calculate a player's height.
     var PLAYER_HEIGHT_TO_WIDTH_RATIO = 9 / 16;
-    var DEFAULT_PLAYER_WIDTH = 400;
+    var DEFAULT_PLAYER_WIDTH = 400;                                                                                               
 // BEGIN_INCLUDE(validation1)
     // params contains the following required and optional parameter names and values:
     //   videoId: (required) The YouTube video id of the video to be embedded.
@@ -38,7 +38,7 @@ window.ChapterMarkerPlayer = {
 
     if (!('chapters' in params)) {
       throw 'The "chapters" parameter must be set to the mapping of times to chapter titles.';
-    }
+    }                           
 // END_INCLUDE(validation1)
 // BEGIN_INCLUDE(time_sort)
     var times = [];
@@ -52,6 +52,19 @@ window.ChapterMarkerPlayer = {
     times.sort(function(a,b) {
       return a - b;
     });
+
+    var dataobjects = [];
+    for (var data in params.dataobjects) {
+      if (params.dataobjects.hasOwnProperty(data)) {
+        dataobjects.push(params.dataobjects[data]);
+      }
+    }
+    // Sort the times numerically for display purposes.
+    // See https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/sort#Examples
+    dataobjects.sort(function(a,b) {
+      return a - b;
+    });
+    
 // END_INCLUDE(time_sort)
     var width = params.width || DEFAULT_PLAYER_WIDTH;
 
@@ -101,7 +114,38 @@ window.ChapterMarkerPlayer = {
 
       // Attempt to use any custom player options that were passed in via params.playerOptions.
       // Fall back to reasonable defaults as needed.
-      var playerOptions = params.playerOptions || {};
+      ////// var playerOptions = params.playerOptions || {};
+      var playerOptions = {
+            onStateChange: function(event) {
+                //console.log('State is ' + event.data);
+                player = event.target;
+                if (event.data == YT.PlayerState.PLAYING && player.isPauseClicked) {
+                    player.isChapterClicked = false;
+                }
+                switch (event.data) {
+                    case YT.PlayerState.PLAYING:
+                        action = "logvideoplay"; 
+                        player.isPauseClicked = false;
+                        break;
+                    case YT.PlayerState.PAUSED:
+                        action = "logvideopause"; 
+                        player.isPauseClicked = true;
+                        break;
+                }
+                if (!player.isChapterClicked) {
+                    // use object var (see below), if you need to log current time of video playing
+                    // event.target.B.currentTime
+                    var objectid = document.getElementById(params.container).getAttribute('data-objectid');
+                    if (params.callbackState != null) {
+                        params.callbackState(action, objectid); // send ajax
+                    }
+                } 
+                if (event.data == YT.PlayerState.PLAYING) {
+                    player.isChapterClicked = false;
+                }
+            }
+      };
+      
       return new YT.Player(playerContainer, {
         // Maintain a 16:9 aspect ratio for the player based on the width passed in via params.
         // Override can be done via params.playerOptions if needed
@@ -155,14 +199,22 @@ window.ChapterMarkerPlayer = {
 
       for (var i = 0; i < times.length; i++) {
         var time = times[i];
+        var dataobject = dataobjects[i];
         var chapterTitle = params.chapters[time];
 
         var li = document.createElement('li');
         li.setAttribute('data-time', time);
+        li.setAttribute('data-objectid', dataobject);
+        li.setAttribute('class', 'chapterlink');
+        li.setAttribute('style', 'cursor: pointer');
         li.textContent = formatTimestamp(time) + ': ' + chapterTitle;
         li.onclick = function() {
           // 'this' will refer to the element that was clicked.
-          player.seekTo(this.getAttribute('data-time'));
+          player.isChapterClicked = true;
+          player.seekTo(this.getAttribute('data-time'));  // go to time from chapter marker, which was clicked
+          if (params.callbackState != null) {
+              params.callbackState("logchapter", this.getAttribute('data-objectid')); //send ajax
+          }
         };
         ol.appendChild(li);
       }
@@ -175,14 +227,17 @@ window.ChapterMarkerPlayer = {
     function insertPlayerAndAddChapterMarkers(params) {
 // BEGIN_INCLUDE(validation2)
       var containerElement = document.getElementById(params.container);
+      var containerChapters = document.getElementById(params.containerChapters) || containerElement;
       if (!containerElement) {
         throw 'The "container" parameter must be set to the id of a existing HTML element.';
       }
 // END_INCLUDE(validation2)
 
-      //var player = initializePlayer(containerElement, params);
       player = initializePlayer(containerElement, params);
-      //addChapterMarkers(containerElement, player);
+      player.isChapterClicked = false;
+      player.isPauseClicked = false;
+      // add chapter masrkers for video
+      addChapterMarkers(containerChapters, player);
     }
   },
 // BEGIN_INCLUDE(callback_array)

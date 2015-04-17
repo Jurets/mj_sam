@@ -56,6 +56,7 @@ $string['pluginname'] = 'Video Resource';
 
 $string['administration'] = 'Video Resource Administration';
 $string['manage_videos'] = 'Manage Video Resource Library';
+$string['edit_activity_content'] = 'Edit content of Video Resource Activity ';
 
 $string['index_video'] = 'Video Resource Index';
 $string['add_video'] = 'Add Video Resource';
@@ -77,6 +78,8 @@ $string['publicly_info'] = 'Publicly Accessible Fields';
 $string['chapter_timecode'] = 'Timecode';
 $string['chapter_title'] = 'Title';
 $string['secondary_description'] = 'Secondary description';
+$string['text_above'] = 'Text Above';
+$string['text_below'] = 'Text Below';
 
 $string['internal_name'] = 'Video Name';
 $string['internal_notes'] = 'Notes';
@@ -96,6 +99,10 @@ $string['no_chapters'] = 'There is no Chapters in this Video Resource';
 $string['videoresource_exists_in_course'] = 'Video Resource exists in course';
 $string['deletecheck_chapter_fromvideo'] = 'Are you absolutely sure you want to delete chapter {$a} from video?'; 
 $string['in_this_video'] = 'In this video (Click to Advance)'; 
+
+$string['all_videos_in_course_module'] = 'All of Videos added in this Course Module';
+$string['no_lists_in_course_module']  = 'There are no Videos in this Course Module';
+$string['there_are_no_videos']  = 'There is no Videos! Go to <a href="{$a}">Video List Page</a> for Manage';
 
 $string['listfield'] = 'Video Resource List';
 $string['listfield_help'] = 'Select Video Resource from list below';

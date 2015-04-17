@@ -281,3 +281,120 @@ function videoresource_delete_chapter($data) {
 function videoresource_time_convert($time) {
     return sprintf('%02d:%02d:%02d', $time/3600, ($time % 3600)/60, ($time % 3600) % 60);
 }
+
+/**
+* get Lists wich is in Cource
+* 
+* @param mixed $data - resourcelib instance
+* @return array
+*/
+function videoresource_get_courcemodule_contents($data) {
+    global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
+        throw new coding_exception('Invalid $data parameter in videoresource_get_courcemodule_contents() detected');
+    }
+    $sql = 'SELECT rc.id, r.id as content_id, r.internal_title as name, rc.instance_id, rc.sort_order
+            FROM mdl_videoresource_content rc 
+              LEFT JOIN mdl_resource_videos r ON rc.instance_id = r.id
+            WHERE rc.type = ? AND rc.resource_id = ?
+            ORDER BY rc.sort_order ASC';
+    return $DB->get_records_sql($sql, array('videoresource', $data->id));
+}
+
+/**
+* get Lists wich is not in Cource
+* 
+* @param mixed $data - resourcelib instance
+* @return array
+*/
+function videoresource_get_notcource_lists($resource_id) {
+    global $DB;
+    // Make sure nobody sends bogus record type as parameter.
+    /*if (!property_exists($data, 'id')) {
+        throw new coding_exception('Invalid $data parameter in get_notlist_sections() detected');
+    }*/
+    $sql = 'SELECT v.id, v.internal_title as name
+            FROM {resource_videos} v 
+            WHERE v.id NOT IN 
+              (SELECT rc.instance_id FROM {videoresource_content} rc WHERE rc.type = ? AND rc.resource_id = ?)';
+    $items = $DB->get_records_sql_menu($sql, array('videoresource', $resource_id));
+    if (!$items)
+        $items = array();
+    return $items;
+}
+
+function get_action_icon($url, $icon, $alt, $tooltip) {
+    global $OUTPUT;
+    return '<a title="' . $tooltip . '" href="'. $url . '">' .
+            '<img src="' . $OUTPUT->pix_url('t/' . $icon) . '" class="iconsmall" alt="' . $alt . '" /></a> ';
+}
+
+function get_spacer() {
+    global $OUTPUT;
+    return '<img src="' . $OUTPUT->pix_url('spacer') . '" class="iconsmall" alt="" /> ';
+}
+
+/**
+* create a delete button for data table
+* 
+* @param mixed $url
+* @param mixed $action
+* @param mixed $id
+* @param mixed $confirm
+* @return string
+*/
+function videoresource_confirm_deletebutton($url, $action, $itemid, $confirm = false) {
+    global $OUTPUT;
+    $strdelete = get_string('delete');
+    $url = new moodle_url($url, array('action'=>$action, 'itemid'=>$itemid, 'sesskey'=>sesskey()));
+    $text = html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall'));
+    $link = new action_link($url, $text); //create action link
+    $action = new component_action('click', 'M.util.show_confirm_dialog', array('message' => $confirm)); //attach confirm dialog
+    $link->add_action($action);
+    return $OUTPUT->render($link);
+}
+
+/**
+* Move Item down in Items List of Course module content
+* 
+* @param mixed $section
+* @return bool
+*/
+function videoresource_item_move_down($item) {
+    return move_item($item, 'down');
+}
+
+/**
+* Move Item up in Items List of Course module content
+* 
+* @param mixed $section
+* @return bool
+*/
+function videoresource_item_move_up($item) {
+    return move_item($item, 'up');
+}
+
+/**
+* Move Item
+* 
+* @param mixed $item
+* @param mixed $direction - direction of moving ("down" or "up")
+* @return bool
+*/
+function move_item($item, $direction = 'down') {
+    global $DB;
+    $sql = 'SELECT * FROM {videoresource_content}
+            WHERE resource_id = ? 
+                  AND sort_order ' . ($direction == 'down' ? '>' : '<') . ' ?
+            ORDER BY sort_order ' . ($direction == 'down' ? 'ASC' : 'DESC') . '
+            LIMIT 1';
+    $other_item = $DB->get_record_sql($sql, array($item->resource_id, $item->sort_order));
+    if (!$other_item) { //if other section not exists - return false
+        return false;
+    }
+    $result = $DB->set_field('videoresource_content', 'sort_order', $other_item->sort_order, array('id' => $item->id))
+           && $DB->set_field('videoresource_content', 'sort_order', $item->sort_order,  array('id' => $other_item->id));
+    return $result;
+}
+

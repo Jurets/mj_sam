@@ -89,8 +89,7 @@ function videoresource_add_instance(stdClass $videoresource, mod_videoresource_m
         $videoresource->scale = (int)RATING_AGGREGATE_SUM;
         //process form data
         $form_content = $mform->get_data();
-        //set video ID
-        $videoresource->resource_videos_id = $form_content->resource_videos_id;
+        //$videoresource->resource_videos_id = $form_content->resource_videos_id; //set video ID
         //insert record
         $videoresource->id = $DB->insert_record('videoresource', $videoresource, true);
         // Assuming the both inserts work, we get to the following line.
@@ -451,6 +450,17 @@ function videoresource_extend_settings_navigation(settings_navigation $settingsn
     global $PAGE, $DB;
     $url = new moodle_url('/mod/videoresource/view.php', array('id'=>$PAGE->cm->id));
     $videoresourcenode->add(get_string('preview', 'lesson'), $url);
+    // check edit ability for current user
+    $canedit = has_capability('mod/videoresource:edit', $PAGE->cm->context);
+    
+    //if ($canedit) 
+    {
+        $url = new moodle_url('/mod/videoresource/edit.php', array('id'=>$PAGE->cm->id));
+        $videoresourcenode->add(get_string('edit'), $url);
+    }
+    
+    $url = new moodle_url('/mod/videoresource/video.php', array());
+    $videoresourcenode->add(get_string('administration', 'videoresource'), $url);
 }
 
 

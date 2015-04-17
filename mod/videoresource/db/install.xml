@@ -19,7 +19,6 @@
                 <FIELD NAME="assesstimestart" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
                 <FIELD NAME="assesstimefinish" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
                 <FIELD NAME="scale" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-                <FIELD NAME="resource_videos_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of Video Resource"/>
                 <FIELD NAME="activity" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
@@ -30,6 +29,23 @@
             </INDEXES>
         </TABLE>  
 
+        <TABLE NAME="videoresource_content" COMMENT="Each record is one video-resource and its config data">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="resource_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="reference to mdl_videoresource record"/>
+                <FIELD NAME="type" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="type of instance (videoresource), for compatibility or future (list, resource)"/>
+                <FIELD NAME="instance_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="id of instance (videoresource, other)"/>
+                <FIELD NAME="textabove" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="text to display above each video"/>
+                <FIELD NAME="textbelow" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="text to display below each video"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="sort_order" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>  
+    
+        
         <TABLE NAME="resource_videos" COMMENT="resource_videos table retrofitted from MySQL">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>

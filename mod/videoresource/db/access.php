@@ -59,6 +59,16 @@ $capabilities = array(
         'clonepermissionsfrom' => 'moodle/course:manageactivities'
     ),
 
+    'mod/videoresource:edit' => array(
+        'riskbitmask' => RISK_XSS, // we want flash and JS in question pages
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+
     'mod/videoresource:view' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,

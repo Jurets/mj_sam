@@ -75,6 +75,11 @@ $PAGE->requires->js('/mod/videoresource/js/chapter_marker_player.js', true);
 // Include CSS file
 $PAGE->requires->css('/mod/videoresource/styles.css');
 
+//output of script, this jQuery click process command need for event storing
+$sesskey = sesskey();
+$cm_id = $cm->id;
+//$video_id = $video->video_id;
+$baseurl = $CFG->wwwroot;
 /*
  * Other things you may want to set - remove if not needed.
  * $PAGE->set_cacheable(false);
@@ -90,148 +95,138 @@ if ($videoresource->intro) {
     echo $OUTPUT->box(format_module_intro('videoresource', $videoresource, $cm->id), 'generalbox mod_introbox', 'videoresourceintro');
 }
 
-/// Render Video Resource Data
-$video = videoresource_get_video($videoresource->resource_videos_id);
-
-/// --- Render media frame
-echo html_writer::div('', 'mediaplugin mediaplugin_youtube', array(
-    'id'=>'iframe-session-player',
-    'data-objectid'=>$video->id,
-));
-
-$video_chapters = '';
-foreach ($video->chapters as $chapter) {
-    $video_chapters .= $chapter->timecode . ': "' . $chapter->title . '",';
-}
-
-///  --- below previous version - throug moodle mediarenderer
-//$mediarenderer = $PAGE->get_renderer('core', 'media');  //previous version
-//$url = 'http://youtu.be/'.$video->video_id;
-//echo $mediarenderer->embed_url(new moodle_url($url));
-
-/// --- Render podcast and transcript block
-echo html_writer::start_div('video_metadata', array('style'=>'text-align: center'));
-$video_metadata = array();
-if (!empty($video->podcast_url)) {
-    $video_metadata[] = html_writer::link($video->podcast_url, get_string('podcast_url', 'videoresource'), array(
-        'target'=>'_blank',
-        'class'=>'podcastlink',
-        'data-objectid'=>$video->id,
-    ));
-}
-if (!empty($video->transcript)) {
-    $url = new moodle_url(VR_URL_MAIN, array('action'=>'transcript', 'id'=>$video->id));
-    $video_metadata[] = html_writer::link($url, get_string('transcript', 'videoresource'), array(
-        'target'=>'_blank',
-        'class'=>'transcriptlink',
-        'data-objectid'=>$video->id,
-    ));
-}
-$video_metadata = implode(' | ', $video_metadata);
-$video_metadata = '[ ' . $video_metadata . ' ]';
-echo $video_metadata;
-echo html_writer::end_div();
-
-/// --- Render Follow Up Text
-if (!empty($video->description)) {
-    echo html_writer::div($video->description);
-    echo '<br>';
-}
-
-/// Reinitialise global $OUTPUT for correct Rating renderer
-$OUTPUT = new mooc_renderer($PAGE, RENDERER_TARGET_MAINTENANCE);
-
-//render rating element
-$ratingoptions = new stdClass;
-$ratingoptions->context = $context; //$modcontext;
-$ratingoptions->component = 'mod_videoresource';
-$ratingoptions->ratingarea = 'resource'; //
-$ratingoptions->items = array($videoresource); //
-$ratingoptions->aggregate = $videoresource->assessed; //1;//the aggregation method
-$ratingoptions->scaleid = $videoresource->scale;//5;
-$ratingoptions->userid = $USER->id;
-$ratingoptions->returnurl = "$CFG->wwwroot/mod/videoresource/view.php?id=$id";
-$rm = new rating_manager();
-$items = $rm->get_ratings($ratingoptions);
-$item = $items[0];
-if(isset($item->rating)) {
-    $rate_html = html_writer::tag('div', $OUTPUT->render($item->rating), array('class'=>'forum-post-rating'));
-    echo $rate_html;
-}
-
-/// --- Render chapters
-if (!empty($video->chapters)) {
-    echo html_writer::div(get_string('in_this_video', 'videoresource') . ':', 'video_chapter_header');
-    foreach ($video->chapters as $chapter) {
-        echo html_writer::start_div('video_chapter');
-        $time = videoresource_time_convert($chapter->timecode);
-        echo html_writer::tag('a', $time . ' - ' . $chapter->title, array(
-            'class'=>'chapterlink',
-            'data-objectid'=>$chapter->id,
-            'style'=>'cursor: pointer',
-            'onclick'=>'chapter_marker("'.$chapter->timecode.'")',
-        ));
-        echo html_writer::end_div();
-    }
-}
-
 /// --- Render secondary description field (activity)
 if (!empty($videoresource->activity)) {
     echo html_writer::div($videoresource->activity);
     echo '<br>';
 }
 
-//output of script, this jQuery click process command need for event storing
-$sesskey = sesskey();
-$cm_id = $cm->id;
-$video_id = $video->video_id;
-$baseurl = $CFG->wwwroot;
+/// Reinitialise global $OUTPUT for correct Rating renderer
+$OUTPUT = new mooc_renderer($PAGE, RENDERER_TARGET_MAINTENANCE);
+
+// ------------- Main process of video resource
+// get content records 
+$contents = $DB->get_records('videoresource_content', array('resource_id'=>$videoresource->id), 'sort_order ASC');
+
+// cycle for content records 
+foreach($contents as $video_content)
+{
+    /// -------------- Render Video Resource Data
+    $video = videoresource_get_video($video_content->instance_id);
+    $video_id = $video->id;
+    $yt_video_id = $video->video_id;
+
+    /// Render description text above
+    if (!empty($video_content->textabove)) {
+        echo html_writer::div($video_content->textabove);
+        echo '<br>';
+    }
+    
+    /// --- Render media frame
+    echo html_writer::div('', 'mediaplugin mediaplugin_youtube', array(
+        'id'=>'iframe-session-player-'.$video_id,
+        'data-objectid'=>$video->id,
+    ));
+
+    $video_chapters = '';
+    $data_objects = '';
+    foreach ($video->chapters as $chapter) {
+        $video_chapters .= $chapter->timecode . ': "' . $chapter->title . '",';
+        $data_objects   .= $chapter->timecode . ': "' . $chapter->id . '",';
+    }
+    
+    ///  --- below previous version - throug moodle mediarenderer
+    //$mediarenderer = $PAGE->get_renderer('core', 'media');  //previous version
+    //$url = 'http://youtu.be/'.$video->video_id;
+    //echo $mediarenderer->embed_url(new moodle_url($url));
+
+    /// --- Render podcast and transcript block
+    echo html_writer::start_div('video_metadata', array('style'=>'text-align: center'));
+    $video_metadata = array();
+    if (!empty($video->podcast_url)) {
+        $video_metadata[] = html_writer::link($video->podcast_url, get_string('podcast_url', 'videoresource'), array(
+            'target'=>'_blank',
+            'class'=>'podcastlink',
+            'data-objectid'=>$video->id,
+        ));
+    }
+    if (!empty($video->transcript)) {
+        $url = new moodle_url(VR_URL_MAIN, array('action'=>'transcript', 'id'=>$video->id));
+        $video_metadata[] = html_writer::link($url, get_string('transcript', 'videoresource'), array(
+            'target'=>'_blank',
+            'class'=>'transcriptlink',
+            'data-objectid'=>$video->id,
+        ));
+    }
+    $video_metadata = implode(' | ', $video_metadata);
+    $video_metadata = '[ ' . $video_metadata . ' ]';
+    echo $video_metadata;
+    echo html_writer::end_div();
+
+    /// --- Render Follow Up Text
+    if (!empty($video->description)) {
+        echo html_writer::div($video->description);
+        echo '<br>';
+    }
+
+    /// Render description text below
+    if (!empty($video_content->textbelow)) {
+        echo html_writer::div($video_content->textbelow);
+        echo '<br>';
+    }
+    
+    //render rating element
+    $ratingoptions = new stdClass;
+    $ratingoptions->context = $context; //$modcontext;
+    $ratingoptions->component = 'mod_videoresource';
+    $ratingoptions->ratingarea = 'resource'; //
+    $ratingoptions->items = array($video_content); //
+    $ratingoptions->aggregate = $videoresource->assessed; //1;//the aggregation method
+    $ratingoptions->scaleid = $videoresource->scale;//5;
+    $ratingoptions->userid = $USER->id;
+    $ratingoptions->returnurl = "$CFG->wwwroot/mod/videoresource/view.php?id=$id";
+    $rm = new rating_manager();
+    $items = $rm->get_ratings($ratingoptions);
+    $item = $items[0];
+    if(isset($item->rating)) {
+        $rate_html = html_writer::tag('div', $OUTPUT->render($item->rating), array('class'=>'forum-post-rating'));
+        echo $rate_html;
+    }
+
+    /// --- Render chapters
+    echo html_writer::start_div('video_chapters', array('id'=>'video-chapters-'.$video_id));
+    if (!empty($video->chapters)) {
+        echo html_writer::div(get_string('in_this_video', 'videoresource') . ':', 'video_chapter_header');
+    }
+    echo html_writer::end_div();
+
+    echo <<<EOD
+<script type="text/javascript">
+    //<![CDATA[
+    
+    $(document).ready(function(){
+        ChapterMarkerPlayer.insert({
+          container: 'iframe-session-player-$video_id',
+          containerChapters: 'video-chapters-$video_id',
+          videoId: '$yt_video_id',
+          width: 600,
+          chapters:{ $video_chapters },
+          dataobjects:{ $data_objects },
+          callbackState: ajaxSend,
+        });
+    });
+
+    //]]>
+</script>
+EOD;
+}
+// -------------
+
+
 echo <<<EOD
 <script type="text/javascript">
     //<![CDATA[
     
-    var isChapterClicked = false;
-    var isPauseClicked = false;
-    
-    ChapterMarkerPlayer.insert({
-      container: 'iframe-session-player',
-      videoId: '$video_id',
-      width: 600,
-      chapters:{ $video_chapters },
-      playerOptions: {
-        onStateChange: function(event) {
-            console.log('State is ' + event.data);
-            if (event.data == YT.PlayerState.PLAYING && isPauseClicked) {
-                isChapterClicked = false;
-            }
-            switch (event.data) {
-                case YT.PlayerState.PLAYING:
-                    action = "logvideoplay"; 
-                    isPauseClicked = false;
-                    break;
-                case YT.PlayerState.PAUSED:
-                    action = "logvideopause"; 
-                    isPauseClicked = true;
-                    break;
-            }
-            if (!isChapterClicked) {
-                objectid = $("#iframe-session-player").data("objectid");
-                // use object var (see below), if you need to log current time of video playing
-                // event.target.B.currentTime
-                ajaxSend(action, objectid);
-            } 
-            if (event.data == YT.PlayerState.PLAYING) {
-                isChapterClicked = false;
-            }
-        }
-      }
-    });
-
-    function chapter_marker(time) {
-        isChapterClicked = true;
-        player.seekTo(time);
-    }
-
     function ajaxSend(action, objectid) {
         $.ajax({
           type: "GET",
@@ -248,15 +243,13 @@ echo <<<EOD
     }
     
     $(document).ready(function(){
-        $(".podcastlink, .transcriptlink, .chapterlink").click(function(){
+        $(".podcastlink, .transcriptlink").click(function(){
             elem = $(this);
             objectid = elem.attr("data-objectid");
             if (elem.hasClass("podcastlink"))
                 action = "logpodcast";
             else if (elem.hasClass("transcriptlink"))
                 action = "logtranscript";
-            else if (elem.hasClass("chapterlink"))
-                action = "logchapter";
             ajaxSend(action, objectid);
             return true;
         })
