@@ -43,6 +43,7 @@ $string['videoresource:viewallratings'] = 'View all raw ratings given by individ
 $string['videoresource:viewanyrating'] = 'View total ratings that anyone received';
 $string['videoresource:viewrating'] = 'View the total rating you received';
 $string['videoresource:rate'] = 'Rate entries';
+$string['videoresource:addforum'] = 'Set forum';
 
 $string['eventresourceviewed'] = 'Resource was viewed';
 $string['eventpodcastviewed'] = 'Podcast was viewed';
@@ -103,6 +104,7 @@ $string['in_this_video'] = 'In this video (Click to Advance)';
 $string['all_videos_in_course_module'] = 'All of Videos added in this Course Module';
 $string['no_lists_in_course_module']  = 'There are no Videos in this Course Module';
 $string['there_are_no_videos']  = 'There is no Videos! Go to <a href="{$a}">Video List Page</a> for Manage';
+$string['there_are_no_forums']  = 'There is no forums in this Course! Firstly add a forum';
 
 $string['listfield'] = 'Video Resource List';
 $string['listfield_help'] = 'Select Video Resource from list below';

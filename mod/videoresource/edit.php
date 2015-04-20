@@ -34,6 +34,7 @@ $action = (!empty($action) ? $action : 'index');
 $itemid = optional_param('itemid', 0, PARAM_INT);
 // params for adding
 $add_item = optional_param('add_item', null, PARAM_TEXT);
+$add_forum = optional_param('add_forum', null, PARAM_TEXT);
 //$video_id = optional_param('video_id', 0, PARAM_INT);
 
 //actions list
@@ -70,6 +71,34 @@ if (!is_null($add_item)) {
     $DB->insert_record('videoresource_content', $item);
 }
 
+// if adding forum was submitted
+if (!is_null($add_forum)) {
+    // firstly get already added forumforum
+    $added_forum = $DB->get_record_select(
+        'videoresource_content', 'resource_id = :resource_id AND type = :type', array('resource_id'=>$videoresource->id, 'type'=>'forum'));
+    // get options of new video content
+    $posted_item = optional_param_array('video', array(), PARAM_RAW);
+    // check post
+    if (empty($posted_item['instance_id'])) { // if clearing of forum 
+        $DB->delete_records('videoresource_content', array('id'=>$added_forum->id));
+    } else if ($added_forum) {  // if exist
+        $item = $added_forum; // get it
+        $item->instance_id = $posted_item['instance_id'];
+        $item->timecreated = time();
+        $DB->update_record('videoresource_content', $item);
+    } else { // else create new instance
+        $item = (object)$posted_item;  //$item = new stdClass();
+        $item->resource_id = $cm->instance;
+        $item->type = 'forum';
+        $item->timecreated = time();
+        //set next sort_order ????
+        //$sort_order = $DB->get_field('videoresource_content', 'MAX(sort_order)', array('resource_id'=>$item->resource_id));
+        //$item->sort_order = $sort_order + 1;
+        $DB->insert_record('videoresource_content', $item);
+    }
+}
+
+
 // page params
 $PAGE->set_url('/mod/videoresource/edit.php', array('id'=>$cm->id));
 $returnurl = $CFG->wwwroot.'/mod/videoresource/edit.php';
@@ -83,7 +112,7 @@ switch($action) {
         echo $OUTPUT->heading(get_string('edit_activity_content', 'videoresource'));
         
         echo html_writer::tag('h3', get_string('listfield', 'videoresource'));
-        //get list of course module content (set of lists)
+        //get list of course module content (set of videos)
         $items = videoresource_get_courcemodule_contents($videoresource);
         if (empty($items)) {
             echo $OUTPUT->notification(get_string('no_lists_in_course_module', 'videoresource'), 'redirectmessage');
@@ -91,7 +120,6 @@ switch($action) {
             $table = new html_table();
             $table->head = array();
             $table->head[] = get_string('name');
-            //$table->head[] = get_string('type', 'videoresource');
 
             $table->size[2] = '120px';
             $strmoveup = get_string('moveup');
@@ -122,18 +150,13 @@ switch($action) {
                 $url = new moodle_url($listurl, array('action'=>'view', 'id'=>$item->instance_id));
                 $table->data[] = array(
                     html_writer::link($url, $item->name),
-                    /*html_writer::empty_tag('img', array(
-                        'src'=>$item->icon_path, 
-                        'alt'=>$item->icon_path, 
-                        'class'=>'iconsmall', 
-                        'style'=>'width: 30px; height: 30px;')),*/
                     implode(' ', $buttons_column)
                 );
             }
             echo html_writer::table($table); //show table
         }
         
-        // get lists, wich is not in course module
+        // get videos, wich is not in this course module
         $items = videoresource_get_notcource_lists($cm->instance);
         if (empty($items)) {
             $count = $DB->get_field('resource_videos', 'COUNT(*)', array());
@@ -147,21 +170,20 @@ switch($action) {
             // form for adding Video Resource
             echo html_writer::tag('h3', get_string('videoresource:addinstance', 'videoresource'));
             echo html_writer::start_tag('form', array('method'=>'POST', 'action'=>$moodle_returnurl->out(false)));
-            
+            // YT video select input
             echo html_writer::start_div();
-            //echo html_writer::start_tag('select', array('id'=>'id_video_id', 'name'=>'video_id' , 'style'=>'width: 500px; float: left;'));
             echo html_writer::start_tag('select', array('id'=>'id_video_id', 'name'=>'video[instance_id]' , 'style'=>'width: 100%;'));
             foreach($items as $value=>$name) {
                 echo html_writer::tag('option', $name, array('value'=>$value));
             }
             echo html_writer::end_tag('select');
             echo html_writer::end_div();
-            
+            // text above video
             echo html_writer::start_div();
             echo html_writer::tag('label', get_string('text_above', 'videoresource'), array('for'=>'id_textabove'));
             echo html_writer::tag('textarea', null, array('id'=>'id_textabove', 'name'=>'video[textabove]', 'style'=>'width: 100%;'));
             echo html_writer::end_div();
-            
+            // text beyond video
             echo html_writer::start_div();
             echo html_writer::tag('label', get_string('text_below', 'videoresource'), array('for'=>'id_textbelow'));
             echo html_writer::tag('textarea', null, array('id'=>'id_textbelow', 'name'=>'video[textbelow]', 'style'=>'width: 100%;'));
@@ -170,6 +192,39 @@ switch($action) {
             echo html_writer::tag('input', null, array('type'=>'submit', 'name'=>'add_item', 'value'=>get_string('add')));
             echo html_writer::end_tag('form');
         }
+        // ---- form for adding forum to video activity page
+        echo html_writer::tag('h3', get_string('videoresource:addforum', 'videoresource'));
+        // get added forum
+        $added_forum = $DB->get_record_select(
+            'videoresource_content', 'resource_id = :resource_id AND type = :type', array('resource_id'=>$videoresource->id, 'type'=>'forum'), 'instance_id');
+        // get forums list from current course
+        $forums = $DB->get_records_menu('forum', array('course'=>$course->id), null, 'id, name');
+        if (empty($forums)) {
+            echo $OUTPUT->notification(get_string('there_are_no_forums', 'videoresource', $url->out(false)), 'redirectmessage');
+        } else {
+            echo html_writer::start_tag('form', array('method'=>'POST', 'action'=>$moodle_returnurl->out(false)));
+
+            //echo html_writer::start_div();
+            echo html_writer::start_tag('select', array('id'=>'id_forum_id', 'name'=>'video[instance_id]' /*, 'style'=>'width: 100%;'*/));
+            $attributes = array('value'=>'');
+            if (!$added_forum) {
+                $attributes['selected'] = '';
+            }
+            echo html_writer::tag('option', '', $attributes);
+            foreach($forums as $value=>$name) {
+                $attributes = array('value'=>$value);
+                if ($added_forum && $value == $added_forum->instance_id) {
+                    $attributes['selected'] = '';
+                }
+                echo html_writer::tag('option', $name, $attributes);
+            }
+            echo html_writer::end_tag('select');
+            //echo html_writer::end_div();
+
+            echo html_writer::tag('input', null, array('type'=>'submit', 'name'=>'add_forum', 'value'=>get_string('ok')));
+            echo html_writer::end_tag('form');
+        }
+        
         // end of page
         echo $OUTPUT->footer();
         break;

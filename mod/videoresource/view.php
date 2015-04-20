@@ -260,9 +260,9 @@ echo <<<EOD
 EOD;
 
 // ----------- show another activity (forum, questionnaire)
-$activity = $DB->get_record_select('videoresource_content', 'resource_id = :resource_id AND type <> :type', array('resource_id'=>$videoresource->id, 'type'=>'videoresource'));
-//DebugBreak();
-switch ($activity->type) {
+
+if ($activity = $DB->get_record_select('videoresource_content', 'resource_id = :resource_id AND type <> :type', array('resource_id'=>$videoresource->id, 'type'=>'videoresource')))
+    switch ($activity->type) {
     case 'forum':
         require_once('../forum/lib.php');
         //$forum_id = 5;  //////////// заглушка!
