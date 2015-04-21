@@ -260,8 +260,7 @@ echo <<<EOD
 EOD;
 
 // ----------- show another activity (forum, questionnaire)
-
-if ($activity = $DB->get_record_select('videoresource_content', 'resource_id = :resource_id AND type <> :type', array('resource_id'=>$videoresource->id, 'type'=>'videoresource')))
+if ($activity = $DB->get_record_select('videoresource_content', 'resource_id = :resource_id AND type = :type', array('resource_id'=>$videoresource->id, 'type'=>'forum')))
     switch ($activity->type) {
     case 'forum':
         require_once('../forum/lib.php');
@@ -325,6 +324,32 @@ if ($activity = $DB->get_record_select('videoresource_content', 'resource_id = :
                 break;
         }
         break;
+}
+//DebugBreak();
+// --- show questionnaire
+if ($activity = $DB->get_record_select('videoresource_content', 'resource_id = :resource_id AND type = :type', array('resource_id'=>$videoresource->id, 'type'=>'questionnaire')))
+{
+    //require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
+    //
+    //$cm_id = 94; //хардкод
+
+    //$questionnaire = $DB->get_record("questionnaire", array("id" => $forum_id));
+    //$cm = get_coursemodule_from_instance("forum", $forum->id, $course->id);
+
+    ////$cm_id = $activity->instance_id;
+    //$popup = optional_param('popup', 0, PARAM_INT);
+    //$qid = optional_param('qid', 0, PARAM_INT);
+    //
+    //$cm = get_coursemodule_from_id('questionnaire', $cm_id);
+    //$questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance));
+    //$questionnaire = new questionnaire($qid, $questionnaire, $course, $cm);
+    //$questionnaire->print_survey($USER->id, $USER->id);
+    ////$questionnaire->survey_print_render('', 'preview', $course->id, $rid = 0, $popup);
+    ////$questionnaire->view();
+
+    require_once('questionnaire.php');
+    //DebugBreak();
+    showQuestionnaire($activity->instance_id, $course);
 }
 
 // Finish the page.
