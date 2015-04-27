@@ -72,15 +72,13 @@ class mod_htmlresource_mod_form extends moodleform_mod {
 
         // -- select Forum
         //list of forums of this course
-        $forums = $DB->get_records_menu('forum', array('course'=>$COURSE->id), null, 'id, name');  
-        // add first empty item into select
-        $forums = array_merge(array(''=>''), $forums);
+        $forums = array(''=>''); // add first empty item into select
+        foreach ($DB->get_records_menu('forum', array('course'=>$COURSE->id), null, 'id, name') as $id=>$name) $forums[$id] = $name;
         $mform->addElement('select', 'forum_id', get_string('addforum', 'htmlresource'), $forums);
         
         // -- select Forum
         //list of forums of this course
-        // add first empty item into select
-        $questionnaires = array(''=>'');
+        $questionnaires = array(''=>''); // add first empty item into select
         $sql = '
             SELECT cm.id, q.name 
             FROM {course_modules} cm LEFT JOIN 
