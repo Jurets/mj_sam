@@ -34,6 +34,9 @@ $action = (!empty($action) ? $action : 'index');
 $itemid = optional_param('itemid', 0, PARAM_INT);
 // params for adding
 $add_item = optional_param('add_item', null, PARAM_TEXT);
+$add_forum = optional_param('add_forum', null, PARAM_TEXT);
+$add_questionnaire = optional_param('add_questionnaire', null, PARAM_TEXT);
+
 $list_id = optional_param('list_id', 0, PARAM_INT);
 
 //actions list
@@ -65,6 +68,60 @@ if (!is_null($add_item)) {
     $sort_order = $DB->get_field('resourcelib_content', 'MAX(sort_order)', array('resourcelib_id'=>$item->resourcelib_id));
     $item->sort_order = $sort_order + 1;
     $DB->insert_record('resourcelib_content', $item);
+}
+
+// if adding forum was submitted
+if (!is_null($add_forum)) {
+    // firstly get already added forumforum
+    $added_forum = $DB->get_record_select(
+        'resourcelib_content', 'resourcelib_id = :resourcelib_id AND type = :type', array('resourcelib_id'=>$resourcelib->id, 'type'=>'forum'));
+    // get options of new video content
+    $posted_item = optional_param_array('resourcelib', array(), PARAM_RAW);
+    // check post
+    if (empty($posted_item['instance_id'])) { // if clearing of forum 
+        $DB->delete_records('resourcelib_content', array('id'=>$added_forum->id));
+    } else if ($added_forum) {  // if exist
+        $item = $added_forum; // get it
+        $item->instance_id = $posted_item['instance_id'];
+        $item->timecreated = time();
+        $DB->update_record('resourcelib_content', $item);
+    } else { // else create new instance
+        $item = (object)$posted_item;  //$item = new stdClass();
+        $item->resourcelib_id = $cm->instance;
+        $item->type = 'forum';
+        $item->timecreated = time();
+        //set next sort_order ????
+        //$sort_order = $DB->get_field('videoresource_content', 'MAX(sort_order)', array('resource_id'=>$item->resource_id));
+        //$item->sort_order = $sort_order + 1;
+        $DB->insert_record('resourcelib_content', $item);
+    }
+}
+
+// if adding forum was submitted
+if (!is_null($add_questionnaire)) {
+    // firstly get already added forumforum
+    $added = $DB->get_record_select(
+        'resourcelib_content', 'resourcelib_id = :resourcelib_id AND type = :type', array('resourcelib_id'=>$resourcelib->id, 'type'=>'questionnaire'));
+    // get options of new video content
+    $posted_item = optional_param_array('resourcelib', array(), PARAM_RAW);
+    // check post
+    if (empty($posted_item['instance_id'])) { // if clearing of forum 
+        $DB->delete_records('resourcelib_content', array('id'=>$added->id));
+    } else if ($added) {  // if exist
+        $item = $added; // get it
+        $item->instance_id = $posted_item['instance_id'];
+        $item->timecreated = time();
+        $DB->update_record('resourcelib_content', $item);
+    } else { // else create new instance
+        $item = (object)$posted_item;  //$item = new stdClass();
+        $item->resourcelib_id = $cm->instance;
+        $item->type = 'questionnaire';
+        $item->timecreated = time();
+        //set next sort_order ????
+        //$sort_order = $DB->get_field('videoresource_content', 'MAX(sort_order)', array('resource_id'=>$item->resource_id));
+        //$item->sort_order = $sort_order + 1;
+        $DB->insert_record('resourcelib_content', $item);
+    }
 }
 
 // page params
@@ -149,6 +206,80 @@ switch($action) {
             echo html_writer::tag('input', null, array('type'=>'submit', 'name'=>'add_item', 'value'=>get_string('add')));
             echo html_writer::end_tag('form');
         }
+        
+        // ---- form for adding forum to video activity page
+        echo html_writer::tag('h3', get_string('resourcelib:addforum', 'resourcelib'));
+        // get added forum
+        $added_forum = $DB->get_record_select(
+            'resourcelib_content', 'resourcelib_id = :resourcelib_id AND type = :type', array('resourcelib_id'=>$resourcelib->id, 'type'=>'forum'), 'instance_id');
+        // get forums from current course
+        $forums = $DB->get_records_menu('forum', array('course'=>$course->id), null, 'id, name');
+        if (empty($forums)) {
+            echo $OUTPUT->notification(get_string('there_are_no_forums', 'resourcelib', $url->out(false)), 'redirectmessage');
+        } else {
+            echo html_writer::start_tag('form', array('method'=>'POST', 'action'=>$moodle_returnurl->out(false)));
+
+            //echo html_writer::start_div();
+            echo html_writer::start_tag('select', array('id'=>'id_forum_id', 'name'=>'resourcelib[instance_id]' /*, 'style'=>'width: 100%;'*/));
+            $attributes = array('value'=>'');
+            if (!$added_forum) {
+                $attributes['selected'] = '';
+            }
+            echo html_writer::tag('option', '', $attributes);
+            foreach($forums as $value=>$name) {
+                $attributes = array('value'=>$value);
+                if ($added_forum && $value == $added_forum->instance_id) {
+                    $attributes['selected'] = '';
+                }
+                echo html_writer::tag('option', $name, $attributes);
+            }
+            echo html_writer::end_tag('select');
+            //echo html_writer::end_div();
+
+            echo html_writer::tag('input', null, array('type'=>'submit', 'name'=>'add_forum', 'value'=>get_string('ok')));
+            echo html_writer::end_tag('form');
+        }
+        
+        // ---- form for adding questionnaire 
+        echo html_writer::tag('h3', get_string('resourcelib:addquestionnaire', 'resourcelib'));
+        // get added questionnaire
+        $added_questionnaire = $DB->get_record_select(
+            'resourcelib_content', 'resourcelib_id = :resourcelib_id AND type = :type', array('resourcelib_id'=>$resourcelib->id, 'type'=>'questionnaire'), 'instance_id');
+        // get questionnaire from current course
+        $sql = '
+            SELECT cm.id, q.name 
+            FROM {course_modules} cm LEFT JOIN 
+                 {questionnaire} q ON q.id = cm.instance LEFT JOIN 
+                 {modules} m ON m.id = cm.module
+            WHERE cm.course = :course AND m.name = :module
+        ';
+        $questionnaires = $DB->get_records_sql_menu($sql, array('course'=>$course->id, 'module'=>'questionnaire'));
+        if (empty($questionnaires)) {
+            echo $OUTPUT->notification(get_string('there_are_no_questionnaires', 'resourcelib', $url->out(false)), 'redirectmessage');
+        } else {
+            echo html_writer::start_tag('form', array('method'=>'POST', 'action'=>$moodle_returnurl->out(false)));
+
+            //echo html_writer::start_div();
+            echo html_writer::start_tag('select', array('id'=>'id_questionnaire_id', 'name'=>'resourcelib[instance_id]' /*, 'style'=>'width: 100%;'*/));
+            $attributes = array('value'=>'');
+            if (!$added_questionnaire) {
+                $attributes['selected'] = '';
+            }
+            echo html_writer::tag('option', '', $attributes);
+            foreach($questionnaires as $value=>$name) {
+                $attributes = array('value'=>$value);
+                if ($added_questionnaire && $value == $added_questionnaire->instance_id) {
+                    $attributes['selected'] = '';
+                }
+                echo html_writer::tag('option', $name, $attributes);
+            }
+            echo html_writer::end_tag('select');
+            //echo html_writer::end_div();
+
+            echo html_writer::tag('input', null, array('type'=>'submit', 'name'=>'add_questionnaire', 'value'=>get_string('ok')));
+            echo html_writer::end_tag('form');
+        }
+        
         // end of page
         echo $OUTPUT->footer();
         break;

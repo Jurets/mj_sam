@@ -49,6 +49,8 @@ $string['resourcelib:viewrating'] = 'View the total rating you received';
 $string['resourcelib:rate'] = 'Rate entries';
 $string['resourcelib:manage'] = 'Manage ResourceLib Items';
 $string['resourcelib:edit'] = 'Edit ResourceLib'; 
+$string['resourcelib:addforum'] = 'Set forum';
+$string['resourcelib:addquestionnaire'] = 'Set questionnaire';
 
 $string['configuration'] = 'Configuration';
 $string['manage_types_desc'] = '<a href="{$a}">Resource Types Page</a> allows to configure types of Resources.<br/>';
@@ -111,6 +113,8 @@ $string['missing_resource'] = 'Missing Resource';
 $string['missing_section'] = 'Missing Section';
 $string['no_resources'] = 'There is no Resources in this Section';
 $string['no_sections'] = 'There is no Sections in this List';
+$string['there_are_no_forums']  = 'There is no forums in this Course! Firstly add a forum';
+$string['there_are_no_questionnaires']  = 'There is no questionnaires in this Course! Firstly add a questionnaire';
 
 $string['all_lists_in_course_module'] = 'All of Lists added in this Course Module';
 $string['no_lists_in_course_module']  = 'There are no Lists in this Course Module';

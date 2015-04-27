@@ -35,6 +35,7 @@
                 <FIELD NAME="resourcelib_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="reference to mdl_resourcelib record"/>
                 <FIELD NAME="type" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="type of instance (list, resource)"/>
                 <FIELD NAME="instance_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="id of instance (list, resource)"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
                 <FIELD NAME="sort_order" TYPE="int" LENGTH="9" NOTNULL="false" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
