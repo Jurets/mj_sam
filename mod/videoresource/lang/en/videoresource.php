@@ -106,7 +106,7 @@ $string['all_videos_in_course_module'] = 'All of Videos added in this Course Mod
 $string['no_lists_in_course_module']  = 'There are no Videos in this Course Module';
 $string['there_are_no_videos']  = 'There is no Videos! Go to <a href="{$a}">Video List Page</a> for Manage';
 $string['there_are_no_forums']  = 'There is no forums in this Course! Firstly add a forum';
-$string['there_are_no_questionnaires']  = 'There is no questionnaires in this Course! Firstly add a forum';
+$string['there_are_no_questionnaires']  = 'There is no questionnaires in this Course! Firstly add a questionnaire';
 
 $string['listfield'] = 'Video Resource List';
 $string['listfield_help'] = 'Select Video Resource from list below';
