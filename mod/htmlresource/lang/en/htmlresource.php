@@ -78,3 +78,6 @@ $string['htmlresource_exists_in_course'] = 'Html Resource exists in course';
 
 $string['listfield'] = 'Html Resource List';
 $string['listfield_help'] = 'Select Html Resource from list below';
+
+$string['addforum'] = 'Set forum';
+$string['addquestionnaire'] = 'Set questionnaire';

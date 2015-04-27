@@ -41,6 +41,7 @@ class mod_htmlresource_mod_form extends moodleform_mod {
      * Defines forms elements
      */
     public function definition() {
+        global $DB, $COURSE;
 
         $mform = $this->_form;
 
@@ -61,14 +62,37 @@ class mod_htmlresource_mod_form extends moodleform_mod {
         // Adding the standard "intro" and "introformat" fields.
         $this->add_intro_editor();
         
-        //group of elements
+        // --- group of elements
         $mform->addElement('header', 'htmlresourcefieldset', get_string('htmlresourcefieldset', 'htmlresource'));
+        // select HTML resource
         $items = htmlresource_get_items_select();  //get list of html
-        $select = $mform->addElement('select', 'resource_html_id', get_string('list'), $items);
+        $select = $mform->addElement('select', 'resource_html_id', get_string('modulename', 'htmlresource'), $items);
         $mform->setType('resource_html_id', PARAM_INT); //Set type of element
         $mform->addHelpButton('resource_html_id', 'listfield', 'htmlresource');
-        $mform->setExpanded('htmlresourcefieldset');
 
+        // -- select Forum
+        //list of forums of this course
+        $forums = $DB->get_records_menu('forum', array('course'=>$COURSE->id), null, 'id, name');  
+        // add first empty item into select
+        $forums = array_merge(array(''=>''), $forums);
+        $mform->addElement('select', 'forum_id', get_string('addforum', 'htmlresource'), $forums);
+        
+        // -- select Forum
+        //list of forums of this course
+        // add first empty item into select
+        $questionnaires = array(''=>'');
+        $sql = '
+            SELECT cm.id, q.name 
+            FROM {course_modules} cm LEFT JOIN 
+                 {questionnaire} q ON q.id = cm.instance LEFT JOIN 
+                 {modules} m ON m.id = cm.module
+            WHERE cm.course = :course AND m.name = :module
+        ';
+        foreach ($DB->get_records_sql_menu($sql, array('course'=>$COURSE->id, 'module'=>'questionnaire')) as $key=>$value) $questionnaires[$key]=$value;
+        $mform->addElement('select', 'questionnaire_id', get_string('addquestionnaire', 'htmlresource'), $questionnaires);
+        
+        $mform->setExpanded('htmlresourcefieldset');
+        
         //$mform->addElement('modgrade', 'scale', get_string('grade'), false);
 
         // Add standard elements, common to all modules.

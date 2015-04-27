@@ -106,5 +106,58 @@ if(isset($item->rating)) {
     echo $rate_html;
 }*/
 
+
+// ----------- show another activity (forum, questionnaire)
+//if ($activity = $DB->get_record_select('resourcelib_content', 'resourcelib_id = :resourcelib_id AND type = :type', array('resourcelib_id'=>$resourcelib->id, 'type'=>'forum')))
+//    switch ($activity->type) {
+//    case 'forum':
+if ($forum_id = $htmlresource->forum_id) {
+        
+        require_once('../forum/lib.php');
+        
+        $forum = $DB->get_record("forum", array("id" => $forum_id));
+        $cm = get_coursemodule_from_instance("forum", $forum->id, $course->id);
+
+        echo $OUTPUT->heading(format_string($forum->name), 2);
+
+        if ($cm && !empty($forum->intro) && $forum->type != 'single' && $forum->type != 'teacher') {
+            echo $OUTPUT->box(format_module_intro('forum', $forum, $cm->id), 'generalbox', 'intro');
+        }
+        if ($cm) {
+            groups_print_activity_menu($cm, $CFG->wwwroot . '/mod/forum/view.php?id=' . $cm->id);
+        }
+
+        switch ($forum->type) {
+            case 'single':
+                if (!empty($discussions) && count($discussions) > 1) {
+                    echo $OUTPUT->notification(get_string('warnformorepost', 'forum'));
+                }
+                if (! $post = forum_get_post_full($discussion->firstpost)) {
+                    print_error('cannotfindfirstpost', 'forum');
+                }
+
+                $canreply    = forum_user_can_post($forum, $discussion, $USER, $cm, $course, $context);
+                $canrate     = has_capability('mod/forum:rate', $context);
+                $displaymode = get_user_preferences("forum_displaymode", $CFG->forum_displaymode);
+
+                echo '&nbsp;'; // this should fix the floating in FF
+                forum_print_discussion($course, $cm, $forum, $discussion, $post, $displaymode, $canreply, $canrate);
+                break;
+            default:
+                echo '<br />';
+                forum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, 0 /*$page*/, $CFG->forum_manydiscussions, $cm);
+                break;
+        }
+//        break;
+}
+
+// --- show questionnaire
+//if ($activity = $DB->get_record_select('resourcelib_content', 'resourcelib_id = :resourcelib_id AND type = :type', array('resourcelib_id'=>$resourcelib->id, 'type'=>'questionnaire'))) {
+if ($questionnaire_id = $htmlresource->questionnaire_id) {    
+    require_once('questionnaire.php'); // include file for questionnaire showing
+    echo '<br>';
+    showQuestionnaire($questionnaire_id, $course);
+}
+
 // Finish the page.
 echo $OUTPUT->footer();
