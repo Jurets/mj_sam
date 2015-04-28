@@ -24,6 +24,8 @@
 
 require_once('../../config.php');
 require_once($CFG->dirroot.'/mod/videoresource/locallib.php');
+require_once($CFG->dirroot.'/mod/videoresource/form_addvideoresource.php');
+
 
 /// Input params
 $id = required_param('id', PARAM_INT);
@@ -56,12 +58,23 @@ require_login($course, false, $cm);
 require_capability('mod/videoresource:edit', $context);
 //require_capability('mod/resourcelib:edit', $context);
 
+$returnurl = $CFG->wwwroot.'/mod/videoresource/edit.php';
+$moodle_returnurl = new moodle_url($returnurl, array('action' => $actionIndex, 'id'=>$cm->id));
+$listurl = $CFG->wwwroot.'/mod/videoresource/video.php';
+
+$addform = new mod_videoresource_form_addvideoresource($moodle_returnurl->out(false), array('items'=>array())); //create form instance
+
 // if adding new item was submitted
-if (!is_null($add_item)) {
+if ($data = $addform->get_data()) {//DebugBreak();
+//if (!is_null($add_item)) {
     // get options of new video content
-    $posted_item = optional_param_array('video', array(), PARAM_RAW);
+    //$posted_item = optional_param_array('video', array(), PARAM_RAW);
     //create new instance
-    $item = (object)$posted_item;  //$item = new stdClass();
+    //$item = (object)$posted_item;  //$item = new stdClass();
+    $item = new stdClass();
+    $item->textabove = $data->textabove['text'];
+    $item->textbelow = $data->textbelow['text'];
+    $item->instance_id = $_POST['instance_id'];
     $item->resource_id = $cm->instance;
     $item->type = 'videoresource';
     //$item->instance_id = $video_id;
@@ -128,9 +141,7 @@ if (!is_null($add_questionnaire)) {
 
 // page params
 $PAGE->set_url('/mod/videoresource/edit.php', array('id'=>$cm->id));
-$returnurl = $CFG->wwwroot.'/mod/videoresource/edit.php';
-$moodle_returnurl = new moodle_url($returnurl, array('action' => $actionIndex, 'id'=>$cm->id));
-$listurl = $CFG->wwwroot.'/mod/videoresource/video.php';
+
 /// ----- Main process
 switch($action) {
     case $actionIndex:
@@ -196,7 +207,7 @@ switch($action) {
         } else {
             // form for adding Video Resource
             echo html_writer::tag('h3', get_string('videoresource:addinstance', 'videoresource'));
-            echo html_writer::start_tag('form', array('method'=>'POST', 'action'=>$moodle_returnurl->out(false)));
+            /*echo html_writer::start_tag('form', array('method'=>'POST', 'action'=>$moodle_returnurl->out(false)));
             // YT video select input
             echo html_writer::start_div();
             echo html_writer::start_tag('select', array('id'=>'id_video_id', 'name'=>'video[instance_id]' , 'style'=>'width: 100%;'));
@@ -217,9 +228,12 @@ switch($action) {
             echo html_writer::end_div();
             
             echo html_writer::tag('input', null, array('type'=>'submit', 'name'=>'add_item', 'value'=>get_string('add')));
-            echo html_writer::end_tag('form');
+            echo html_writer::end_tag('form');*/
+            
+            // special form class
+            $addform = new mod_videoresource_form_addvideoresource($moodle_returnurl->out(false), array('items'=>$items)); //create form instance
+            $addform->display();
         }
-        
         
         // ---- form for adding forum to video activity page
         echo html_writer::tag('h3', get_string('videoresource:addforum', 'videoresource'));

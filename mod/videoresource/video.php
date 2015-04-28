@@ -224,6 +224,8 @@ switch($action) {
             $url = new moodle_url($returnurl, array('action' => $actionIndex));
             redirect($url);
         } else if ($data = $editform->get_data()) {
+            if (is_array($data->description)) $data->description = $data->description['text'];
+            if (is_array($data->transcript)) $data->transcript = $data->transcript['text'];
             if ($action == $actionAdd) {
                 $inserted_id = videoresource_add_video($data);
                 $success = isset($id);

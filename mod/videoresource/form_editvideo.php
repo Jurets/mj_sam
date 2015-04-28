@@ -32,7 +32,7 @@ require_once("$CFG->libdir/formslib.php");
 class mod_videoresource_form_editvideo extends moodleform {
     public function definition() {
         global $CFG;
-        
+        //DebugBreak();
         if (isset($this->_customdata['video']) && is_object($this->_customdata['video'])) {
             $data = $this->_customdata['video'];
         } else
@@ -67,17 +67,19 @@ class mod_videoresource_form_editvideo extends moodleform {
         $mform->addElement('text', 'title', get_string('video_title', 'videoresource'), array('style'=>'width: 100%')); // Add elements to your form
         $mform->setType('title', PARAM_TEXT);                   //Set type of element
         //video: Description/Followup Text
-        $mform->addElement('textarea', 'description', get_string('description_text', 'videoresource'), array('rows'=>3, 'style'=>'width: 100%'));
-        $mform->setType('description', PARAM_TEXT); //Set type of element
+        $description = $mform->addElement('editor', 'description', get_string('description_text', 'videoresource'), array('rows'=>3, 'style'=>'width: 100%'));
+        $mform->setType('description', PARAM_RAW); //Set type of element
         //video: Podcast URL
         $mform->addElement('text', 'podcast_url', get_string('podcast_url', 'videoresource'), array('style'=>'width: 100%')); // Add elements to your form
         $mform->setType('podcast_url', PARAM_TEXT);  
         //video: transcript
-        $mform->addElement('textarea', 'transcript', get_string('transcript', 'videoresource'), array('rows'=>3, 'style'=>'width: 100%'));
-        $mform->setType('transcript', PARAM_TEXT); //Set type of element
+        $transcript = $mform->addElement('editor', 'transcript', get_string('transcript', 'videoresource'), array('rows'=>3, 'style'=>'width: 100%'));
+        $mform->setType('transcript', PARAM_RAW); //Set type of element
         
         if (isset($data)) {
             $this->set_data($data);
+            $description->setValue(array('text' => $data->description));
+            $transcript->setValue(array('text' => $data->transcript));
         }
         
         $this->add_action_buttons();
