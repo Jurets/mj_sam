@@ -164,6 +164,8 @@ foreach($contents as $content)
                     {
                         /// --- Render one resource item                    
                         echo html_writer::start_div('resource_item');
+                        //
+                        echo html_writer::start_div('resource_body');
                         echo html_writer::start_div('resource_title');
                         echo html_writer::empty_tag('img', array(
                             'src'=>$resource->icon_path, 
@@ -175,26 +177,8 @@ foreach($contents as $content)
                             'class'=>'resourcelink',
                             'data-objectid'=>$resource->id, //'data-resourcelibid'=>$cm->id,
                         ));
-                        echo html_writer::end_div();
-                        //render rating element
-                        $ratingoptions = new stdClass;
-                        $ratingoptions->context = $context; //$modcontext;
-                        $ratingoptions->component = 'mod_resourcelib';
-                        $ratingoptions->ratingarea = 'resource'; //
-                        $ratingoptions->items = array($resource); //
-                        $ratingoptions->aggregate = $resourcelib->assessed; //1;//the aggregation method
-                        $ratingoptions->scaleid = $resourcelib->scale;//5;
-                        $ratingoptions->userid = $USER->id;
-                        $ratingoptions->returnurl = "$CFG->wwwroot/mod/resourcelib/view.php?id=$id";
-                        $rm = new rating_manager();
-                        $items = $rm->get_ratings($ratingoptions);
-                        $item = $items[0];
-                        if (isset($item->rating)) {
-                            //$rendered_rating = is_null($item->rating->rating) ? $OUTPUT->render($item->rating) : get_string('your_rate', 'resourcelib') . get_string('labelsep', 'langconfig') . ' ' . $item->rating->rating;
-                            $rendered_rating = $OUTPUT->render($item->rating);
-                            $rate_html = html_writer::tag('div', $rendered_rating, array('class'=>'forum-post-rating'));
-                            echo $rate_html;
-                        }
+                        echo html_writer::end_div(); // end of resource_title
+                        
                         // render Author and source
                         if (!empty($resource->author)) {
                             echo html_writer::start_div('resource_metadata');
@@ -209,6 +193,29 @@ foreach($contents as $content)
                             echo html_writer::end_div();
                         }
                         echo html_writer::div($resource->description, 'resource_description');
+                        echo html_writer::end_div(); // end of Resource body ---
+                        
+                        //render rating element
+                        $ratingoptions = new stdClass;
+                        $ratingoptions->context = $context; //$modcontext;
+                        $ratingoptions->component = 'mod_resourcelib';
+                        $ratingoptions->ratingarea = 'resource'; //
+                        $ratingoptions->items = array($resource); //
+                        $ratingoptions->aggregate = $resourcelib->assessed; //1;//the aggregation method
+                        $ratingoptions->scaleid = $resourcelib->scale;//5;
+                        $ratingoptions->userid = $USER->id;
+                        $ratingoptions->returnurl = "$CFG->wwwroot/mod/resourcelib/view.php?id=$id";
+                        $rm = new rating_manager();
+                        $items = $rm->get_ratings($ratingoptions);
+                        $item = $items[0];
+
+                        if (isset($item->rating)) {
+                            //$rendered_rating = is_null($item->rating->rating) ? $OUTPUT->render($item->rating) : get_string('your_rate', 'resourcelib') . get_string('labelsep', 'langconfig') . ' ' . $item->rating->rating;
+                            $rendered_rating = $OUTPUT->render($item->rating);
+                            $rate_html = html_writer::tag('div', $rendered_rating, array('class'=>'forum-post-rating', 'style'=>'margin: 5px 0;'));
+                            echo $rate_html;
+                        }
+
                         echo html_writer::end_div(); // end of Resource Item ---
                     }
                 }
