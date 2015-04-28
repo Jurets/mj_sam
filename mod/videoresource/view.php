@@ -189,7 +189,7 @@ foreach($contents as $video_content)
     $items = $rm->get_ratings($ratingoptions);
     $item = $items[0];
     if(isset($item->rating)) {
-        $rate_html = html_writer::tag('div', $OUTPUT->render($item->rating), array('class'=>'forum-post-rating'));
+        $rate_html = html_writer::tag('div', $OUTPUT->render($item->rating), array('class'=>'forum-post-rating', 'style'=>'text-align: center;'));
         echo $rate_html;
     }
 

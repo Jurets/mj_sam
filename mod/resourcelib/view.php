@@ -137,7 +137,7 @@ foreach($contents as $content)
             'alt'=>$list->icon_path, 
             'class'=>'iconsmall', 
             'style'=>'width: 30px; height: 30px; float: left;'));
-        echo html_writer::tag('h2', $list->display_name);
+        echo html_writer::tag('h2', $list->display_name, array('style'=>'margin-top: 0;'));
         echo html_writer::end_div();
         //
         echo html_writer::start_div('list_content');
