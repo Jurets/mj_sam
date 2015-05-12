@@ -289,16 +289,24 @@ class enrol_survey_user_form extends moodleform {
         // show question cycle
         foreach($questions as $key=>$question) {
             //build label
-            $label = (++$item_num) . '. ' . $question->label;
+            $isShow = ($question->type != 'group') || ($question->type == 'group' && isset($question->children) && is_array($question->children));
+            $item_num = $isShow ? ($item_num + 1) : $item_num;
+            $label = $item_num . '. ' . $question->label;
+            if ($isShow) {
+                $this->mform->addElement('header', 'group'.$question->id, $label, array('style'=>'font-size: 14px;'));
+                $this->mform->setExpanded('group'.$question->id);
+            }
             // analize - if group type
             if ($question->type == 'group' && isset($question->children) && is_array($question->children)) {
-                //$this->mform->addElement('header', 'header'.$item_num, $label, array('style'=>'font-size: 14px;'));
-                $this->mform->addElement('static', 'group'.$item_num, $label, '');
                 foreach($question->children as $child_question) {
                     $this->one_question($child_question, $child_question->label, $answer);
                 }
             } else {
-                $this->one_question($question, $label, $answer);
+                $this->one_question($question, '', $answer);
+            }
+            if ($isShow) {
+                $this->mform->addElement('static', 'endgroup'.$question->id, '');
+                $this->mform->closeHeaderBefore('endgroup'.$question->id);
             }
         }
         $this->add_action_buttons(true, ($enrol->id ? null : get_string('addinstance', 'enrol'))); // add buttons
@@ -325,7 +333,7 @@ class enrol_survey_user_form extends moodleform {
                     $this->mform->setDefault($name, $answer->optionid);
                 }
             }  // must be same name in radio elements and in group
-            $this->mform->addGroup($radioarray, $name, $label, array(' '), false);
+            $this->mform->addGroup($radioarray, $name, $label, array('<br>'), false);
         } else if ($question->type == 'select') {
             $items = array(''=>'');
             if (isset($question->items) && is_array($question->items)) {
