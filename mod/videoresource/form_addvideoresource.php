@@ -33,6 +33,11 @@ class mod_videoresource_form_addvideoresource extends moodleform {
     public function definition() {
         global $CFG;
         
+        if (isset($this->_customdata['item']) && is_object($this->_customdata['item'])) {
+            $data = $this->_customdata['item'];
+        } else
+            $data = null;
+
         if (isset($this->_customdata['items'])/* && is_object($this->_customdata['items'])*/) {
             $items = $this->_customdata['items'];
         } else
@@ -53,19 +58,23 @@ class mod_videoresource_form_addvideoresource extends moodleform {
         $mform->addRule('instance_id', get_string('missingname'), 'required', null, 'client');
 
         //video: text above
-        $mform->addElement('editor', 'textabove', get_string('text_above', 'videoresource'), array('rows'=>6, 'style'=>'width: 100%'));
+        $textabove = $mform->addElement('editor', 'textabove', get_string('text_above', 'videoresource'), array('rows'=>6, 'style'=>'width: 100%')
+            //, array('maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $this->context, 'subdirs' => true)
+        );
         $mform->setType('textabove', PARAM_RAW); //Set type of element
         
         //video: text below
-        $mform->addElement('editor', 'textbelow', get_string('text_below', 'videoresource'), array('rows'=>6, 'style'=>'width: 100%'));
+        $textbelow = $mform->addElement('editor', 'textbelow', get_string('text_below', 'videoresource'), array('rows'=>6, 'style'=>'width: 100%'));
         $mform->setType('textbelow', PARAM_RAW); //Set type of element
-
-        /*if (isset($data)) {
+        
+        if (isset($data)) {
             $this->set_data($data);
-        }*/
+            $textabove->setValue(array('text' => $data->textabove));
+            $textbelow->setValue(array('text' => $data->textbelow));
+        }
         
-        $this->add_action_buttons(false, get_string('add'));
-        
+        $this->add_action_buttons();
+        //$this->add_action_buttons(false, get_string('add'));
     }
 }
   

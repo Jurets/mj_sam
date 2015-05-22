@@ -24,8 +24,6 @@
 
 require_once('../../config.php');
 require_once($CFG->dirroot.'/mod/videoresource/locallib.php');
-require_once($CFG->dirroot.'/mod/videoresource/form_addvideoresource.php');
-
 
 /// Input params
 $id = required_param('id', PARAM_INT);
@@ -38,10 +36,11 @@ $itemid = optional_param('itemid', 0, PARAM_INT);
 $add_item = optional_param('add_item', null, PARAM_TEXT);
 $add_forum = optional_param('add_forum', null, PARAM_TEXT);
 $add_questionnaire = optional_param('add_questionnaire', null, PARAM_TEXT);
-//$video_id = optional_param('video_id', 0, PARAM_INT);
 
 //actions list
 $actionIndex = 'index';
+$actionAdd = 'add';
+$actionEdit = 'edit';
 $actionAddToList = 'addtolist';
 $actionDelFromList = 'delfromlist';
 $actionMoveDown = 'movedown';
@@ -56,34 +55,10 @@ $context = context_module::instance($cm->id);
 // requires
 require_login($course, false, $cm);
 require_capability('mod/videoresource:edit', $context);
-//require_capability('mod/resourcelib:edit', $context);
 
 $returnurl = $CFG->wwwroot.'/mod/videoresource/edit.php';
 $moodle_returnurl = new moodle_url($returnurl, array('action' => $actionIndex, 'id'=>$cm->id));
 $listurl = $CFG->wwwroot.'/mod/videoresource/video.php';
-
-$addform = new mod_videoresource_form_addvideoresource($moodle_returnurl->out(false), array('items'=>array())); //create form instance
-
-// if adding new item was submitted
-if ($data = $addform->get_data()) {//DebugBreak();
-//if (!is_null($add_item)) {
-    // get options of new video content
-    //$posted_item = optional_param_array('video', array(), PARAM_RAW);
-    //create new instance
-    //$item = (object)$posted_item;  //$item = new stdClass();
-    $item = new stdClass();
-    $item->textabove = $data->textabove['text'];
-    $item->textbelow = $data->textbelow['text'];
-    $item->instance_id = $_POST['instance_id'];
-    $item->resource_id = $cm->instance;
-    $item->type = 'videoresource';
-    //$item->instance_id = $video_id;
-    $item->timecreated = time();
-    //get next sort_order
-    $sort_order = $DB->get_field('videoresource_content', 'MAX(sort_order)', array('resource_id'=>$item->resource_id));
-    $item->sort_order = $sort_order + 1;
-    $DB->insert_record('videoresource_content', $item);
-}
 
 // if adding forum was submitted
 if (!is_null($add_forum)) {
@@ -132,15 +107,13 @@ if (!is_null($add_questionnaire)) {
         $item->resource_id = $cm->instance;
         $item->type = 'questionnaire';
         $item->timecreated = time();
-        //set next sort_order ????
-        //$sort_order = $DB->get_field('videoresource_content', 'MAX(sort_order)', array('resource_id'=>$item->resource_id));
-        //$item->sort_order = $sort_order + 1;
         $DB->insert_record('videoresource_content', $item);
     }
 }
 
 // page params
 $PAGE->set_url('/mod/videoresource/edit.php', array('id'=>$cm->id));
+$PAGE->set_cacheable(false);
 
 /// ----- Main process
 switch($action) {
@@ -179,6 +152,11 @@ switch($action) {
                 } else {
                     $buttons_column[] = get_spacer();
                 }
+                // edit button
+                $buttons_column[] = html_writer::link(
+                    new moodle_url($returnurl, array('id'=>$id, 'action'=>'edit', 'itemid'=>$item->id, 'sesskey'=>sesskey())), 
+                    html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/editstring'), 'alt'=>get_string('edit'), 'class'=>'iconsmall')), 
+                    array('title'=>get_string('edit')));
                 // delete button
                 $buttons_column[] = videoresource_confirm_deletebutton(
                     $returnurl . '?id=' . $id, $actionDelFromList, $item->id, 
@@ -205,49 +183,23 @@ switch($action) {
                 echo $OUTPUT->notification(get_string('there_are_no_videos', 'videoresource', $url->out(false)), 'notifyproblem');
             }
         } else {
-            // form for adding Video Resource
-            echo html_writer::tag('h3', get_string('videoresource:addinstance', 'videoresource'));
-            /*echo html_writer::start_tag('form', array('method'=>'POST', 'action'=>$moodle_returnurl->out(false)));
-            // YT video select input
-            echo html_writer::start_div();
-            echo html_writer::start_tag('select', array('id'=>'id_video_id', 'name'=>'video[instance_id]' , 'style'=>'width: 100%;'));
-            foreach($items as $value=>$name) {
-                echo html_writer::tag('option', $name, array('value'=>$value));
-            }
-            echo html_writer::end_tag('select');
-            echo html_writer::end_div();
-            // text above video
-            echo html_writer::start_div();
-            echo html_writer::tag('label', get_string('text_above', 'videoresource'), array('for'=>'id_textabove'));
-            echo html_writer::tag('textarea', null, array('id'=>'id_textabove', 'name'=>'video[textabove]', 'style'=>'width: 100%;'));
-            echo html_writer::end_div();
-            // text beyond video
-            echo html_writer::start_div();
-            echo html_writer::tag('label', get_string('text_below', 'videoresource'), array('for'=>'id_textbelow'));
-            echo html_writer::tag('textarea', null, array('id'=>'id_textbelow', 'name'=>'video[textbelow]', 'style'=>'width: 100%;'));
-            echo html_writer::end_div();
-            
-            echo html_writer::tag('input', null, array('type'=>'submit', 'name'=>'add_item', 'value'=>get_string('add')));
-            echo html_writer::end_tag('form');*/
-            
-            // special form class
-            $addform = new mod_videoresource_form_addvideoresource($moodle_returnurl->out(false), array('items'=>$items)); //create form instance
-            $addform->display();
+            $url = new moodle_url($returnurl, array('id'=>$id, 'action' => $actionAdd));
+            echo html_writer::div(
+                html_writer::tag('a', $OUTPUT->pix_icon('t/add', '') . ' ' . get_string('additem', 'videoresource'), array('href' => $url->out(false))), 'mdl-right');
         }
         
         // ---- form for adding forum to video activity page
         echo html_writer::tag('h3', get_string('videoresource:addforum', 'videoresource'));
         // get added forum
-        $added_forum = $DB->get_record_select(
-            'videoresource_content', 'resource_id = :resource_id AND type = :type', array('resource_id'=>$videoresource->id, 'type'=>'forum'), 'instance_id');
+        $added_forum = $DB->get_record_select('videoresource_content', 'resource_id = :resource_id AND type = :type', 
+            array('resource_id'=>$videoresource->id, 'type'=>'forum'), 'instance_id');
         // get forums from current course
         $forums = $DB->get_records_menu('forum', array('course'=>$course->id), null, 'id, name');
         if (empty($forums)) {
             echo $OUTPUT->notification(get_string('there_are_no_forums', 'videoresource', $url->out(false)), 'redirectmessage');
         } else {
+            // build simple form
             echo html_writer::start_tag('form', array('method'=>'POST', 'action'=>$moodle_returnurl->out(false)));
-
-            //echo html_writer::start_div();
             echo html_writer::start_tag('select', array('id'=>'id_forum_id', 'name'=>'video[instance_id]' /*, 'style'=>'width: 100%;'*/));
             $attributes = array('value'=>'');
             if (!$added_forum) {
@@ -262,8 +214,6 @@ switch($action) {
                 echo html_writer::tag('option', $name, $attributes);
             }
             echo html_writer::end_tag('select');
-            //echo html_writer::end_div();
-
             echo html_writer::tag('input', null, array('type'=>'submit', 'name'=>'add_forum', 'value'=>get_string('ok')));
             echo html_writer::end_tag('form');
         }
@@ -285,9 +235,8 @@ switch($action) {
         if (empty($questionnaires)) {
             echo $OUTPUT->notification(get_string('there_are_no_questionnaires', 'videoresource', $url->out(false)), 'redirectmessage');
         } else {
+            // build simple form
             echo html_writer::start_tag('form', array('method'=>'POST', 'action'=>$moodle_returnurl->out(false)));
-
-            //echo html_writer::start_div();
             echo html_writer::start_tag('select', array('id'=>'id_questionnaire_id', 'name'=>'video[instance_id]' /*, 'style'=>'width: 100%;'*/));
             $attributes = array('value'=>'');
             if (!$added_questionnaire) {
@@ -302,12 +251,9 @@ switch($action) {
                 echo html_writer::tag('option', $name, $attributes);
             }
             echo html_writer::end_tag('select');
-            //echo html_writer::end_div();
-
             echo html_writer::tag('input', null, array('type'=>'submit', 'name'=>'add_questionnaire', 'value'=>get_string('ok')));
             echo html_writer::end_tag('form');
         }
-
         // end of page
         echo $OUTPUT->footer();
         break;
@@ -339,11 +285,70 @@ switch($action) {
                 print_error('cannotdelitem', 'videoresource', $url->out(false), $itemid);
             }
             if ($DB->delete_records('videoresource_content', array('id'=>$itemid))) {
-                //$url = new moodle_url($returnurl, array('action'=>$actionIndex, 'id'=>$item->resourcelib_id));
                 redirect($url);
             } else {
                 echo $OUTPUT->notification(get_string('deletednot', '', $item->id));
             }
         }
         break;
+        
+    case $actionAdd:
+    case $actionEdit:
+        require_once($CFG->dirroot.'/mod/videoresource/form_addvideoresource.php');
+        // set title
+        $head_str = ($action == $actionAdd) ? get_string('additem', 'videoresource') : get_string('edititem', 'videoresource');
+        // analize - add or edit
+        if ($action == $actionAdd) { //add new type
+            $PAGE->navbar->add($head_str);
+            $item = null;        //empty data
+            // get videos, wich is not in this course module
+            $items = videoresource_get_notcource_lists($cm->instance);
+            $actionurl = new moodle_url($returnurl, array('id'=>$id, 'action' => $actionAdd));
+        } else if (isset($id)){     //edit existing type ($id parameter must be present in URL)
+            $PAGE->navbar->add($head_str);
+            $item = $DB->get_record('videoresource_content', array('id'=>$itemid)); //get data from DB
+            // get videos, wich is not in this course module
+            $items = videoresource_get_notcource_lists($cm->instance, $item->instance_id);
+            $actionurl = new moodle_url($returnurl, array('id'=>$id, 'action' => $actionEdit, 'itemid'=>$item->id));
+        }
+        //build form
+        $editform = new mod_videoresource_form_addvideoresource($actionurl->out(false), array('item'=>$item, 'items'=>$items)); //create form instance
+        
+        //$editform->is_submitted()
+        if ($editform->is_cancelled()) {  //in cancel form case - redirect to previous page
+            $url = new moodle_url($returnurl, array('action' => $actionIndex, 'id'=>$cm->id));
+            redirect($url);
+        } else if ($data = $editform->get_data()) {
+            if ($action == $actionAdd) {
+                $item = new stdClass();
+                $item->resource_id = $cm->instance;
+                //get next sort_order
+                $sort_order = $DB->get_field('videoresource_content', 'MAX(sort_order)', array('resource_id'=>$item->resource_id));
+                $item->sort_order = $sort_order + 1;  //set sort order
+                $item->timecreated = time(); //set create time
+                $item->type = 'videoresource'; //set type of content (resource)
+                //$inserted_id = resourcelib_add_resource($data);
+                $success = isset($id);
+            } 
+            // set field values:
+            $item->textabove = $data->textabove['text'];
+            $item->textbelow = $data->textbelow['text'];
+            $item->instance_id = $_POST['instance_id'];
+            if ($action == $actionAdd) {
+                $success = $DB->insert_record('videoresource_content', $item);
+            } else {
+                $success = $DB->update_record('videoresource_content', $item);
+            }
+            if ($success){  //call create Resource Type function
+                $url = new moodle_url($returnurl, array('action' => $actionIndex, 'id'=>$cm->id));
+                redirect($url);
+            }
+        }
+        //show form page
+        echo $OUTPUT->header();
+        echo $OUTPUT->heading($head_str);
+        $editform->display();
+        echo $OUTPUT->footer();
+        break;
+        
 }

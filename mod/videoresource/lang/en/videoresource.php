@@ -68,6 +68,10 @@ $string['delete_video'] = 'Delete Video Resource';
 $string['add_video_desc'] = '<a href="{$a}">Add Video Resource</a> allows to add Video Resource.<br/>';
 $string['index_video_desc'] = '<a href="{$a}">Video Resource Index</a> shows List of Video Resources.<br/>';
 
+$string['additem'] = 'Add VideoResource Item';
+$string['edititem'] = 'Edit VideoResource Item';
+$string['deleteitem'] = 'Delete VideoResource Item';
+
 $string['add_video_chapter'] = 'Add Video Chapter';
 $string['edit_video_chapter'] = 'Edit Video Chapter';
 $string['delete_video_chapter'] = 'Delete Video Chapter';

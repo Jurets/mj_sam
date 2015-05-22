@@ -308,7 +308,7 @@ function videoresource_get_courcemodule_contents($data) {
 * @param mixed $data - resourcelib instance
 * @return array
 */
-function videoresource_get_notcource_lists($resource_id) {
+function videoresource_get_notcource_lists($resource_id, $with_id = null) {
     global $DB;
     // Make sure nobody sends bogus record type as parameter.
     /*if (!property_exists($data, 'id')) {
@@ -318,7 +318,12 @@ function videoresource_get_notcource_lists($resource_id) {
             FROM {resource_videos} v 
             WHERE v.id NOT IN 
               (SELECT rc.instance_id FROM {videoresource_content} rc WHERE rc.type = ? AND rc.resource_id = ?)';
-    $items = $DB->get_records_sql_menu($sql, array('videoresource', $resource_id));
+    $params = array('videoresource', $resource_id);
+    if (isset($with_id)) {
+        $sql .= ' OR v.id = ?';
+        $params[] = $with_id;
+    }
+    $items = $DB->get_records_sql_menu($sql, $params);
     if (!$items)
         $items = array();
     return $items;
@@ -348,7 +353,7 @@ function videoresource_confirm_deletebutton($url, $action, $itemid, $confirm = f
     global $OUTPUT;
     $strdelete = get_string('delete');
     $url = new moodle_url($url, array('action'=>$action, 'itemid'=>$itemid, 'sesskey'=>sesskey()));
-    $text = html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall'));
+    $text = html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'title'=>$strdelete, 'class'=>'iconsmall'));
     $link = new action_link($url, $text); //create action link
     $action = new component_action('click', 'M.util.show_confirm_dialog', array('message' => $confirm)); //attach confirm dialog
     $link->add_action($action);
