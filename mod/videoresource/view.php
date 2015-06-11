@@ -34,6 +34,7 @@ require_once($CFG->dirroot.'/rating/lib.php');
 // include custom classes for rendering
 require_once(dirname(__FILE__).'/classes/mooc_lib.php');  // New class!!!
 
+
 //process input params
 $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
 $n  = optional_param('n', 0, PARAM_INT);  // ... videoresource instance ID - it should be named as the first character of the module.
@@ -63,9 +64,23 @@ $event->add_record_snapshot('course', $PAGE->course);
 ////////$event->add_record_snapshot($PAGE->cm->modname, $activityrecord);
 $event->trigger();
 
-// Print the page header.
+$baseurl = $CFG->wwwroot.'/mod/videoresource';
+$returnurl = new moodle_url($baseurl . '/view.php', array('id' => $cm->id));
 
-$PAGE->set_url('/mod/videoresource/view.php', array('id' => $cm->id));
+// check: if adding bookmark 
+$bookmark_added = ($bookmark = $DB->get_record('resbookmarks', array('user_id'=>$USER->id, 'url'=>$returnurl->out(false))));
+$add_bookmark = optional_param('add_bookmark', '', PARAM_TEXT);
+if (!$bookmark_added && $add_bookmark) {
+    $data = new stdClass();
+    $data->timecreated = time();
+    $data->user_id = $USER->id;
+    $data->url = $returnurl->out(false);
+    $data->title = $videoresource->name;
+    $bookmark_added = $DB->insert_record('resbookmarks', $data);
+}
+
+// Print the page header.
+$PAGE->set_url($returnurl);
 $PAGE->set_title(format_string($videoresource->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($context);
@@ -79,7 +94,7 @@ $PAGE->requires->css('/mod/videoresource/styles.css');
 $sesskey = sesskey();
 $cm_id = $cm->id;
 //$video_id = $video->video_id;
-$baseurl = $CFG->wwwroot;
+//$baseurl = $CFG->wwwroot;
 /*
  * Other things you may want to set - remove if not needed.
  * $PAGE->set_cacheable(false);
@@ -89,6 +104,29 @@ $baseurl = $CFG->wwwroot;
 
 // Output starts here.
 echo $OUTPUT->header();
+
+// --- button for bookmark
+/*echo html_writer::start_div('');
+if (!$bookmark_added) { 
+    echo html_writer::start_tag('a', array('href' => '#', 'id'=>'bookmarklink')); 
+    echo html_writer::empty_tag('img', array('src'=>$baseurl . '/pix/bookmark_2.png', 'alt'=>'!', 'class'=>'iconsmall'));
+    echo html_writer::tag('span', get_string('bookmark', 'videoresource'));
+    echo html_writer::end_tag('a');
+} else {
+    echo html_writer::empty_tag('img', array('src'=>$baseurl . '/pix/bookmark_3.png', 'alt'=>'!', 'class'=>'iconsmall', ));
+    echo html_writer::tag('span', get_string('bookmarked', 'videoresource'));
+}
+echo html_writer::end_div();*/
+echo videoresource_button_bookmark($bookmark_added);
+
+//$OUTPUT->pix_icon('t/add', '') 
+// build simple form
+  //$url = new moodle_url(VR_URL_MAIN, array('action'=>'bookmark'/*, 'id'=>$video->id*/));
+/*echo html_writer::start_tag('form', array('method'=>'POST', 'action'=>$returnurl->out(false)));
+//echo html_writer::intag('input', null, array('type'=>'submit', 'name'=>'add_bookmark', 'value'=>get_string('ok')));
+echo html_writer::tag('input', null, array('type'=>'submit', 'name'=>'add_bookmark', 'value'=>get_string('bookmark', 'videoresource')));
+echo html_writer::end_tag('form');*/
+
 
 // Conditions to show the intro can change to look for own settings or whatever.
 if ($videoresource->intro) {
@@ -230,7 +268,7 @@ echo <<<EOD
     function ajaxSend(action, objectid) {
         $.ajax({
           type: "GET",
-          url: "$baseurl/mod/videoresource/ajax.php",
+          url: "$baseurl/ajax.php",
           data: {"action": action, "id": "$cm_id", "objectid": objectid, "sesskey": "$sesskey"},
           dataType: "json",
           success: function(response){
@@ -242,6 +280,23 @@ echo <<<EOD
         return true;
     }
     
+    function ajaxBookmark(container_id) {
+        $.ajax({
+          type: "GET",
+          url: "$baseurl/ajax.php",
+          data: {"action": "bookmark", "id": "$cm_id", "sesskey": "$sesskey"},
+          dataType: "json",
+          success: function(response){
+            if (!response.success) {
+                Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
+            } else if (response.html) {
+                $("#"+container_id).html(response.html);
+            }
+          }
+        });
+        return true;
+    }
+
     $(document).ready(function(){
         $(".podcastlink, .transcriptlink").click(function(){
             elem = $(this);
@@ -252,6 +307,11 @@ echo <<<EOD
                 action = "logtranscript";
             ajaxSend(action, objectid);
             return true;
+        });
+        
+        $("#bookmarklink").click(function(){
+            //return ajaxSend("bookmark");
+            return ajaxBookmark("bookmark_container");
         })
     });
     

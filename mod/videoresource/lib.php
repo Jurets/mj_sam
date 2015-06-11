@@ -434,7 +434,34 @@ function videoresource_pluginfile($course, $cm, $context, $filearea, array $args
  * @param stdClass $module
  * @param cm_info $cm
  */
-function videoresource_extend_navigation(navigation_node $navref, stdclass $course, stdclass $module, cm_info $cm) {
+/*function videoresource_extend_navigation(navigation_node $navref, stdclass $course, stdclass $module, cm_info $cm) {//DebugBreak();
+    //global $PAGE, $DB;
+    $link = new moodle_url('/mod/wiki/admin.php', array('pageid' => 1));
+    //get root node
+    if ($root = find_root($navref)) {
+        if ($myprofile = $root->find('myprofile', navigation_node::TYPE_ROOTNODE)) {
+            $blist = $myprofile->add('My Bookmarks', $link, navigation_node::TYPE_SETTING); 
+            $blist->isexpandable = true;
+            $blist->add('Bookmark_1', new moodle_url('/mod/videoresource/view.php', array('id' => 98)), navigation_node::TYPE_SETTING);
+            $blist->add('Bookmark_2', new moodle_url('/mod/videoresource/view.php', array('id' => 98)), navigation_node::TYPE_SETTING);
+            $blist->add('Bookmark_3', new moodle_url('/mod/videoresource/view.php', array('id' => 98)), navigation_node::TYPE_SETTING);
+        }
+    }
+}*/
+
+function find_root(navigation_node $node) {
+    /*if ($node->type == navigation_node::TYPE_SYSTEM || $node->type == navigation_node::TYPE_ROOTNODE || $node->type == navigation_node::TYPE_UNKNOWN) {
+        return $node;
+    } else if (isset($node->parent)) {
+        return find_root($node->parent);
+    } else {
+        return null;
+    }*/
+    if (!isset($node->parent)) {
+        return $node;
+    } else {
+        return find_root($node->parent);
+    }
 }
 
 /**

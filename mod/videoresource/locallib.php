@@ -403,3 +403,59 @@ function move_item($item, $direction = 'down') {
     return $result;
 }
 
+/**
+* Add bookmark
+* 
+* @param string $url
+* @param string $title
+* @return bool
+*/
+function videoresource_add_bookmark($url = '', $title = 'bookmark') {
+    global $DB, $USER;
+    $data = new stdClass();
+    $data->timecreated = time();
+    $data->user_id = $USER->id;
+    $data->url = $url; //$returnurl->out(false);
+    $data->title = $title; //$videoresource->name;
+    return $DB->insert_record('resbookmarks', $data);
+}
+
+/**
+* Delete bookmark
+* 
+* @param int $id
+* @return bool
+*/
+function videoresource_delete_bookmark($id) {
+    global $DB;
+    $data = new stdClass();
+    $data->timecreated = time();
+    $data->user_id = $USER->id;
+    $data->url = $url; //$returnurl->out(false);
+    $data->title = $title; //$videoresource->name;
+    return $DB->insert_record('resbookmarks', $data);
+}
+
+/**
+* button for bookmark
+* 
+* @param bool $url
+* @return bool
+*/
+function videoresource_button_bookmark($bookmark_added = false) {
+    global $CFG;
+    $response = '';
+    $baseurl = $CFG->wwwroot.'/mod/videoresource';
+    $response .= html_writer::start_div('', array('id'=>'bookmark_container'));
+    if (!$bookmark_added) { 
+        $response .= html_writer::start_tag('a', array('href' => '#', 'id'=>'bookmarklink')) 
+        . html_writer::empty_tag('img', array('src'=>$baseurl . '/pix/bookmark_2.png', 'alt'=>'!', 'class'=>'iconsmall'))
+        . html_writer::tag('span', get_string('bookmark', 'videoresource'))
+        . html_writer::end_tag('a');
+    } else {
+        $response .= html_writer::empty_tag('img', array('src'=>$baseurl . '/pix/bookmark_3.png', 'alt'=>'!', 'class'=>'iconsmall', /*'style'=>'width: 30px; height: 30px;'*/))
+        . html_writer::tag('span', get_string('bookmarked', 'videoresource'));
+    }
+    $response .= html_writer::end_div();
+    return $response;
+}

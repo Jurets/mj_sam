@@ -95,6 +95,8 @@ $string['description_text'] = 'Description/Followup Text';
 $string['podcast_url'] = 'Podcast';
 $string['transcript'] = 'Transcript';
 $string['video_transcript'] = 'Video Transcript';
+$string['bookmark'] = 'bookmark';
+$string['bookmarked'] = 'bookmarked';
 
 $string['missing_videoid'] = 'Missing Youtube Video ID';
 $string['missing_internal_title'] = 'Missing Internal Title';

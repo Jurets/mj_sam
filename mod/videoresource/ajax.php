@@ -28,6 +28,7 @@ if (!defined('AJAX_SCRIPT')) {
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once('lib.php');
+require_once('locallib.php');
 
 //process input params
 $id = required_param('id', PARAM_INT);
@@ -57,8 +58,7 @@ $classes = array(
 );
 
 // analize action value
-if (isset($classes[$action]))
-{ 
+if (isset($classes[$action])) { // --------- if event
     //analize action name param
     $classname = $classes[$action];//'\mod_videoresource\event\chapter_clicked';
     // create event instance
@@ -76,6 +76,20 @@ if (isset($classes[$action]))
         //any exception process
         $return['success'] = false;  //set false to success flag
         $return['error'] = $e->a;    //set error text
+    }
+} else if ($action == 'bookmark'){ // ------------- if bookmark
+    $url = new moodle_url($CFG->wwwroot.'/mod/videoresource/view.php', array('id' => $cm->id));
+    $bookmark = $DB->get_record('resbookmarks', array('user_id'=>$USER->id, 'url'=>$url->out(false)));
+    // check: if bookmark already exists
+    if ($bookmark) {
+        videoresource_delete_bookmark($id);
+        $return['html'] = videoresource_button_bookmark(false);
+        $return['success'] = true;
+    } else {
+        $videoresource  = $DB->get_record('videoresource', array('id' => $cm->instance), 'name', MUST_EXIST);
+        $inserted_id = videoresource_add_bookmark($url->out(false), $videoresource->name);
+        $return['success'] = (bool)$inserted_id;
+        $return['html'] = videoresource_button_bookmark(true);
     }
 } else {
     $return['success'] = false;  //set false to success flag
