@@ -346,7 +346,7 @@ class block_resbookmarks extends block_list {
         $this->content->items  = array();
         $this->content->icons  = array();
 
-        $blist = $DB->get_records('resbookmarks', array('user_id'=>$USER->id));
+        $blist = $DB->get_records('resbookmarks', array('user_id'=>$USER->id, 'active'=>1));
         foreach ($blist as $index=>$b_item) {
             //$this->content->items[] = html_writer::tag('a', get_string('bookmark', $this->blockname) . ' ' . ($index + 1), array('href' => $b_item->url));
             $this->content->items[] = html_writer::tag('a', $b_item->title, array('href'=>$b_item->url, 'target'=>'_blank'));

@@ -77,19 +77,17 @@ if (isset($classes[$action])) { // --------- if event
         $return['success'] = false;  //set false to success flag
         $return['error'] = $e->a;    //set error text
     }
-} else if ($action == 'bookmark'){ // ------------- if bookmark
-    $url = new moodle_url($CFG->wwwroot.'/mod/videoresource/view.php', array('id' => $cm->id));
-    $bookmark = $DB->get_record('resbookmarks', array('user_id'=>$USER->id, 'url'=>$url->out(false)));
-    // check: if bookmark already exists
-    if ($bookmark) {
-        videoresource_delete_bookmark($id);
-        $return['html'] = videoresource_button_bookmark(false);
+} else if (!empty($action)){// ------------- if action for bookmarking
+    if ($action == 'unbookmark') {
+        $bookmark = videoresource_unbookmark($objectid /*$bookmark->id*/);
+        $return['html'] = videoresource_button_bookmark($bookmark);
         $return['success'] = true;
-    } else {
+    } else if ($action == 'bookmark') {
         $videoresource  = $DB->get_record('videoresource', array('id' => $cm->instance), 'name', MUST_EXIST);
-        $inserted_id = videoresource_add_bookmark($url->out(false), $videoresource->name);
-        $return['success'] = (bool)$inserted_id;
-        $return['html'] = videoresource_button_bookmark(true);
+        $url = new moodle_url($CFG->wwwroot.'/mod/videoresource/view.php', array('id' => $cm->id));
+        $bookmark = videoresource_bookmark($url->out(false), $videoresource->name, ($objectid ? $objectid : null));
+        $return['success'] = (bool)$bookmark;
+        $return['html'] = videoresource_button_bookmark($bookmark);
     }
 } else {
     $return['success'] = false;  //set false to success flag

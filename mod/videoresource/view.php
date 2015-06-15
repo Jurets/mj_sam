@@ -117,7 +117,7 @@ if (!$bookmark_added) {
     echo html_writer::tag('span', get_string('bookmarked', 'videoresource'));
 }
 echo html_writer::end_div();*/
-echo videoresource_button_bookmark($bookmark_added);
+echo videoresource_button_bookmark($bookmark);
 
 //$OUTPUT->pix_icon('t/add', '') 
 // build simple form
@@ -265,38 +265,35 @@ echo <<<EOD
 <script type="text/javascript">
     //<![CDATA[
     
-    function ajaxSend(action, objectid) {
+    function callbackDefault(response){
+        if (!response.success) {
+            Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
+            //alert("Error during AJAX request: " + response.error);
+        }
+    }
+    
+    function callbackBookmark(response) {
+        if (!response.success) {
+            Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
+        } else if (response.html) {
+            $("#bookmark_container").html(response.html);
+        }
+    }
+    
+    function ajaxSend(action, objectid, callback) {
+        if (!callback) {
+            callback = callbackDefault;
+        }
         $.ajax({
           type: "GET",
           url: "$baseurl/ajax.php",
           data: {"action": action, "id": "$cm_id", "objectid": objectid, "sesskey": "$sesskey"},
           dataType: "json",
-          success: function(response){
-            if (!response.success)
-                Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
-                //alert("Error during AJAX request: " + response.error);
-          }
+          success: callback,
         });
         return true;
     }
     
-    function ajaxBookmark(container_id) {
-        $.ajax({
-          type: "GET",
-          url: "$baseurl/ajax.php",
-          data: {"action": "bookmark", "id": "$cm_id", "sesskey": "$sesskey"},
-          dataType: "json",
-          success: function(response){
-            if (!response.success) {
-                Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
-            } else if (response.html) {
-                $("#"+container_id).html(response.html);
-            }
-          }
-        });
-        return true;
-    }
-
     $(document).ready(function(){
         $(".podcastlink, .transcriptlink").click(function(){
             elem = $(this);
@@ -309,9 +306,12 @@ echo <<<EOD
             return true;
         });
         
-        $("#bookmarklink").click(function(){
-            //return ajaxSend("bookmark");
-            return ajaxBookmark("bookmark_container");
+        $(document).on("click", "#bookmarklink", function(){
+            elem = $(this);
+            action = elem.attr("data-action");
+            objectid = elem.attr("data-objectid");
+            //return ajaxBookmark(action, objectid, callbackBookmark);
+            return ajaxSend(action, objectid, callbackBookmark);
         })
     });
     

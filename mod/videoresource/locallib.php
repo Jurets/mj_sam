@@ -410,14 +410,25 @@ function move_item($item, $direction = 'down') {
 * @param string $title
 * @return bool
 */
-function videoresource_add_bookmark($url = '', $title = 'bookmark') {
+function videoresource_bookmark($url = '', $title = 'bookmark', $id = null) {
     global $DB, $USER;
-    $data = new stdClass();
-    $data->timecreated = time();
-    $data->user_id = $USER->id;
-    $data->url = $url; //$returnurl->out(false);
-    $data->title = $title; //$videoresource->name;
-    return $DB->insert_record('resbookmarks', $data);
+    //if ($bookmark = $DB->get_record('resbookmarks', array('user_id'=>$USER->id, 'url'=>$url))) {
+    if (isset($id)) {
+        $bookmark = new stdClass();
+        $bookmark->id = $id;
+        $bookmark->active = 1;
+        //$success = $DB->update_record('resbookmarks', $bookmark);
+        $success = $DB->update_record_raw('resbookmarks', $bookmark);
+    } else {
+        $bookmark = new stdClass();
+        $bookmark->timecreated = time();
+        $bookmark->user_id = $USER->id;
+        $bookmark->url = $url; //$returnurl->out(false);
+        $bookmark->title = $title; //$videoresource->name;
+        $bookmark->active = 1;
+        $success = $DB->insert_record('resbookmarks', $bookmark, false);
+    }
+    return $bookmark;
 }
 
 /**
@@ -426,14 +437,17 @@ function videoresource_add_bookmark($url = '', $title = 'bookmark') {
 * @param int $id
 * @return bool
 */
-function videoresource_delete_bookmark($id) {
+function videoresource_unbookmark($id) {
     global $DB;
-    $data = new stdClass();
-    $data->timecreated = time();
-    $data->user_id = $USER->id;
-    $data->url = $url; //$returnurl->out(false);
-    $data->title = $title; //$videoresource->name;
-    return $DB->insert_record('resbookmarks', $data);
+    //if ($bookmark = $DB->get_record('resbookmarks', array('id'=>$id))) {
+    if ($id) {
+        $bookmark = new stdClass();
+        $bookmark->id = $id;
+        $bookmark->active = 0;
+        if ($success = $DB->update_record_raw('resbookmarks', $bookmark))
+            return $bookmark;
+    }
+    return false;
 }
 
 /**
@@ -442,20 +456,16 @@ function videoresource_delete_bookmark($id) {
 * @param bool $url
 * @return bool
 */
-function videoresource_button_bookmark($bookmark_added = false) {
+function videoresource_button_bookmark($bookmark = null) {
     global $CFG;
-    $response = '';
+    $b_exists = isset($bookmark) && is_object($bookmark);
+    $b_active = $b_exists && $bookmark->active;
     $baseurl = $CFG->wwwroot.'/mod/videoresource';
-    $response .= html_writer::start_div('', array('id'=>'bookmark_container'));
-    if (!$bookmark_added) { 
-        $response .= html_writer::start_tag('a', array('href' => '#', 'id'=>'bookmarklink')) 
-        . html_writer::empty_tag('img', array('src'=>$baseurl . '/pix/bookmark_2.png', 'alt'=>'!', 'class'=>'iconsmall'))
-        . html_writer::tag('span', get_string('bookmark', 'videoresource'))
-        . html_writer::end_tag('a');
-    } else {
-        $response .= html_writer::empty_tag('img', array('src'=>$baseurl . '/pix/bookmark_3.png', 'alt'=>'!', 'class'=>'iconsmall', /*'style'=>'width: 30px; height: 30px;'*/))
-        . html_writer::tag('span', get_string('bookmarked', 'videoresource'));
-    }
-    $response .= html_writer::end_div();
+    $response = html_writer::start_div('', array('id'=>'bookmark_container')) 
+              . html_writer::start_tag('a', array('href' => '#', 'id'=>'bookmarklink', 'data-objectid'=>($b_exists ? $bookmark->id : ''), 'data-action'=>($b_active ? 'unbookmark' : 'bookmark')))
+              . html_writer::empty_tag('img', array('src'=>$baseurl . '/pix/'.(!$b_active ? 'bookmark_3.png' : 'bookmark_2.png'), 'alt'=>'!', 'class'=>'iconsmall'))
+              . html_writer::tag('span', get_string((!$b_active ? 'bookmark' : 'unbookmark'), 'videoresource'))
+              . html_writer::end_tag('a')
+              . html_writer::end_div();
     return $response;
 }

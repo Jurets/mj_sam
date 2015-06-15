@@ -96,6 +96,7 @@ $string['podcast_url'] = 'Podcast';
 $string['transcript'] = 'Transcript';
 $string['video_transcript'] = 'Video Transcript';
 $string['bookmark'] = 'bookmark';
+$string['unbookmark'] = 'unbookmark';
 $string['bookmarked'] = 'bookmarked';
 
 $string['missing_videoid'] = 'Missing Youtube Video ID';
