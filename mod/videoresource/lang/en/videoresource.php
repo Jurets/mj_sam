@@ -95,9 +95,6 @@ $string['description_text'] = 'Description/Followup Text';
 $string['podcast_url'] = 'Podcast';
 $string['transcript'] = 'Transcript';
 $string['video_transcript'] = 'Video Transcript';
-$string['bookmark'] = 'bookmark';
-$string['unbookmark'] = 'unbookmark';
-$string['bookmarked'] = 'bookmarked';
 
 $string['missing_videoid'] = 'Missing Youtube Video ID';
 $string['missing_internal_title'] = 'Missing Internal Title';
@@ -117,3 +114,7 @@ $string['there_are_no_questionnaires']  = 'There is no questionnaires in this Co
 
 $string['listfield'] = 'Video Resource List';
 $string['listfield_help'] = 'Select Video Resource from list below';
+
+$string['bookmark'] = 'bookmark';
+$string['unbookmark'] = 'unbookmark';
+$string['bookmarked'] = 'bookmarked';

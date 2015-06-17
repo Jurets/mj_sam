@@ -106,27 +106,7 @@ $cm_id = $cm->id;
 echo $OUTPUT->header();
 
 // --- button for bookmark
-/*echo html_writer::start_div('');
-if (!$bookmark_added) { 
-    echo html_writer::start_tag('a', array('href' => '#', 'id'=>'bookmarklink')); 
-    echo html_writer::empty_tag('img', array('src'=>$baseurl . '/pix/bookmark_2.png', 'alt'=>'!', 'class'=>'iconsmall'));
-    echo html_writer::tag('span', get_string('bookmark', 'videoresource'));
-    echo html_writer::end_tag('a');
-} else {
-    echo html_writer::empty_tag('img', array('src'=>$baseurl . '/pix/bookmark_3.png', 'alt'=>'!', 'class'=>'iconsmall', ));
-    echo html_writer::tag('span', get_string('bookmarked', 'videoresource'));
-}
-echo html_writer::end_div();*/
 echo videoresource_button_bookmark($bookmark);
-
-//$OUTPUT->pix_icon('t/add', '') 
-// build simple form
-  //$url = new moodle_url(VR_URL_MAIN, array('action'=>'bookmark'/*, 'id'=>$video->id*/));
-/*echo html_writer::start_tag('form', array('method'=>'POST', 'action'=>$returnurl->out(false)));
-//echo html_writer::intag('input', null, array('type'=>'submit', 'name'=>'add_bookmark', 'value'=>get_string('ok')));
-echo html_writer::tag('input', null, array('type'=>'submit', 'name'=>'add_bookmark', 'value'=>get_string('bookmark', 'videoresource')));
-echo html_writer::end_tag('form');*/
-
 
 // Conditions to show the intro can change to look for own settings or whatever.
 if ($videoresource->intro) {
