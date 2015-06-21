@@ -260,7 +260,7 @@ echo <<<EOD
     <script type="text/javascript">
     //<![CDATA[
 
-    var loader = "<img src='/pix/i/loading_small.gif' alt='...process'>";
+    var loader = "<img src='$CFG->wwwroot/pix/i/loading_small.gif' alt='...process'>";
     
     function ajaxSend(action, objectid) {
         $.ajax({
