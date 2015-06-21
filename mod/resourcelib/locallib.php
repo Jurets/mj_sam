@@ -960,7 +960,7 @@ function resourcelib_bookmark($resource_id, $bookmark_id) {
         $bookmark->timecreated = time();
         $bookmark->user_id = $USER->id;
         $bookmark->url = $resource->url; //$returnurl->out(false);
-        $bookmark->title = $resource->internal_title ? $resource->internal_title : $resource->title; //
+        $bookmark->title = /*$resource->internal_title ? $resource->internal_title :*/ $resource->title; //
         $bookmark->active = 1;
         $success = $DB->insert_record('resbookmarks', $bookmark, false);
     }

@@ -232,15 +232,17 @@ EOD;
 echo <<<EOD
 <script type="text/javascript">
     //<![CDATA[
+
+    var loader = "<img src='/pix/i/loading_small.gif' alt='...process'>";
     
-    function callbackDefault(response){
+    function successDefault(response){
         if (!response.success) {
             Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
             //alert("Error during AJAX request: " + response.error);
         }
     }
     
-    function callbackBookmark(response) {
+    function successBookmark(response) {
         if (!response.success) {
             Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
         } else if (response.html) {
@@ -248,16 +250,23 @@ echo <<<EOD
         }
     }
     
-    function ajaxSend(action, objectid, callback) {
-        if (!callback) {
-            callback = callbackDefault;
+    function beforeBookmark() {
+        $("#bookmark_container").html(loader);
+        return true;
+    }    
+    
+    function ajaxSend(action, objectid, callbackSuccess, callbackBeforesend) {
+        if (!callbackSuccess) {
+            callbackSuccess = successDefault;
+            callbackBeforesend = function(){return true;};
         }
         $.ajax({
           type: "GET",
           url: "$baseurl/ajax.php",
           data: {"action": action, "id": "$cm_id", "objectid": objectid, "sesskey": "$sesskey"},
           dataType: "json",
-          success: callback,
+          beforeSend: callbackBeforesend,
+          success: callbackSuccess,
         });
         return true;
     }
@@ -278,8 +287,7 @@ echo <<<EOD
             elem = $(this);
             action = elem.attr("data-action");
             objectid = elem.attr("data-objectid");
-            //return ajaxBookmark(action, objectid, callbackBookmark);
-            return ajaxSend(action, objectid, callbackBookmark);
+            return ajaxSend(action, objectid, successBookmark, beforeBookmark);
         })
     });
     

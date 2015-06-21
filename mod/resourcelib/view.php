@@ -260,12 +260,18 @@ echo <<<EOD
     <script type="text/javascript">
     //<![CDATA[
 
+    var loader = "<img src='/pix/i/loading_small.gif' alt='...process'>";
+    
     function ajaxSend(action, objectid) {
         $.ajax({
           type: "GET",
           url: "$baseurl/ajax.php",
           data: {"action": action, "id": "$cm_id", "objectid": objectid, "bookmarkid": bookmarkid, "sesskey": "$sesskey"},
           dataType: "json",
+          beforeSend: function() {
+                $("#bookmark_container_"+objectid).html(loader);
+                return true;
+          },
           success: function (response) {
                 if (!response.success) {
                     Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');

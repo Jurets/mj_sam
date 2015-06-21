@@ -462,7 +462,12 @@ function videoresource_button_bookmark($bookmark = null) {
     $b_active = $b_exists && $bookmark->active;
     $baseurl = $CFG->wwwroot.'/mod/videoresource';
     $response = html_writer::start_div('', array('id'=>'bookmark_container')) 
-              . html_writer::start_tag('a', array('href' => '#', 'id'=>'bookmarklink', 'data-objectid'=>($b_exists ? $bookmark->id : ''), 'data-action'=>($b_active ? 'unbookmark' : 'bookmark')))
+              . html_writer::start_tag('a', array(
+                    'id'=>'bookmarklink', 
+                    'data-objectid'=>($b_exists ? $bookmark->id : ''), 
+                    'data-action'=>($b_active ? 'unbookmark' : 'bookmark'),
+                    'style'=>'cursor: pointer;'
+              ))
               . html_writer::empty_tag('img', array('src'=>$baseurl . '/pix/'.(!$b_active ? 'bookmark_3.png' : 'bookmark_2.png'), 'alt'=>'!', 'class'=>'iconsmall'))
               . html_writer::tag('span', get_string((!$b_active ? 'bookmark' : 'unbookmark'), 'videoresource'))
               . html_writer::end_tag('a')
