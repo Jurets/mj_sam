@@ -68,7 +68,7 @@ function xmldb_resourcelib_upgrade($oldversion) {
      *
      * First example, some fields were added to install.xml on 2007/04/01
      */
-     DebugBreak();
+     
      // add bookmark functionality
      if ($oldversion < 2015061502) {
         // Drop all legacy upgrade tables, not used anymore.
