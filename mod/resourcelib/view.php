@@ -61,8 +61,11 @@ $event->add_record_snapshot('course', $PAGE->course);
 ////////$event->add_record_snapshot($PAGE->cm->modname, $activityrecord);
 $event->trigger();
 
+$baseurl = $CFG->wwwroot.'/mod/resourcelib';
+$returnurl = new moodle_url($baseurl . '/view.php', array('id' => $cm->id));
+
 // Print the page header.
-$PAGE->set_url('/mod/resourcelib/view.php', array('id' => $cm->id));
+$PAGE->set_url($returnurl);
 $PAGE->set_title(format_string($resourcelib->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($context);
@@ -86,6 +89,9 @@ $PAGE->requires->css('/mod/resourcelib/styles.css');
  */
 // Output starts here.
 echo $OUTPUT->header();
+
+// --- button for bookmark
+//echo resourcelib_button_bookmark($bookmark);
 
 // Conditions to show the intro can change to look for own settings or whatever.
 if ($resourcelib->intro) {
@@ -119,6 +125,7 @@ if ($isTabs) {
     $index = 0;
 }
 
+// output mail content
 foreach($contents as $content)
 {
     if ($content->type == 'list') 
@@ -204,7 +211,7 @@ foreach($contents as $content)
                         $ratingoptions->aggregate = $resourcelib->assessed; //1;//the aggregation method
                         $ratingoptions->scaleid = $resourcelib->scale;//5;
                         $ratingoptions->userid = $USER->id;
-                        $ratingoptions->returnurl = "$CFG->wwwroot/mod/resourcelib/view.php?id=$id";
+                        $ratingoptions->returnurl = $returnurl;
                         $rm = new rating_manager();
                         $items = $rm->get_ratings($ratingoptions);
                         $item = $items[0];
@@ -212,9 +219,23 @@ foreach($contents as $content)
                         if (isset($item->rating)) {
                             //$rendered_rating = is_null($item->rating->rating) ? $OUTPUT->render($item->rating) : get_string('your_rate', 'resourcelib') . get_string('labelsep', 'langconfig') . ' ' . $item->rating->rating;
                             $rendered_rating = $OUTPUT->render($item->rating);
-                            $rate_html = html_writer::tag('div', $rendered_rating, array('class'=>'forum-post-rating', 'style'=>'margin: 5px 0;'));
+                            $rate_html = html_writer::tag('div', $rendered_rating, array('class'=>'forum-post-rating', 'style'=>'margin: 5px 10px 5px 0; float: left;'));
                             echo $rate_html;
                         }
+                        
+                        // check: if adding bookmark 
+                        $bookmark_added = ($bookmark = $DB->get_record('resbookmarks', array('user_id'=>$USER->id, 'url'=>$resource->url)));
+                        $add_bookmark = optional_param('add_bookmark', '', PARAM_TEXT);
+                        if (!$bookmark_added && $add_bookmark) {
+                            $data = new stdClass();
+                            $data->timecreated = time();
+                            $data->user_id = $USER->id;
+                            $data->url = $returnurl->out(false);
+                            $data->title = $videoresource->name;
+                            $bookmark_added = $DB->insert_record('resbookmarks', $data);
+                        }
+                        echo resourcelib_button_bookmark($resource->resource_id, $bookmark);
+                        
 
                         echo html_writer::end_div(); // end of Resource Item ---
                     }
@@ -234,19 +255,35 @@ if ($isTabs) {
 //output of script, this jQuery click process command need for event storing
 $sesskey = sesskey();
 $cm_id = $cm->id;
-$baseurl = $CFG->wwwroot;
+//$baseurl = $CFG->wwwroot;
 echo <<<EOD
     <script type="text/javascript">
     //<![CDATA[
 
+    function ajaxSend(action, objectid) {
+        $.ajax({
+          type: "GET",
+          url: "$baseurl/ajax.php",
+          data: {"action": action, "id": "$cm_id", "objectid": objectid, "bookmarkid": bookmarkid, "sesskey": "$sesskey"},
+          dataType: "json",
+          success: function (response) {
+                if (!response.success) {
+                    Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
+                } else if (response.html) {
+                    $("#bookmark_container_"+objectid).html(response.html);
+                }
+          },
+        });
+        return true;
+    }
+    
     $(document).ready(function(){
         $(".resourcelink").click(function(){
             //id = $(this).attr("data-resourcelibid");
             objectid = $(this).attr("data-objectid");
-            //alert(id);
             $.ajax({
               type: "GET",
-              url: "$baseurl/mod/resourcelib/ajax.php",
+              url: "$baseurl/ajax.php",
               data: {"action": "logview", "id": "$cm_id", "objectid": objectid, "sesskey": "$sesskey"},
               dataType: "json",
               success: function(response){
@@ -257,7 +294,16 @@ echo <<<EOD
             });
             return true;
         })
+
+        $(document).on("click", ".bookmarklink", function(){
+            elem = $(this);
+            action = elem.attr("data-action");
+            objectid = elem.attr("data-objectid");
+            bookmarkid = elem.attr("data-bookmarkid");
+            return ajaxSend(action, objectid);
+        })
     });
+    
     //]]>
     </script>
 EOD;

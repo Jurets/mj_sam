@@ -139,3 +139,7 @@ $string['listfield'] = 'Resource Library Lists';
 $string['listfield_help'] = 'Select list from select element below. You can choose multiple items by pressing button <Ctrl> and mouse clicking';
 
 $string['your_rate'] = 'Your rate is';
+
+$string['bookmark'] = 'bookmark';
+$string['unbookmark'] = 'unbookmark';
+$string['bookmarked'] = 'bookmarked';

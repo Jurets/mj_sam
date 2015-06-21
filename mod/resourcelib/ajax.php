@@ -28,6 +28,7 @@ if (!defined('AJAX_SCRIPT')) {
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once('lib.php');
+require_once('locallib.php');
 
 //process input params
 $id = required_param('id', PARAM_INT);
@@ -67,6 +68,24 @@ switch ($action) {
             //any exception process
             $return['success'] = false;  //set false to success flag
             $return['error'] = $e->a;    //set error text
+        }
+        break;
+        
+    case 'bookmark':
+        $resource = $DB->get_record('resource_items', array('id' => $objectid), 'id, url, title, internal_title', MUST_EXIST);
+        // get bookmark 
+        $bookmarkid = optional_param('bookmarkid', false, PARAM_INT);
+        $bookmark = resourcelib_bookmark($resource->id, ($bookmarkid ? $bookmarkid : null));
+        $return['success'] = (bool)$bookmark;
+        $return['html'] = resourcelib_button_bookmark($resource->id, $bookmark);
+        break;
+        
+    case 'unbookmark':
+        if ($bookmarkid = optional_param('bookmarkid', false, PARAM_INT)) {
+            if ($bookmark = resourcelib_unbookmark($bookmarkid)) {
+                $return['html'] = resourcelib_button_bookmark($objectid, $bookmark);
+                $return['success'] = true;
+            }
         }
         break;
 }

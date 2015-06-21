@@ -68,29 +68,27 @@ function xmldb_resourcelib_upgrade($oldversion) {
      *
      * First example, some fields were added to install.xml on 2007/04/01
      */
-
-     $table = new xmldb_table('resourcelib');
-     
-     /*if ($oldversion <= 2014112401) {
-         if (!$dbman->table_exists($table)) {
-             $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-             $table->add_field('name', XMLDB_TYPE_TEXT, '255', null, XMLDB_NOTNULL, null, '');
-             $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-             $dbman->create_table($table);
-         }
-     }*/
-     
-     /*if ($oldversion <= 2014112402) {
-        // Define field course to be added to resourcelib.
-        $field = new xmldb_field('course', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'id');
-        // Add field course.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
+     DebugBreak();
+     // add bookmark functionality
+     if ($oldversion < 2015061502) {
+        // Drop all legacy upgrade tables, not used anymore.
+        $table = new xmldb_table('resbookmarks');
+        if (!$dbman->table_exists('resbookmarks')) {
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('user_id', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('url', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('title', XMLDB_TYPE_CHAR, '255', false, XMLDB_NOTNULL, null, null);
+            $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', false, null, null, null);
+            $table->add_field('active', XMLDB_TYPE_INTEGER, '1', false, XMLDB_NOTNULL, null, 1);
+            
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+            $table->add_key('user', XMLDB_KEY_FOREIGN, array('user_id'), 'user', array('id'));         
+            $dbman->create_table($table);
+                
+            upgrade_mod_savepoint(true, 2015061502, 'videoresource');
         }
-        // Another save point reached.
-        upgrade_mod_savepoint(true, 2014112403, 'resourcelib');
-    }*/
-
+     }
+    
     /*
      * And that's all. Please, examine and understand the 3 example blocks above. Also
      * it's interesting to look how other modules are using this script. Remember that

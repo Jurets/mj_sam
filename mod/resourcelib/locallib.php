@@ -340,7 +340,7 @@ function resourcelib_get_section_items($data) {
     if (!property_exists($data, 'id') /*or !property_exists($user, 'name')*/) {
         throw new coding_exception('Invalid $data parameter in get_section_items() detected');
     }
-    $sql = 'SELECT si.id, r.url, r.title, r.internal_title, r.description, r.author, r.source, 
+    $sql = 'SELECT si.id, r.id as resource_id, r.url, r.title, r.internal_title, r.description, r.author, r.source, 
                    t.name AS type_name, t.icon_path, si.sort_order
             FROM {resource_section_items} si 
                 LEFT JOIN {resource_items} r ON r.id = si.resource_item_id
@@ -930,4 +930,92 @@ function resourcelib_show_editbutton($url, $label, $attributes = array('class' =
     echo html_writer::start_tag('div', $attributes);
     echo html_writer::tag('a', $OUTPUT->pix_icon('t/editstring', '') . ' ' . $label, array('href' => $url->out(false)));
     echo html_writer::end_tag('div');
+}
+
+/**
+* Add bookmark
+* 
+* @param mixed $resource_id
+* @param mixed $bookmark_id
+* @return stdClass
+*/
+function resourcelib_bookmark($resource_id, $bookmark_id) {
+//function resourcelib_bookmark($url = '', $title = 'bookmark', $id = null) {
+    global $DB, $USER;
+    if (isset($resource_id)) {
+        $resource = $DB->get_record('resource_items', array('id'=>$resource_id));
+    }
+    if (!(isset($resource) && is_object($resource))) {
+        return false;
+    }
+    
+    if (isset($bookmark_id)) {
+        $bookmark = new stdClass();
+        $bookmark->id = $bookmark_id;
+        $bookmark->active = 1;
+        //$success = $DB->update_record('resbookmarks', $bookmark);
+        $success = $DB->update_record_raw('resbookmarks', $bookmark);
+    } else {
+        $bookmark = new stdClass();
+        $bookmark->timecreated = time();
+        $bookmark->user_id = $USER->id;
+        $bookmark->url = $resource->url; //$returnurl->out(false);
+        $bookmark->title = $resource->internal_title ? $resource->internal_title : $resource->title; //
+        $bookmark->active = 1;
+        $success = $DB->insert_record('resbookmarks', $bookmark, false);
+    }
+    return $bookmark;
+}
+
+/**
+* Delete bookmark
+* 
+* @param mixed $id
+* @return stdClass
+*/
+function resourcelib_unbookmark($id) {
+    global $DB;
+    //if ($bookmark = $DB->get_record('resbookmarks', array('id'=>$id))) {
+    if ($id) {
+        $bookmark = new stdClass();
+        $bookmark->id = $id;
+        $bookmark->active = 0;
+        if ($success = $DB->update_record_raw('resbookmarks', $bookmark))
+            return $bookmark;
+    }
+    return false;
+}
+
+/**
+* build link/button for bookmark
+* 
+* @param mixed $resource_id
+* @param mixed $bookmark
+*/
+function resourcelib_button_bookmark($resource_id, $bookmark = null) {
+    global $CFG;
+    if (!isset($resource_id)) {
+        return false;
+    }
+    $b_exists = isset($bookmark) && is_object($bookmark);
+    $b_active = $b_exists && $bookmark->active;
+    $baseurl = $CFG->wwwroot.'/mod/resourcelib';
+    $response = html_writer::start_div('', array(
+                    'class'=>'bookmark_container', 
+                    'id'=>'bookmark_container_'.$resource_id, 
+                    'style'=>'margin: 5px 0;'
+                )) 
+              . html_writer::start_tag('a', array(
+                    'class'=>'bookmarklink', 
+                    'id'=>'bookmarklink_'.$resource_id, 
+                    'data-objectid'=>$resource_id, 
+                    'data-bookmarkid'=>($b_exists ? $bookmark->id : ''), 
+                    'data-action'=>($b_active ? 'unbookmark' : 'bookmark'),
+                    'style'=>'cursor: pointer;',
+                ))
+              . html_writer::empty_tag('img', array('src'=>$baseurl . '/pix/'.(!$b_active ? 'bookmark_3.png' : 'bookmark_2.png'), 'alt'=>'!', 'class'=>'iconsmall'))
+              . html_writer::tag('span', get_string((!$b_active ? 'bookmark' : 'unbookmark'), 'resourcelib'))
+              . html_writer::end_tag('a')
+              . html_writer::end_div();
+    return $response;
 }

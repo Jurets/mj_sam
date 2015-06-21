@@ -67,18 +67,6 @@ $event->trigger();
 $baseurl = $CFG->wwwroot.'/mod/videoresource';
 $returnurl = new moodle_url($baseurl . '/view.php', array('id' => $cm->id));
 
-// check: if adding bookmark 
-$bookmark_added = ($bookmark = $DB->get_record('resbookmarks', array('user_id'=>$USER->id, 'url'=>$returnurl->out(false))));
-$add_bookmark = optional_param('add_bookmark', '', PARAM_TEXT);
-if (!$bookmark_added && $add_bookmark) {
-    $data = new stdClass();
-    $data->timecreated = time();
-    $data->user_id = $USER->id;
-    $data->url = $returnurl->out(false);
-    $data->title = $videoresource->name;
-    $bookmark_added = $DB->insert_record('resbookmarks', $data);
-}
-
 // Print the page header.
 $PAGE->set_url($returnurl);
 $PAGE->set_title(format_string($videoresource->name));
@@ -93,8 +81,7 @@ $PAGE->requires->css('/mod/videoresource/styles.css');
 //output of script, this jQuery click process command need for event storing
 $sesskey = sesskey();
 $cm_id = $cm->id;
-//$video_id = $video->video_id;
-//$baseurl = $CFG->wwwroot;
+
 /*
  * Other things you may want to set - remove if not needed.
  * $PAGE->set_cacheable(false);
@@ -106,6 +93,7 @@ $cm_id = $cm->id;
 echo $OUTPUT->header();
 
 // --- button for bookmark
+$bookmark = $DB->get_record('resbookmarks', array('user_id'=>$USER->id, 'url'=>$returnurl->out(false)));
 echo videoresource_button_bookmark($bookmark);
 
 // Conditions to show the intro can change to look for own settings or whatever.
