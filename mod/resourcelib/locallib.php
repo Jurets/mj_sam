@@ -1003,7 +1003,7 @@ function resourcelib_button_bookmark($resource_id, $bookmark = null) {
     $response = html_writer::start_div('', array(
                     'class'=>'bookmark_container', 
                     'id'=>'bookmark_container_'.$resource_id, 
-                    'style'=>'margin: 5px 0;'
+                    'style'=>'float: left; margin: 5px 0; padding-right: 10px;'
                 )) 
               . html_writer::start_tag('a', array(
                     'class'=>'bookmarklink', 

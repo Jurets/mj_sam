@@ -223,7 +223,7 @@ foreach($contents as $content)
                             echo $rate_html;
                         }
                         
-                        // check: if adding bookmark 
+                        // bookmark link
                         $bookmark_added = ($bookmark = $DB->get_record('resbookmarks', array('user_id'=>$USER->id, 'url'=>$resource->url)));
                         $add_bookmark = optional_param('add_bookmark', '', PARAM_TEXT);
                         if (!$bookmark_added && $add_bookmark) {
@@ -236,6 +236,17 @@ foreach($contents as $content)
                         }
                         echo resourcelib_button_bookmark($resource->resource_id, $bookmark);
                         
+                        // AddToAny
+                        echo html_writer::start_div('addtoany', array('style'=>'margin: 5px 0;'));
+                        echo html_writer::link($resource->url, 
+                            html_writer::img('//static.addtoany.com/buttons/share_save_171_16.png', 'Share', array('width'=>"171", 'height'=>"16", 'border'=>"0")), 
+                            array('href'=>"https://www.addtoany.com/share_save?linkurl={$resource->url}&amp;linkname=FI", 'class'=>'a2a_dd')
+                        );
+                        echo html_writer::script('var a2a_config = a2a_config || {};
+                                a2a_config.linkname = "'.$resource->title.'";
+                                a2a_config.linkurl = "'.$resource->url.'";');
+                        echo html_writer::tag('script', null, array('src'=>'//static.addtoany.com/menu/page.js'));
+                        echo html_writer::end_div(); //
 
                         echo html_writer::end_div(); // end of Resource Item ---
                     }
