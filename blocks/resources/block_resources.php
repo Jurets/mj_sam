@@ -177,7 +177,7 @@ class block_resources extends block_base {
         }
         
         if (!empty($this->content->text)) {
-            $this->content->text .= html_writer::link($CFG->wwwroot.'/blocks/resources/tocsv.php', 'Download list (CSV)');
+            $this->content->text .= html_writer::link($CFG->wwwroot.'/mod/resourcelib/tocsv.php', 'Download list (CSV)');
         } else {
             $this->content->text .= 'There are no resources';
             //$this->content->text .= $OUTPUT->notification(get_string('no_resources', 'resourcelib'), 'redirectmessage');

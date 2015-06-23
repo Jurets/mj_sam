@@ -22,6 +22,7 @@ require_once("../../config.php");
 require_once($CFG->dirroot.'\lib\enrollib.php');
 require_once('locallib.php');
 
+// ---settings
 $delimiter = ';';
 $quote = '"';
 $eol = "\r\n";
@@ -31,8 +32,10 @@ $mimeType = 'text/csv';
 $terminate = true;
 $content = '';
 
-$courses = block_resources_get_all_resources(); //get content
+// ---get course-resources structure
+$courses = resourcelib_csv_allresources(); 
 
+// ---build CSV string
 $ifHeader = false;
 foreach ($courses as $key=>$course) {
     if (!$ifHeader && (!empty($course->resources) || !empty($course->videoresources))) {
@@ -53,35 +56,25 @@ foreach ($courses as $key=>$course) {
     }
 }
 
-// send file
-//sendFile('resources.csv', $content, 'text/csv');
-
-// send content function
-//function sendFile($fileName, $content, $mimeType=null, $terminate=true) 
-{
-    if ($mimeType===null) {
-        if (($mimeType=CFileHelper::getMimeTypeByExtension($fileName))===null)
-
-            $mimeType='text/plain';
-
-    }
-    header('Pragma: public');
-    header('Expires: 0');
-    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-    header("Content-type: $mimeType");
-    header('Content-Length: '.(function_exists('mb_strlen') ? mb_strlen($content,'8bit') : strlen($content)));
-    header("Content-Disposition: attachment; filename=\"$fileName\"");
-    header('Content-Transfer-Encoding: binary');
-    if ($terminate) {
-        // clean up the application first because the file downloading could take long time
-        // which may cause timeout of some resources (such as DB connection)
-        ob_start();
-        ob_end_clean();
-        echo $content;
-        exit(0);
-    } else
-        echo $content;
+// ---send content 
+//function sendFile($fileName, $content, $mimeType=null, $terminate=true)  {
+if ($mimeType===null) {
+    $mimeType='text/plain';
 }
-    
-
-?>
+header('Pragma: public');
+header('Expires: 0');
+header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+header("Content-type: $mimeType");
+header('Content-Length: '.(function_exists('mb_strlen') ? mb_strlen($content,'8bit') : strlen($content)));
+header("Content-Disposition: attachment; filename=\"$fileName\"");
+header('Content-Transfer-Encoding: binary');
+if ($terminate) {
+    // clean up the application first because the file downloading could take long time
+    // which may cause timeout of some resources (such as DB connection)
+    ob_start();
+    ob_end_clean();
+    echo $content;
+    exit(0);
+} else
+    echo $content;
+//}
