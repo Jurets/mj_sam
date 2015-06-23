@@ -29,11 +29,15 @@
 *
 * Used to produce the global navigation block new to Moodle 2.0
 *
-* @package   block_resbookmarks
+* @package   block_resources
 * @category  navigation
-* @copyright 2009 Sam Hemelryk
+* @copyright 2015 Jurets
 * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
+
+require_once('locallib.php');
+//require_once($CFG->dirroot.'/blocks/course_overview/locallib.php');
+
 class block_resources extends block_base {
 
     /**
@@ -72,7 +76,7 @@ class block_resources extends block_base {
     *  get content
     */
     public function get_content() {
-        global $OUTPUT, $DB;
+        global $OUTPUT, $CFG;
         
         if ($this->content !== null) {
             return $this->content;
@@ -80,21 +84,18 @@ class block_resources extends block_base {
         $this->content =  new stdClass;
         $this->content->text = '';
         
-        $courses = enrol_get_my_courses();
+        // get courses list in wich logged user was enrolled
+        $courses = block_resources_get_all_resources();
+        if (!$courses) {
+            $this->content->text .= 'There are no courses';
+            return $this->content;
+        }
+        
+        // --------- cycle by courses 
         foreach ($courses as $course) {
-            $sql = '
-                SELECT si.id, rl.course, r.id as resource_id, r.url, r.title, r.internal_title, r.description, r.author, r.source
-                FROM mdl_resourcelib rl
-                     RIGHT JOIN mdl_resourcelib_content rc ON rl.id = rc.resourcelib_id
-                     RIGHT JOIN mdl_resource_lists l ON rc.instance_id = l.id
-                     RIGHT JOIN mdl_resource_list_sections ls ON l.id = ls.resource_list_id
-                     RIGHT JOIN mdl_resource_section_items si ON ls.resource_section_id = si.resource_section_id
-                     RIGHT JOIN mdl_resource_items r ON r.id = si.resource_item_id
-                WHERE rl.course = ?
-                ORDER BY ls.sort_order, si.sort_order';
-            $resources = $DB->get_records_sql($sql, array($course->id));
             
-            if (!empty($resources)) {
+            if ($course->resources || $course->videoresources)
+            {   // render corse box
                 $this->content->text .= 
                     $OUTPUT->box_start('coursebox', "course-{$course->id}")
                   . html_writer::start_tag('div', array('class' => 'course_title'));
@@ -112,18 +113,14 @@ class block_resources extends block_base {
                         new moodle_url('/auth/mnet/jump.php', array('hostid' => $course->hostid, 'wantsurl' => '/course/view.php?id='.$course->remoteid)),
                         format_string($course->shortname, true), $attributes) . ' (' . format_string($course->hostname) . ')', 2, 'title');
                 }
-            
-                foreach($resources as $resource) {
+                
+                // render resources
+                foreach($course->resources as $resource) {
                     /// --- Render one resource item                    
                     $this->content->text .= 
                         html_writer::start_div('resource_item')
                       . html_writer::start_div('resource_body')
                       . html_writer::start_div('resource_title')
-                    /*echo html_writer::empty_tag('img', array(
-                        'src'=>$resource->icon_path, 
-                        'alt'=>$resource->icon_path, 
-                        'class'=>'iconsmall', 
-                        'style'=>'width: 30px; height: 30px;'));*/
                       . html_writer::link($resource->url, $resource->title, array(
                         'target'=>'_blank',
                         'class'=>'resourcelink',
@@ -151,13 +148,41 @@ class block_resources extends block_base {
                     
                     $this->content->text .= html_writer::end_div(); // end of Resource Item ---
                 }
+                
+                // render videoresources
+                foreach($course->videoresources as $videoresource) {
+                    /// --- Render one resource item                    
+                    $url = new moodle_url("$CFG->wwwroot/mod/videoresource/view.php", array('id'=>$videoresource->id));
+                    $this->content->text .= 
+                        html_writer::start_div('resource_item')
+                      . html_writer::start_div('resource_body')
+                      . html_writer::start_div('resource_title')
+                      . html_writer::link($url->out(false), $videoresource->name, array(
+                        'target'=>'_blank',
+                        'class'=>'resourcelink',
+                        'data-objectid'=>$videoresource->id, //'data-resourcelibid'=>$cm->id,
+                    ));
+                    $this->content->text .= html_writer::end_div(); // end of resource_title
+                    
+                    //echo html_writer::div($resource->description, 'resource_description');
+                    $this->content->text .= html_writer::end_div(); // end of Resource body ---
+                    
+                    $this->content->text .= html_writer::end_div(); // end of Resource Item ---
+                }
+                
                 //$this->content->text .= $OUTPUT->box('', 'flush');
                 $this->content->text .= html_writer::end_tag('div');  
                 $this->content->text .= $OUTPUT->box_end();
-            }
+            } 
         }
-        //$this->content->footer = 'Footer here...';
-        //$this->content->text .= $OUTPUT
+        
+        if (!empty($this->content->text)) {
+            $this->content->text .= html_writer::link($CFG->wwwroot.'/blocks/resources/tocsv.php', 'Download list (CSV)');
+        } else {
+            $this->content->text .= 'There are no resources';
+            //$this->content->text .= $OUTPUT->notification(get_string('no_resources', 'resourcelib'), 'redirectmessage');
+        }
+        
         return $this->content;
     }
 
