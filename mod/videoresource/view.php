@@ -125,8 +125,13 @@ foreach($contents as $video_content)
     /// Render description text above
     if (!empty($video_content->textabove)) {
         echo html_writer::div($video_content->textabove);
-        echo '<br>';
     }
+    
+    echo html_writer::start_div('panel panel-default course-element course-element-video');
+    if (strlen($video->title)>0){
+        echo html_writer::div(html_writer::tag("h3",get_string('video_prefix', 'videoresource').": "."$video->title",array("class"=>"panel-title")), 'panel-heading panel-video');
+    }
+    echo html_writer::start_div('panel_body panel-video');
     
     /// --- Render media frame
     echo html_writer::div('', 'mediaplugin mediaplugin_youtube', array(
@@ -164,23 +169,14 @@ foreach($contents as $video_content)
             'data-objectid'=>$video->id,
         ));
     }
-    $video_metadata = implode(' | ', $video_metadata);
-    $video_metadata = '[ ' . $video_metadata . ' ]';
+    
+    if(count($video_metadata)>0){
+        $video_metadata = implode(' | ', $video_metadata);
+        $video_metadata = '[ ' . $video_metadata . ' ]';
+    }
     echo $video_metadata;
     echo html_writer::end_div();
 
-    /// --- Render Follow Up Text
-    if (!empty($video->description)) {
-        echo html_writer::div($video->description);
-        echo '<br>';
-    }
-
-    /// Render description text below
-    if (!empty($video_content->textbelow)) {
-        echo html_writer::div($video_content->textbelow);
-        echo '<br>';
-    }
-    
     //render rating element
     $ratingoptions = new stdClass;
     $ratingoptions->context = $context; //$modcontext;
@@ -205,7 +201,6 @@ foreach($contents as $video_content)
         echo html_writer::div(get_string('in_this_video', 'videoresource') . ':', 'video_chapter_header');
     }
     echo html_writer::end_div();
-
     echo <<<EOD
 <script type="text/javascript">
     //<![CDATA[
@@ -223,8 +218,22 @@ foreach($contents as $video_content)
     });
 
     //]]>
-</script>
+</script>   
 EOD;
+
+    /// --- Render Follow Up Text
+    if (!empty($video->description)) {
+        echo html_writer::div($video->description);
+    }
+        
+    echo html_writer::end_div();
+    echo html_writer::end_div();
+        
+    /// Render description text below
+    if (!empty($video_content->textbelow)) {
+        echo html_writer::div($video_content->textbelow);
+    }
+    
 }
 // -------------
 
@@ -299,13 +308,19 @@ EOD;
 if ($activity = $DB->get_record_select('videoresource_content', 'resource_id = :resource_id AND type = :type', array('resource_id'=>$videoresource->id, 'type'=>'forum')))
     switch ($activity->type) {
     case 'forum':
+        echo html_writer::start_tag('div', array('class'=>'panel panel-default course-element course-element-discussion'));
         require_once('../forum/lib.php');
-        //$forum_id = 5;  //////////// заглушка!
+        //
         $forum_id = $activity->instance_id;
         $forum = $DB->get_record("forum", array("id" => $forum_id));
         $cm = get_coursemodule_from_instance("forum", $forum->id, $course->id);
 
-        echo $OUTPUT->heading(format_string($forum->name), 2);
+        echo html_writer::start_tag('div',array('class'=>'panel-heading'));
+        echo html_writer::start_tag('h3',array('class'=>'panel-title'));
+        echo ($forum->name);
+        echo html_writer::end_tag('h3');
+        echo html_writer::end_tag('div');
+        echo html_writer::start_tag('div',array('class'=>'panel-body'));
 
         if ($cm && !empty($forum->intro) && $forum->type != 'single' && $forum->type != 'teacher') {
             echo $OUTPUT->box(format_module_intro('forum', $forum, $cm->id), 'generalbox', 'intro');
@@ -359,6 +374,8 @@ if ($activity = $DB->get_record_select('videoresource_content', 'resource_id = :
                 }
                 break;
         }
+        echo html_writer::end_tag('div');
+        echo html_writer::end_tag('div');
         break;
 }
 

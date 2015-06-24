@@ -5,3 +5,15 @@
 .resource_item {
     margin-top: 20px;
 }
+
+.course-element-resource .panel-footer{
+	margin-bottom: -20px;
+}
+
+.list_heading{
+	margin-bottom: 10px;
+}
+
+.list_title{
+	margin-top: 5px;
+}

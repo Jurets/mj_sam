@@ -109,7 +109,7 @@ $isTabs = count($contents) > 1;
 if ($isTabs) {
     echo '<div role="tabpanel"">';
         //output of tabs
-        echo '<ul class="nav nav-tabs" role="tablist">';
+        echo '<ul class="nav nav-tabs resource-tabs" role="tablist">';
             $index = 0;
             foreach($contents as $content) {
                 $list = get_list($content->instance_id);
@@ -138,14 +138,16 @@ foreach($contents as $content)
         }
         
         //list head
-        echo html_writer::start_div('list_title');
-        echo html_writer::empty_tag('img', array(
-            'src'=>$list->icon_path, 
-            'alt'=>$list->icon_path, 
-            'class'=>'iconsmall', 
-            'style'=>'width: 30px; height: 30px; float: left;'));
-        echo html_writer::tag('h2', $list->display_name, array('style'=>'margin-top: 0;'));
-        echo html_writer::end_div();
+        if($list->s_count>1){
+            echo html_writer::start_div('list_title');
+            if (strlen($list->icon_path)>0) echo html_writer::empty_tag('img', array(
+                'src'=>$list->icon_path, 
+                'alt'=>$list->icon_path, 
+                'class'=>'iconsmall', 
+                'style'=>'width: 30px; height: 30px; float: left;'));
+            echo html_writer::tag('h2', $list->display_name, array('style'=>'margin-top: 0;'));
+            echo html_writer::end_div();
+        }
         //
         echo html_writer::start_div('list_content');
         echo html_writer::div($list->heading, 'list_heading');
@@ -153,17 +155,18 @@ foreach($contents as $content)
         if ($list->s_count > 0) {
             $sections = get_list_sections($list);
             foreach($sections as $section) {
-                echo html_writer::start_div('section_title');
-                echo html_writer::empty_tag('img', array(
+                echo html_writer::start_div('panel panel-default course-element course-element-resource');
+                echo html_writer::start_div('panel-heading');
+                if (strlen($section->icon_path)>0) echo html_writer::empty_tag('img', array(
                     'src'=>$section->icon_path, 
                     'alt'=>$section->icon_path, 
                     'class'=>'iconsmall', 
                     'style'=>'width: 30px; height: 30px; float: left;'));
-                echo html_writer::tag('h3', $section->display_name);
+                echo html_writer::tag('h3', $section->display_name, array('class'=>'panel-title'));
                 echo html_writer::end_div();
                 
-                echo html_writer::div($section->heading, 'section_heading');
-
+                echo html_writer::div($section->heading, 'panel-footer');
+                echo html_writer::start_div('panel-body');
                 //get Resources of this Section
                 if ($section->r_count > 0) {
                     $resources = resourcelib_get_section_items($section);
@@ -250,7 +253,9 @@ foreach($contents as $content)
 
                         echo html_writer::end_div(); // end of Resource Item ---
                     }
+                    echo html_writer::end_div();
                 }
+                echo html_writer::end_div();
             }
         }
         echo html_writer::end_div();
@@ -329,13 +334,19 @@ EOD;
 if ($activity = $DB->get_record_select('resourcelib_content', 'resourcelib_id = :resourcelib_id AND type = :type', array('resourcelib_id'=>$resourcelib->id, 'type'=>'forum')))
     switch ($activity->type) {
     case 'forum':
+        echo html_writer::start_tag('div', array('class'=>'panel panel-default course-element course-element-discussion'));
         require_once('../forum/lib.php');
-        //$forum_id = 5;  //////////// заглушка!
+        //
         $forum_id = $activity->instance_id;
         $forum = $DB->get_record("forum", array("id" => $forum_id));
         $cm = get_coursemodule_from_instance("forum", $forum->id, $course->id);
 
-        echo $OUTPUT->heading(format_string($forum->name), 2);
+        echo html_writer::start_tag('div',array('class'=>'panel-heading'));
+        echo html_writer::start_tag('h3',array('class'=>'panel-title'));
+        echo ($forum->name);
+        echo html_writer::end_tag('h3');
+        echo html_writer::end_tag('div');
+        echo html_writer::start_tag('div',array('class'=>'panel-body'));
 
         if ($cm && !empty($forum->intro) && $forum->type != 'single' && $forum->type != 'teacher') {
             echo $OUTPUT->box(format_module_intro('forum', $forum, $cm->id), 'generalbox', 'intro');
@@ -389,6 +400,8 @@ if ($activity = $DB->get_record_select('resourcelib_content', 'resourcelib_id = 
                 }
                 break;
         }
+        echo html_writer::end_tag('div');
+        echo html_writer::end_tag('div');
         break;
 }
 
