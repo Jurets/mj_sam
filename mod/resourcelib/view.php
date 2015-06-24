@@ -414,3 +414,14 @@ if ($activity = $DB->get_record_select('resourcelib_content', 'resourcelib_id = 
 
 // Finish the page.
 echo $OUTPUT->footer();
+
+if ($file_content = file_get_contents($CFG->dirroot.'/mod/resourcelib/rating.js')) {
+    echo   //wrap contant of js-file into <script> tag
+    '<script type="text/javascript">
+        //<![CDATA[
+        ' . $file_content . '
+        
+        M.resource_rating.init(Y);
+        //]]>
+    </script>';
+}

@@ -483,14 +483,19 @@ function resourcelib_rating_validate($params) {
     if (!array_key_exists('itemid', $params) || !array_key_exists('context', $params) || !array_key_exists('rateduserid', $params)) {
         throw new rating_exception('missingparameter');
     }
-    /*$ratingoptions = new stdClass;
-    $ratingoptions->context = $params['context']; //$modcontext;
-    $ratingoptions->component = $params['component'];
-    $ratingoptions->ratingarea = $params['ratingarea']; //
-    $ratingoptions->aggregate = $params['aggregation']; //1;//the aggregation method
-    $ratingoptions->scaleid = $params['scaleid'];//5;
-    $ratingoptions->userid = $USER->id;
-    $ratingoptions->items = array($resource);*/ //
+    // validate: User cannot rate a resource unless they have first clicked on the link
+    $logmanger = get_log_manager();
+    $readers = $logmanger->get_readers('\core\log\sql_select_reader');
+    $reader = reset($readers);
+    if (!empty($reader)) { // A proper reader.
+        $count = $reader->get_events_select_count(
+            //"userid = :userid AND courseid = :courseid AND eventname = :eventname AND objectid = :objectid", 
+            "userid = :userid AND contextid = :contextid AND eventname = :eventname AND objectid = :objectid", 
+            array('objectid' => $params['itemid'], 'userid' => $USER->id,
+                  'contextid'=> $params[context]->id, //'courseid' => $course->id, 
+                  'eventname' => '\mod_resourcelib\event\resource_viewed'));
+        return (bool)$count;
+    }
     return true;
 }
 

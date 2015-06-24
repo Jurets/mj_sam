@@ -153,8 +153,10 @@ class mooc_renderer extends core_renderer {
                                   select = $("select#menurating" + id);
                                   select.children("[value=" + score + "]").attr("selected", "selected");
                                   sel = Y.one("select#menurating" + id);
-                                  M.core_rating.submit_rating("change", sel);  //Y.fire("change", {nodes: sel}); 
-                                  $(this).raty("readOnly", true);
+                                  //M.core_rating.submit_rating("change", sel);  //Y.fire("change", {nodes: sel}); 
+                                  // own handler for submitting rating
+                                  M.resource_rating.submit_rating("change", sel);
+                                  return false;
                               }, ';
             $ratinghtml .= html_writer::start_span('star-rate', array('id'=>$itemid, 'data-id'=>$rating->itemid)) . 
                            html_writer::end_span(); // DOM-container for Star Raty Plugin
