@@ -53,7 +53,7 @@ M.resource_rating={
                                     node.set('innerHTML',"("+data.count+")");
                                     counter = $('#star_menurating'+data.itemid);
                                     //$('#star_menurating'+data.itemid).raty();
-                                    counter.raty({ score: data.aggregate, readOnly: false });
+                                    counter.raty({ score: data.aggregate, readOnly: true });
                                 } else {
                                     node.set('innerHTML',"");
                                 }

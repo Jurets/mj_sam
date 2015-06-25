@@ -40,6 +40,9 @@ $mimeType = 'text/csv';
 $terminate = true;
 $content = '';
 
+// to prevent output before header
+ob_start();
+
 // ---get course-resources structure
 $courses = block_resources_get_all_resources(); 
 
@@ -55,14 +58,14 @@ foreach ($courses as $key=>$course) {
             $quote.str_replace('"', '""', $resource->title).$quote, 
             $quote.str_replace('"', '""', $resource->author).$quote, 
             $quote.str_replace('"', '""', $resource->source).$quote, 
-            $quote.$quote)) . $eol;
+            $quote.$resource->avgrate.$quote)) . $eol;
     }
     foreach ($course->videoresources as $resource) {
         $content .= implode($delimiter, array(
             $quote.str_replace('"', '""', $resource->name).$quote, 
             $quote.$quote, $quote.$quote, $quote.$quote)) . $eol;
     }
-}
+} 
 
 // ---send content 
 //function sendFile($fileName, $content, $mimeType=null, $terminate=true)  {
@@ -79,7 +82,7 @@ header('Content-Transfer-Encoding: binary');
 if ($terminate) {
     // clean up the application first because the file downloading could take long time
     // which may cause timeout of some resources (such as DB connection)
-    ob_start();
+    ////ob_start();
     ob_end_clean();
     echo $content;
     exit(0);

@@ -143,6 +143,13 @@ class block_resources extends block_base {
                           . ': ' . $resource->source
                           . html_writer::end_div();
                     }
+                    if (!empty($resource->avgrate)) {
+                        $this->content->text .= 
+                            html_writer::start_div('resource_metadata')
+                          . html_writer::tag('strong', 'AVG rating')
+                          . ': ' . $resource->avgrate
+                          . html_writer::end_div();
+                    }
                     //echo html_writer::div($resource->description, 'resource_description');
                     $this->content->text .= html_writer::end_div(); // end of Resource body ---
                     
