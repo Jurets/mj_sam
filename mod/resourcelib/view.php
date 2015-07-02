@@ -299,24 +299,51 @@ echo <<<EOD
         return true;
     }
     
+    function clickResource(element){
+        //id = $(this).attr("data-resourcelibid");
+        objectid = $(element).attr("data-objectid");
+        $.ajax({
+          type: "GET",
+          url: "$baseurl/ajax.php",
+          data: {"action": "logview", "id": "$cm_id", "objectid": objectid, "sesskey": "$sesskey"},
+          dataType: "json",
+          success: function(response){
+            if (!response.success)
+                Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
+                //alert("Error during AJAX request: " + response.error);
+          }
+        });
+        return true;
+    }
+    
     $(document).ready(function(){
-        $(".resourcelink").click(function(){
-            //id = $(this).attr("data-resourcelibid");
-            objectid = $(this).attr("data-objectid");
-            $.ajax({
-              type: "GET",
-              url: "$baseurl/ajax.php",
-              data: {"action": "logview", "id": "$cm_id", "objectid": objectid, "sesskey": "$sesskey"},
-              dataType: "json",
-              success: function(response){
-                if (!response.success)
-                    Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
-                    //alert("Error during AJAX request: " + response.error);
-              }
-            });
-            return true;
-        })
+        $(document).on("click", ".resourcelink", function(){
+            clickResource(this);
+        });
+        
+        $(document).on('contextmenu', '.resourcelink', function(e) {
+            e.stopPropagation();
+            //clickResource(this);
+            //$(this).click();
+            //url = $(this).attr("href");
+            //$("<a>").attr("href", url).attr("target", "_blank").click();
+            //location.target = "_blank";
+            //location.href = url;
+            //window.open(url,'_blank');
+            return false;
+        });
 
+        $(document).on('mousedown', '.resourcelink', function(e) {
+            if (e.which == 2) {
+                e.stopPropagation();
+                clickResource(this);
+                //open(this.getAttribute("data-anotherhref"), null)
+                return false;
+            }
+            return true;
+        });
+        
+        
         $(document).on("click", ".bookmarklink", function(){
             elem = $(this);
             action = elem.attr("data-action");
