@@ -155,18 +155,19 @@ foreach($contents as $content)
         if ($list->s_count > 0) {
             $sections = get_list_sections($list);
             foreach($sections as $section) {
-                echo html_writer::start_div('panel panel-default course-element course-element-resource');
-                echo html_writer::start_div('panel-heading');
+                echo html_writer::start_tag('section', array('class'=>'course-section course_resource'));
+                echo html_writer::start_div('section-header');
                 if (strlen($section->icon_path)>0) echo html_writer::empty_tag('img', array(
                     'src'=>$section->icon_path, 
                     'alt'=>$section->icon_path, 
                     'class'=>'iconsmall', 
                     'style'=>'width: 30px; height: 30px; float: left;'));
-                echo html_writer::tag('h3', $section->display_name, array('class'=>'panel-title'));
+                echo html_writer::tag('h2', $section->display_name, array('class'=>'section-label'));
+                echo html_writer::tag('h3',$section->heading, array('class'=>'section-support-text'));
                 echo html_writer::end_div();
                 
-                echo html_writer::div($section->heading, 'panel-footer');
-                echo html_writer::start_div('panel-body');
+                
+                echo html_writer::start_div('section-content');
                 //get Resources of this Section
                 if ($section->r_count > 0) {
                     $resources = resourcelib_get_section_items($section);
@@ -241,10 +242,15 @@ foreach($contents as $content)
                         
                         // AddToAny
                         echo html_writer::start_div('addtoany', array('style'=>'margin: 5px 0;'));
-                        echo html_writer::link($resource->url, 
-                            html_writer::img('//static.addtoany.com/buttons/share_save_171_16.png', 'Share', array('width'=>"171", 'height'=>"16", 'border'=>"0")), 
-                            array('href'=>"https://www.addtoany.com/share_save?linkurl={$resource->url}&amp;linkname=FI", 'class'=>'a2a_dd')
-                        );
+                        
+                        echo html_writer::start_div('a2a_kit a2a_default_style');
+                        	echo html_writer::link('https://www.addtoany.com/share_save?linkurl='.$resource->url.'&linkname='.$resource->title, 'Share', array('class'=>'a2a_dd'));
+                        	echo html_writer::span('', 'a2a_divider');
+                        	echo html_writer::tag('a','',array('class'=>'a2a_button_facebook'));
+                        	echo html_writer::tag('a','',array('class'=>'a2a_button_twitter'));
+                        	echo html_writer::tag('a','',array('class'=>'a2a_button_google_plus'));
+            
+						echo html_writer::end_div();
                         echo html_writer::script('var a2a_config = a2a_config || {};
                                 a2a_config.linkname = "'.$resource->title.'";
                                 a2a_config.linkurl = "'.$resource->url.'";');
@@ -255,7 +261,7 @@ foreach($contents as $content)
                     }
                     echo html_writer::end_div();
                 }
-                echo html_writer::end_div();
+                echo html_writer::end_tag('section');
             }
         }
         echo html_writer::end_div();
@@ -299,51 +305,24 @@ echo <<<EOD
         return true;
     }
     
-    function clickResource(element){
-        //id = $(this).attr("data-resourcelibid");
-        objectid = $(element).attr("data-objectid");
-        $.ajax({
-          type: "GET",
-          url: "$baseurl/ajax.php",
-          data: {"action": "logview", "id": "$cm_id", "objectid": objectid, "sesskey": "$sesskey"},
-          dataType: "json",
-          success: function(response){
-            if (!response.success)
-                Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
-                //alert("Error during AJAX request: " + response.error);
-          }
-        });
-        return true;
-    }
-    
     $(document).ready(function(){
-        $(document).on("click", ".resourcelink", function(){
-            clickResource(this);
-        });
-        
-        $(document).on('contextmenu', '.resourcelink', function(e) {
-            e.stopPropagation();
-            //clickResource(this);
-            //$(this).click();
-            //url = $(this).attr("href");
-            //$("<a>").attr("href", url).attr("target", "_blank").click();
-            //location.target = "_blank";
-            //location.href = url;
-            //window.open(url,'_blank');
-            return false;
-        });
-
-        $(document).on('mousedown', '.resourcelink', function(e) {
-            if (e.which == 2) {
-                e.stopPropagation();
-                clickResource(this);
-                //open(this.getAttribute("data-anotherhref"), null)
-                return false;
-            }
+        $(".resourcelink").click(function(){
+            //id = $(this).attr("data-resourcelibid");
+            objectid = $(this).attr("data-objectid");
+            $.ajax({
+              type: "GET",
+              url: "$baseurl/ajax.php",
+              data: {"action": "logview", "id": "$cm_id", "objectid": objectid, "sesskey": "$sesskey"},
+              dataType: "json",
+              success: function(response){
+                if (!response.success)
+                    Y.log(response.error, 'debug', 'moodle-mod_resourcelib-logview');
+                    //alert("Error during AJAX request: " + response.error);
+              }
+            });
             return true;
-        });
-        
-        
+        })
+
         $(document).on("click", ".bookmarklink", function(){
             elem = $(this);
             action = elem.attr("data-action");

@@ -140,6 +140,6 @@ $string['listfield_help'] = 'Select list from select element below. You can choo
 
 $string['your_rate'] = 'Your rate is';
 
-$string['bookmark'] = 'bookmark';
-$string['unbookmark'] = 'unbookmark';
+$string['bookmark'] = 'Bookmark this Resource';
+$string['unbookmark'] = 'Remove from Bookmarks';
 $string['bookmarked'] = 'bookmarked';
