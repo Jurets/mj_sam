@@ -151,7 +151,8 @@ class mooc_renderer extends core_renderer {
             $callback_click = 'click: function(score, evt) {
                                   id = $(this).data("id");
                                   select = $("select#menurating" + id);
-                                  select.children("[value=" + score + "]").attr("selected", "selected");
+                                  //select.children("[value=" + score + "]").attr("selected", "selected");
+                                  select.children("[value=" + score + "]").prop("selected", true);
                                   sel = Y.one("select#menurating" + id);
                                   //M.core_rating.submit_rating("change", sel);  //Y.fire("change", {nodes: sel}); 
                                   // own handler for submitting rating
