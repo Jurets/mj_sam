@@ -87,4 +87,7 @@ $string['required_question_help'] = 'Required parameter. This text will be displ
 $string['required_answers'] = 'Possible answers';
 $string['required_answers_help'] = 'Required parameter. Fill list of possible answers. It will be paragraph separated text: each answer must begin from new string.';
 
+$string['groupid'] = 'Group';
+$string['groupid_help'] = 'If you select one or several groups, all enrolled users will added to them after enrolment.';
+
 ?>

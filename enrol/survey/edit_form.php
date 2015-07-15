@@ -57,38 +57,21 @@ class enrol_self_edit_form extends moodleform {
 
         // group
         $selected = !empty($instance->customchar1) ? array_values(explode(',', $instance->customchar1)) : array();
-        /*$label = 'Groups';
-        foreach ($groups as $groupid=>$groupname) {
-            $checkbox = $mform->addElement('advcheckbox', 'groupid'.$groupid, $label, $groupname, array('group' => 1));
-            $mform->setDefault('groupid'.$groupid, in_array($groupid, $selected));
-            if (!empty($label)) {
-                $mform->addHelpButton('groupid'.$groupid, 'groupid', 'enrol_survey');
-            }
-            $label = null;
-        }
-        $this->add_checkbox_controller(1);*/
-        
         $group_array = array();
-
-        //creating days of the week
         foreach ($groups as $groupid=>$groupname) {
-            $group_array[] =& $mform->createElement('advcheckbox', $groupid, '', $groupname);
-            $mform->setDefault("groups[$groupid]", in_array($groupid, $selected));
+            $group_array[] =& $mform->createElement('checkbox', $groupid, '', $groupname);
+            $mform->setDefault("groupid[$groupid]", in_array($groupid, $selected));
         }
-        //display them into one row
-        $mform->addGroup($group_array, 'groups', 'Groups', array(' '), true);
+        $mform->addGroup($group_array, 'groupid', 'Groups', array(' '), true);
+        $mform->addHelpButton('groupid', 'groupid', 'enrol_survey');
 
-        // version with 'select'
-        //$select = $mform->addElement('select', 'groupid', get_string('defaultgroupname', 'group'), $groups);
-        //$select->setMultiple(true);
-        //$select->setSelected($selected);
-        //$mform->addHelpButton('groupid', 'groupid', 'enrol_survey');
-
+        // Param: whether delete user answers after unenrolment user 
         $options = array(1 => get_string('yes'), 0 => get_string('no'));
         $mform->addElement('select', 'customint1', get_string('isdeleteanswers', 'enrol_survey'), $options);
         $mform->addHelpButton('customint1', 'isdeleteanswers', 'enrol_survey');
         $mform->setDefault('customint1', 0/*$plugin->get_config('customint1')*/);
 		
+        // description (comment)
         $mform->addElement('textarea', 'customtext1', get_string('editdescription', 'enrol_survey'));
 
         $mform->addElement('hidden', 'id');
@@ -99,12 +82,5 @@ class enrol_self_edit_form extends moodleform {
         $this->add_action_buttons(true, ($instance->id ? null : get_string('addinstance', 'enrol')));
 
         $this->set_data($instance);
-        /*if (!empty($instance->customchar1)) {
-            $selected = array_values(explode(',', $instance->customchar1));
-            foreach ($selected as $item) {
-                $mform->getElement('groupid'.$item)->setValue(1);
-            }
-        }*/
-        
     }
 }

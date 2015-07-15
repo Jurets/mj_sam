@@ -25,6 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once("$CFG->libdir/formslib.php");
+require_once($CFG->dirroot.'/group/lib.php');
 
 class enrol_survey_enrol_form extends moodleform {
     protected $instance;
@@ -824,4 +825,42 @@ function enrol_survey_get_user_answers($enrol, $user) {
         $answers[$answer->timecreated][] = $answer;
     }
     return $answers;
+}
+
+/**
+* get ID of group, which contain course, wich consist of minimal count of members
+* 
+* @param int $courseid - id of course
+* return ID of
+*/
+function enrol_survey_get_group_min_members($courseid) {
+    global $DB;
+    $sql = 'SELECT g.id, count(*) 
+            FROM mdl_groups_members m LEFT JOIN 
+                 mdl_groups g ON g.id = m.groupid 
+            WHERE g.courseid = ? 
+            GROUP BY m.groupid ORDER BY count(*) ASC LIMIT 1';
+    $groupid = $DB->get_records_sql($sql, array($courseid));
+    return $groupid;
+}
+
+/**
+* get ID of group, which contain course, wich consist of minimal count of members
+* 
+* @param int $courseid - id of course
+* return ID of
+*/
+function enrol_survey_add_to_group($enrol) {
+    global $DB, $USER;
+    if (empty($enrol->customchar1)) return false; // if group config not present in enrol - quit
+    //$DB->get_in_or_equal($items, $type=SQL_PARAMS_QM, $prefix='param', $equal=true, $onemptyitems=false)
+    $sql = 'SELECT g.id, count(*) 
+            FROM mdl_groups_members m LEFT JOIN 
+                 mdl_groups g ON g.id = m.groupid 
+            WHERE g.courseid = ? AND m.groupid IN ('.$enrol->customchar1.') 
+            GROUP BY m.groupid ORDER BY count(*) ASC LIMIT 1';
+    // calculate group with smallest count of users
+    $groupid = $DB->count_records_sql($sql, array($enrol->courseid));
+    // add current user to group
+    return groups_add_member($groupid, $USER->id);
 }

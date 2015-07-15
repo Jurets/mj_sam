@@ -66,6 +66,7 @@ $form = new enrol_survey_user_form(null, array(
     'questions'=>$questions,
 ));
 
+// ---- form process
 if ($enroldata = $form->get_data()) {
     // save user answers into database
     enrol_survey_save_user_answers($enroldata);
@@ -84,6 +85,10 @@ if ($enroldata = $form->get_data()) {
     }
     // run user enrol procedure (status = null for enrol activity)
     $plugin->enrol_user($enrol, $USER->id, $roleid, $timestart, $timeend, null);
+
+    // ---- add user to group
+    enrol_survey_add_to_group($enrol);
+
     // redirect to course view main page
     redirect("$CFG->wwwroot/course/view.php?id=$enrol->courseid");
 }

@@ -55,19 +55,25 @@ if ($instanceid) {
     $instance->courseid = $course->id;
 }
 
-$mform = new enrol_self_edit_form(NULL, array($instance, $plugin, $context));
+// get groups from this course
+$_groups = groups_get_all_groups($courseid, 0, 0, 'g.id, g.name');
+$groups = array();
+foreach ($_groups as $key=>$group) {$groups[$key] = $group->name;}
 
+$mform = new enrol_self_edit_form(NULL, array($instance, $plugin, $context, $course, $groups));
+
+// ---- Form process
 if ($mform->is_cancelled()) {
     redirect($return);
-
 } else if ($data = $mform->get_data()) {
     if ($instance->id) {
         $instance->status         = $data->status;
         $instance->name           = $data->name;
-        $instance->customtext1    = $data->customtext1;
-        $instance->customint1     = $data->customint1;
         $instance->roleid         = $data->roleid;
         $instance->timemodified   = time();
+        $instance->customtext1    = $data->customtext1;  //comment
+        $instance->customint1     = $data->customint1;   //isdeleteanswers
+        $instance->customchar1    = !empty($data->groupid) ? implode(',', array_keys($data->groupid)) : null; //groups
         $DB->update_record('enrol', $instance);
 
     } else {

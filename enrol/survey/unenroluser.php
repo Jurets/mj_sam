@@ -68,7 +68,7 @@ navigation_node::override_active_url($usersurl);
 if ($confirm && confirm_sesskey()) {
     //include form for survey
     require_once("$CFG->dirroot/enrol/survey/locallib.php");
-    //$isdeleteanswers = $DB->get_field('enrol', 'COALESCE(customint1, 0)', array(''=>$instance->id));
+    // get param value "isdeleteanswers" - whether delete user answers after unenrollment
     $isdeleteanswers = (isset($instance->customint1) && $instance->customint1 == 1);
     if ($isdeleteanswers) {
         // delete user answers
