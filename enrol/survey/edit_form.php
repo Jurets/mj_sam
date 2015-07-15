@@ -29,9 +29,11 @@ require_once($CFG->libdir.'/formslib.php');
 class enrol_self_edit_form extends moodleform {
 
     function definition() {
+        if (!isset($this->_customdata)) return true;
+        
         $mform = $this->_form;
 
-        list($instance, $plugin, $context) = $this->_customdata;
+        list($instance, $plugin, $context, $course, $groups) = $this->_customdata;
 
         $mform->addElement('header', 'header', get_string('pluginname', 'enrol_survey'));
 
@@ -44,6 +46,7 @@ class enrol_self_edit_form extends moodleform {
         $mform->addHelpButton('status', 'status', 'enrol_survey');
         $mform->setDefault('status', $plugin->get_config('status'));
 
+        // role
         if ($instance->id) {
             $roles = get_default_enrol_roles($context, $instance->roleid);
         } else {
@@ -51,6 +54,35 @@ class enrol_self_edit_form extends moodleform {
         }
         $mform->addElement('select', 'roleid', get_string('defaultrole', 'role'), $roles);
         $mform->setDefault('roleid', $plugin->get_config('roleid'));
+
+        // group
+        $selected = !empty($instance->customchar1) ? array_values(explode(',', $instance->customchar1)) : array();
+        /*$label = 'Groups';
+        foreach ($groups as $groupid=>$groupname) {
+            $checkbox = $mform->addElement('advcheckbox', 'groupid'.$groupid, $label, $groupname, array('group' => 1));
+            $mform->setDefault('groupid'.$groupid, in_array($groupid, $selected));
+            if (!empty($label)) {
+                $mform->addHelpButton('groupid'.$groupid, 'groupid', 'enrol_survey');
+            }
+            $label = null;
+        }
+        $this->add_checkbox_controller(1);*/
+        
+        $group_array = array();
+
+        //creating days of the week
+        foreach ($groups as $groupid=>$groupname) {
+            $group_array[] =& $mform->createElement('advcheckbox', $groupid, '', $groupname);
+            $mform->setDefault("groups[$groupid]", in_array($groupid, $selected));
+        }
+        //display them into one row
+        $mform->addGroup($group_array, 'groups', 'Groups', array(' '), true);
+
+        // version with 'select'
+        //$select = $mform->addElement('select', 'groupid', get_string('defaultgroupname', 'group'), $groups);
+        //$select->setMultiple(true);
+        //$select->setSelected($selected);
+        //$mform->addHelpButton('groupid', 'groupid', 'enrol_survey');
 
         $options = array(1 => get_string('yes'), 0 => get_string('no'));
         $mform->addElement('select', 'customint1', get_string('isdeleteanswers', 'enrol_survey'), $options);
@@ -67,5 +99,12 @@ class enrol_self_edit_form extends moodleform {
         $this->add_action_buttons(true, ($instance->id ? null : get_string('addinstance', 'enrol')));
 
         $this->set_data($instance);
+        /*if (!empty($instance->customchar1)) {
+            $selected = array_values(explode(',', $instance->customchar1));
+            foreach ($selected as $item) {
+                $mform->getElement('groupid'.$item)->setValue(1);
+            }
+        }*/
+        
     }
 }
