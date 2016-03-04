@@ -204,6 +204,7 @@ class theme_anomaly_core_course_renderer extends core_course_renderer {
      * @return string
      */
     public function course_section_cm($course, &$completioninfo, cm_info $mod, $sectionreturn, $displayoptions = array()) {
+        global $DB, $USER;
         $output = '';
         // We return empty string (because course module will not be displayed at all)
         // if:
@@ -242,8 +243,22 @@ class theme_anomaly_core_course_renderer extends core_course_renderer {
         $cmname = $this->course_section_cm_name($mod, $displayoptions);
 
         if (!empty($cmname)) {
+            $attributes = array('class' => 'activityinstance');
+            // get ASSIGN module info!
+            if ($mod->modname == 'assign') {
+                $id = $mod->instance;
+                $userid = $USER->id;
+                $params = array('assignment'=>$id, 'userid'=>$userid, 'groupid'=>0);
+                
+                $submissions = $DB->get_records('assign_submission', $params, 'attemptnumber DESC', '*', 0, 1);
+                if ($submissions && ($submission = reset($submissions))) {
+                    $attributes['data-submissionsstatus'] = $submission->status;
+                }
+                
+            }
+            
             // Start the div for the activity title, excluding the edit icons.
-            $output .= html_writer::start_tag('div', array('class' => 'activityinstance', 'data-submissionsstatus'=>'draft'));
+            $output .= html_writer::start_tag('div', $attributes);
             $output .= $cmname;
 
 
