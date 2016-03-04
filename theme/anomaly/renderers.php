@@ -1,6 +1,7 @@
 <?php
 // include base renderer class
 require_once($CFG->dirroot.'/course/renderer.php');
+require_once($CFG->dirroot.'/lib/gradelib.php');
 
 class theme_anomaly_core_renderer extends core_renderer {
 
@@ -246,15 +247,41 @@ class theme_anomaly_core_course_renderer extends core_course_renderer {
             $attributes = array('class' => 'activityinstance');
             // get ASSIGN module info!
             if ($mod->modname == 'assign') {
-                $id = $mod->instance;
+                //$attemptnumber = 0;
                 $userid = $USER->id;
-                $params = array('assignment'=>$id, 'userid'=>$userid, 'groupid'=>0);
-                
+                $params = array('assignment'=>$mod->instance, 'userid'=>$userid, 'groupid'=>0);
                 $submissions = $DB->get_records('assign_submission', $params, 'attemptnumber DESC', '*', 0, 1);
                 if ($submissions && ($submission = reset($submissions))) {
                     $attributes['data-submissionsstatus'] = $submission->status;
+                    // getting of grade
+                    /*$params = array('assignment'=>$mod->instance, 'userid'=>$userid);
+                    if ($attemptnumber < 0) {
+                        // Make sure this grade matches the latest submission attempt.
+                        //if ($this->get_instance()->teamsubmission) {
+                        //    $submission = $this->get_group_submission($userid, 0, false);
+                        //} else {
+                        //    $submission = $this->get_user_submission($userid, false);
+                        //}
+                        if ($submission) {
+                            $attemptnumber = $submission->attemptnumber;
+                        }
+                    }
+                    if ($attemptnumber >= 0) {
+                        $params['attemptnumber'] = $attemptnumber;
+                    }
+                    $grades = $DB->get_records('assign_grades', $params, 'attemptnumber DESC', '*', 0, 1);
+                    if ($grades && ($grade = reset($grades))) {
+                        $attributes['data-grade'] = $grade->grade;
+                    }*/
+                    $gradinginfo = grade_get_grades($course->id, 'mod', 'assign', $mod->instance, array($userid));                    
+                    if (isset($gradinginfo->items[0]->grades[$userid]) &&
+                            !$gradinginfo->items[0]->grades[$userid]->hidden ) {
+                        $grade = $gradinginfo->items[0]->grades[$userid]->str_grade;
+                    } else {
+                        $grade = '-';
+                    }
+                    $attributes['data-grade'] = $grade;
                 }
-                
             }
             
             // Start the div for the activity title, excluding the edit icons.
