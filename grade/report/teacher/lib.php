@@ -1,6 +1,7 @@
 <?php
 global $CFG;
 require_once($CFG->dirroot . '/grade/report/user/lib.php');
+require_once($CFG->dirroot . '/mod/assign/locallib.php');
 
 class grade_tree_teacher extends grade_tree {
     
@@ -32,7 +33,7 @@ class grade_tree_teacher extends grade_tree {
         return $header;
     }
         
-    private function get_activity_link($element) {//DebugBreak();
+    private function get_activity_link($element) {
         global $CFG;
         /** @var array static cache of the grade.php file existence flags */
         static $hasgradephp = array();
@@ -76,8 +77,33 @@ class grade_tree_teacher extends grade_tree {
             }
             return new moodle_url('/mod/' . $itemmodule . '/grade.php', $args);
         } else {
-            return new moodle_url('/mod/' . $itemmodule . '/view.php', array('id' => $cm->id, 'rownum'=>0, 'action'=>'grade'));
+            $args = array('id' => $cm->id);
+            if ($itemmodule == 'assign') {
+                $rownum = $this->get_rownum($cm, $element['userid']);
+                $args = array_merge($args, array('rownum'=>$rownum, 'action'=>'grade'));
+            }
+            return new moodle_url('/mod/' . $itemmodule . '/view.php', $args);
         }
+    }
+    
+    
+    /**
+     * Find the rownum for a userid and assign mod to user for grading url
+     *
+     * @param stdClass $cm course module object
+     * @param in $userid the id of the user whose rownum we are interested in
+     *
+     * @return int
+      */
+    function get_rownum($cm, $userid){
+        global $COURSE;
+        $mod_context = context_module::instance($cm->id);
+        $assign = new assign($this->context, $cm, $COURSE);
+        $filter = get_user_preferences('assign_filter', '');
+        $table = new assign_grading_table($assign, 0, $filter, 0, false);
+        $useridlist = $table->get_column_data('userid');
+        $rownum = array_search($userid, $useridlist);
+        return $rownum;
     }
     
 }
@@ -90,6 +116,9 @@ class grade_report_teacher extends grade_report_user {
         
         // Grab the grade_tree for this course
         $this->gtree = new grade_tree_teacher($this->courseid, false, $this->switch, null, !$CFG->enableoutcomes);
+        $this->inject_rowspans($this->gtree->top_element);
+        // no groups on this report - rank is from all course users
+        //$this->setup_table();
     }    
     
 }

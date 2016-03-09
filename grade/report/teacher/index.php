@@ -112,13 +112,13 @@ if (has_capability('moodle/grade:viewall', $context)) { //Teachers will see all 
         $report = new grade_report_teacher($courseid, $gpr, $context, $userid);
 
         $studentnamelink = html_writer::link(new moodle_url('/teacher/view.php', array('id' => $report->user->id, 'course' => $courseid)), fullname($report->user));
-        print_grade_page_head($courseid, 'report', 'user', get_string('pluginname', 'gradereport_teacher') . ' - ' . $studentnamelink);
+        print_grade_page_head($courseid, 'report', 'teacher', get_string('pluginname', 'gradereport_teacher') . ' - ' . $studentnamelink);
         groups_print_course_menu($course, $gpr->get_return_url('index.php?id='.$courseid, array('userid'=>0)));
 
         if ($user_selector) {
             $renderer = $PAGE->get_renderer('gradereport_user');
             $showallusersoptions = true;
-            echo $renderer->graded_users_selector('user', $course, $userid, $currentgroup, $showallusersoptions);
+            echo $renderer->graded_users_selector('teacher', $course, $userid, $currentgroup, $showallusersoptions);
         }
 
         if ($currentgroup and !groups_is_member($currentgroup, $userid)) {
@@ -135,7 +135,7 @@ if (has_capability('moodle/grade:viewall', $context)) { //Teachers will see all 
     $report = new grade_report_teacher($courseid, $gpr, $context, $userid);
 
     // print the page
-    print_grade_page_head($courseid, 'report', 'user', get_string('pluginname', 'gradereport_teacher'). ' - '.fullname($report->user));
+    print_grade_page_head($courseid, 'report', 'teacher', get_string('pluginname', 'gradereport_teacher'). ' - '.fullname($report->user));
 
     if ($report->fill_table()) {
         echo '<br />'.$report->print_table(true);
