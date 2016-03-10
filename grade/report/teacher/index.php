@@ -91,7 +91,7 @@ if (has_capability('moodle/grade:viewall', $context)) { //Teachers will see all 
         groups_print_course_menu($course, $gpr->get_return_url('index.php?id='.$courseid, array('userid'=>0)));
 
         if ($user_selector) {
-            $renderer = $PAGE->get_renderer('gradereport_teacher');
+            $renderer = $PAGE->get_renderer('gradereport_user');
             echo $renderer->graded_users_selector('teacher', $course, $userid, $currentgroup, true);
         }
 
