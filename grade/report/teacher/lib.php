@@ -114,9 +114,13 @@ class grade_tree_teacher extends grade_tree {
     
 }
 
+/**
+*  This class extends Grade User Report
+*/
 class grade_report_teacher extends grade_report_user {
     
     private $activities;
+    private $sections;
     
     // constructor
     public function __construct($courseid, $gpr, $context, $userid) {
@@ -178,9 +182,12 @@ class grade_report_teacher extends grade_report_user {
 
         //optionally calculate grade item averages
         $this->calculate_averages();
-
+//        DebugBreak();
         // get array of activities and filter only Assigns and Labels 
-        $this->activities = array_values(array_filter(get_array_of_activities($courseid), 
+        $this->activities = get_array_of_activities($courseid);
+        //$sections = get_all_sections($courseid);
+        $this->sections = $DB->get_records('course_sections', array('course' => $courseid), 'section', 'section, id, course, name, sequence, visible');
+        $this->activities = array_values(array_filter($this->activities, 
             function($item){
                 return in_array($item->mod, array('assign', 'label'));
             }
@@ -223,9 +230,9 @@ class grade_report_teacher extends grade_report_user {
             return false;
         }
 
-        if ($type == 'category') {
+        /*if ($type == 'category') {
             $this->evenodd[$depth] = (($this->evenodd[$depth] + 1) % 2);
-        }
+        }*/
         $alter = ($this->evenodd[$depth] == 0) ? 'even' : 'odd';
 
         /// Process those items that have scores associated
@@ -432,7 +439,7 @@ class grade_report_teacher extends grade_report_user {
         }
 
         /// Category
-        if ($type == 'category') {
+        /*if ($type == 'category') {
             $data['leader']['class'] = $class.' '.$alter."d$depth b1t b2b b1l";
             if (isset($element['rowspan'])) {
                 $data['leader']['rowspan'] = $element['rowspan'];
@@ -446,31 +453,69 @@ class grade_report_teacher extends grade_report_user {
             $data['itemname']['content'] = $fullname;
             $data['itemname']['celltype'] = 'th';
             $data['itemname']['id'] = "cat_{$grade_object->id}_{$this->user->id}";
-        } else if ($type == 'item') {
+        } else*/ 
+        if ($type == 'item') {
+            /*foreach ($this->sections as $index=>$item) {
+                if ($cm->section == $item->id) {
+                    // add Label to table
+                    $section = array();
+                    $section['itemname']['colspan'] = ($this->maxdepth - $depth + count($this->tablecolumns) - 1);
+                    $section['itemname']['content'] = $item->name;
+                    $section['itemname']['celltype'] = 'th';
+                    $section['itemname']['id'] = "section_{$item->id}_{$this->user->id}";
+                    $section['itemname']['class'] = $class;
+                    $this->tabledata[] = $section;
+                    unset($this->sections[$index]);
+                    break;
+                }
+            }*/
+            $this->insertSection($cm, $depth, $class);
             foreach ($this->activities as $index=>$item) {
                 if ($item->mod == 'assign' && $item->cm == $cm->id) {
+                    //$this->tabledata[] = $data; ///////
                     unset($this->activities[$index]);
                     break;
                 } else if ($item->mod == 'label') {
+                    $this->insertSection($cm, $depth, $class);
                     // add Label to table
-                    $label = array();
+                    $label = array(); 
                     $label['itemname']['colspan'] = ($this->maxdepth - $depth + count($this->tablecolumns) - 1);
-                    $label['itemname']['content'] = $item->name;
+                    $label['itemname']['content'] = strip_tags($item->content); //$item->name;
                     $label['itemname']['celltype'] = 'th';
                     $label['itemname']['id'] = "label_{$item->cm}_{$this->user->id}";
                     $label['itemname']['class'] = $class;
                     $this->tabledata[] = $label;
                     unset($this->activities[$index]);
+                    break;
                 }
             }
         }
         /// Add this row to the overall system
-        $this->tabledata[] = $data;
+        if ($type == 'item')
+            $this->tabledata[] = $data;
 
         /// Recursively iterate through all child elements
         if (isset($element['children'])) {
             foreach ($element['children'] as $key=>$child) {
                 $this->fill_table_recursive($element['children'][$key]);
+            }
+        }
+    }
+    
+    //
+    private function insertSection($cm, $depth, $class) {
+        foreach ($this->sections as $index=>$item) {
+            if ($cm->section == $item->id) {
+                // add Label to table
+                $section = array();
+                $section['itemname']['colspan'] = ($this->maxdepth - $depth + count($this->tablecolumns) - 1);
+                $section['itemname']['content'] = $item->name;
+                $section['itemname']['celltype'] = 'th';
+                $section['itemname']['id'] = "section_{$item->id}_{$this->user->id}";
+                $section['itemname']['class'] = $class;
+                $this->tabledata[] = $section;
+                unset($this->sections[$index]);
+                break;
             }
         }
     }
@@ -481,7 +526,7 @@ class grade_report_teacher extends grade_report_user {
      * @return string
      */
     public function print_table($return=false) {
-         $maxspan = $this->maxdepth;
+         $maxspan = $this->maxdepth - 1;
 
         /// Build table structure
         $html = "
