@@ -21,22 +21,10 @@
     }
 
     $stredit   = get_string('edit');
-    //$strdelete = get_string('delete');
-    $strassignments = get_string('assignments');
-    //$strdeletecheck = get_string('deletecheck');
-    //$strshowallusers = get_string('showallusers');
-    //$strsuspend = get_string('suspenduser', 'admin');
-    //$strunsuspend = get_string('unsuspenduser', 'admin');
-    //$strunlock = get_string('unlockaccount', 'admin');
+    $strassignments = get_string('assignments', 'report_assesment');
     $strconfirm = get_string('confirm');
 
-    /*if (empty($CFG->loginhttps)) {
-        $securewwwroot = $CFG->wwwroot;
-    } else {
-        $securewwwroot = str_replace('http:','https:',$CFG->wwwroot);
-    }*/
-
-    $returnurl = new moodle_url('/admin/user.php', array('sort' => $sort, 'dir' => $dir, 'perpage' => $perpage, 'page'=>$page));
+    $returnurl = new moodle_url('/report/assesment/index.php', array('sort' => $sort, 'dir' => $dir, 'perpage' => $perpage, 'page'=>$page));
     
     $ufiltering = new user_filtering();
     echo $OUTPUT->header();
@@ -44,8 +32,7 @@
     // Carry on with the user listing
     $context = context_system::instance();
     $extracolumns = get_extra_user_fields($context);
-    $columns = array_merge(array('firstname', 'lastname'), $extracolumns,
-            array('city', 'country', 'lastaccess'));
+    $columns = array_merge(array('firstname', 'lastname'), $extracolumns, array('city', 'country', 'lastaccess'));
 
     foreach ($columns as $column) {
         $string[$column] = get_user_field_name($column);
@@ -91,13 +78,6 @@
     $users = get_users_listing($sort, $dir, $page*$perpage, $perpage, '', '', '', $extrasql, $params, $context);
     $usercount = get_users(false);
     $usersearchcount = get_users(false, '', false, null, "", '', '', '', '', '*', $extrasql, $params);
-
-    /*if ($extrasql !== '') {
-        echo $OUTPUT->heading("$usersearchcount / $usercount ".get_string('users'));
-        $usercount = $usersearchcount;
-    } else {
-        echo $OUTPUT->heading("$usercount ".get_string('users'));
-    }*/
 
     $strall = get_string('all');
 
@@ -151,51 +131,16 @@
         foreach ($users as $user) {
             $buttons = array();
             $lastcolumn = '';
-            // delete button
-            //if (has_capability('moodle/user:delete', $sitecontext))
-            {
-                if (is_mnet_remote_user($user) or $user->id == $USER->id or is_siteadmin($user)) {
-                    // no deleting of self, mnet accounts or admins allowed
-                } else {
-                    $buttons[] = html_writer::link(new moodle_url($returnurl, array('assignments'=>$user->id, /*'sesskey'=>sesskey()*/)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/download'), 'alt'=>$strassignments, 'class'=>'iconsmall')), array('title'=>$strassignments));
-                }
+            // download button
+            if (is_mnet_remote_user($user) /*or $user->id == $USER->id*/ or is_siteadmin($user)) {
+                // no operation of self, mnet accounts or admins allowed
+            } else {
+                $buttons[] = html_writer::link(
+                    new moodle_url($returnurl, array('assignments'=>$user->id)), 
+                    html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/download'), 'alt'=>$strassignments, 'class'=>'iconsmall')), 
+                    array('title'=>$strassignments)
+                );
             }
-
-            // suspend button
-            /*if (has_capability('moodle/user:update', $sitecontext)) {
-                if (is_mnet_remote_user($user)) {
-                    // mnet users have special access control, they can not be deleted the standard way or suspended
-                    $accessctrl = 'allow';
-                    if ($acl = $DB->get_record('mnet_sso_access_control', array('username'=>$user->username, 'mnet_host_id'=>$user->mnethostid))) {
-                        $accessctrl = $acl->accessctrl;
-                    }
-                    $changeaccessto = ($accessctrl == 'deny' ? 'allow' : 'deny');
-                    $buttons[] = " (<a href=\"?acl={$user->id}&amp;accessctrl=$changeaccessto&amp;sesskey=".sesskey()."\">".get_string($changeaccessto, 'mnet') . " access</a>)";
-
-                } else {
-                    if ($user->suspended) {
-                        $buttons[] = html_writer::link(new moodle_url($returnurl, array('unsuspend'=>$user->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/show'), 'alt'=>$strunsuspend, 'class'=>'iconsmall')), array('title'=>$strunsuspend));
-                    } else {
-                        if ($user->id == $USER->id or is_siteadmin($user)) {
-                            // no suspending of admins or self!
-                        } else {
-                            $buttons[] = html_writer::link(new moodle_url($returnurl, array('suspend'=>$user->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/hide'), 'alt'=>$strsuspend, 'class'=>'iconsmall')), array('title'=>$strsuspend));
-                        }
-                    }
-
-                    if (login_is_lockedout($user)) {
-                        $buttons[] = html_writer::link(new moodle_url($returnurl, array('unlock'=>$user->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/unlock'), 'alt'=>$strunlock, 'class'=>'iconsmall')), array('title'=>$strunlock));
-                    }
-                }
-            }*/
-
-            // edit button
-            /*if (has_capability('moodle/user:update', $sitecontext)) {
-                // prevent editing of admins by non-admins
-                if (is_siteadmin($USER) or !is_siteadmin($user)) {
-                    $buttons[] = html_writer::link(new moodle_url($securewwwroot.'/user/editadvanced.php', array('id'=>$user->id, 'course'=>$site->id)), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/edit'), 'alt'=>$stredit, 'class'=>'iconsmall')), array('title'=>$stredit));
-                }
-            }*/
 
             // the last column - confirm or mnet info
             if (is_mnet_remote_user($user)) {
@@ -249,10 +194,6 @@
         echo html_writer::table($table);
         echo html_writer::end_tag('div');
         echo $OUTPUT->paging_bar($usercount, $page, $perpage, $baseurl);
-        /*if (has_capability('moodle/user:create', $sitecontext)) {
-            echo $OUTPUT->heading('<a href="'.$securewwwroot.'/user/editadvanced.php?id=-1">'.get_string('addnewuser').'</a>');
-        }*/
     }
-
     
     echo $OUTPUT->footer();
