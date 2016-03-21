@@ -1,15 +1,24 @@
 <?php
+/**
+ * Admin Report plugin for Downloading of User Assignments
+ *
+ * @package    report
+ * @subpackage assesment
+ * @copyright  2016 Jurets
+ * @author     Jurets <jurets75@gmail.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
     require_once('../../config.php');
     require_once($CFG->libdir.'/adminlib.php');
-    //require_once($CFG->libdir.'/authlib.php');
     require_once($CFG->dirroot.'/user/filters/lib.php');
-    //require_once($CFG->dirroot.'/user/lib.php');
 
     $sort = optional_param('sort', 'name', PARAM_ALPHANUM);
     $dir  = optional_param('dir', 'ASC', PARAM_ALPHA);
     $page = optional_param('page', 0, PARAM_INT);
     $perpage = optional_param('perpage', 30, PARAM_INT);        // how many per page
+    //DebugBreak();
+    $assignments_userid = optional_param('assignments', 0, PARAM_INT);        // how many per page
     
     admin_externalpage_setup('reportassesment');
 
@@ -25,10 +34,27 @@
     $strconfirm = get_string('confirm');
 
     $returnurl = new moodle_url('/report/assesment/index.php', array('sort' => $sort, 'dir' => $dir, 'perpage' => $perpage, 'page'=>$page));
+
+    // ---------- Main process of GET params --
+    if ($assignments_userid) {
+        echo '$assignments_userid = '.$assignments_userid;
+        require_once('lib.php');
+        $files = report_assesment_getzip($assignments_userid, 'mod_assignment');
+        echo '<ul>';
+        foreach ($files as $file) {
+            echo '<li>'.$file->get_filename().'</li>';
+        }
+        echo '</ul>';//DebugBreak();
+        // testing of file download
+        $file = array_shift($files);
+        //send_stored_file($file, 86400, 0, true, array('dontdie'));
+    }
+    // -- end of process
     
     $ufiltering = new user_filtering();
     echo $OUTPUT->header();
-
+    echo $OUTPUT->heading(get_string('pluginname', 'report_assesment'));
+    
     // Carry on with the user listing
     $context = context_system::instance();
     $extracolumns = get_extra_user_fields($context);
@@ -112,7 +138,7 @@
         }
 
         $table = new html_table();
-        $table->head = array ();
+        $table->head = array();
         $table->colclasses = array();
         $table->head[] = $fullnamedisplay;
         $table->attributes['class'] = 'admintable generaltable';
