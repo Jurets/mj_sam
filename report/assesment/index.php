@@ -8,7 +8,7 @@
  * @author     Jurets <jurets75@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+    global $CFG;
     require_once('../../config.php');
     require_once($CFG->libdir.'/adminlib.php');
     require_once($CFG->dirroot.'/user/filters/lib.php');
@@ -17,7 +17,7 @@
     $dir  = optional_param('dir', 'ASC', PARAM_ALPHA);
     $page = optional_param('page', 0, PARAM_INT);
     $perpage = optional_param('perpage', 30, PARAM_INT);        // how many per page
-    //DebugBreak();
+    
     $assignments_userid = optional_param('assignments', 0, PARAM_INT);        // how many per page
     
     admin_externalpage_setup('reportassesment');
@@ -37,17 +37,20 @@
 
     // ---------- Main process of GET params --
     if ($assignments_userid) {
-        echo '$assignments_userid = '.$assignments_userid;
-        require_once('lib.php');
-        $files = report_assesment_getzip($assignments_userid, 'mod_assignment');
+        //echo '$assignments_userid = '.$assignments_userid;
+        require_once($CFG->dirroot.'/report/assesment/lib.php');
+        
+        /*$files = report_assesment_getzip($assignments_userid, 'mod_assignment');
         echo '<ul>';
         foreach ($files as $file) {
             echo '<li>'.$file->get_filename().'</li>';
         }
-        echo '</ul>';//DebugBreak();
+        echo '</ul>';*/        //DebugBreak();
         // testing of file download
-        $file = array_shift($files);
+        //$file = array_shift($files);
         //send_stored_file($file, 86400, 0, true, array('dontdie'));
+        $export = new assesment_download();
+        $export->start($assignments_userid);
     }
     // -- end of process
     
