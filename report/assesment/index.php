@@ -37,19 +37,9 @@
 
     // ---------- Main process of GET params --
     if ($assignments_userid) {
-        //echo '$assignments_userid = '.$assignments_userid;
+        // create clas instance and run zip process
         require_once($CFG->dirroot.'/report/assesment/lib.php');
-        
-        /*$files = report_assesment_getzip($assignments_userid, 'mod_assignment');
-        echo '<ul>';
-        foreach ($files as $file) {
-            echo '<li>'.$file->get_filename().'</li>';
-        }
-        echo '</ul>';*/        //DebugBreak();
-        // testing of file download
-        //$file = array_shift($files);
-        //send_stored_file($file, 86400, 0, true, array('dontdie'));
-        $export = new assesment_download();
+        $export = new assesment_download();//DebugBreak();
         $export->start($assignments_userid);
     }
     // -- end of process

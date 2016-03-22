@@ -14,24 +14,21 @@ defined('MOODLE_INTERNAL') || die;
 */
 class assesment_download {
 
+    private $thereareno;
+    
     public function __construct() {
-         //anu code for initing
+         //any code for initing
+         $this->thereareno = "<script>alert('".get_string('thereareno', 'report_assesment')."');</script>";
     }
 
     public function start($userid, $mod='') {
 
         global $CFG, $DB;
 
-        error_reporting(E_ALL);
-        ini_set('display_errors', FALSE);
-        ini_set('display_startup_errors', FALSE);
-        date_default_timezone_set('Europe/London');
-        define('EOL',(PHP_SAPI == 'cli') ? PHP_EOL : '<br />');
-
         $component = 'assignsubmission_file';
         $filearea = 'submission_files';
         
-        ob_start();
+        //ob_start();
         // loop each file in modul data while generating files array
         $countfiles = 0;
 
@@ -50,7 +47,7 @@ class assesment_download {
              LEFT JOIN mdl_course_modules cm ON cm.id = x.instanceid
              LEFT JOIN mdl_assign a ON cm.instance = a.id
              LEFT JOIN mdl_course c ON c.id = cm.course
-            WHERE f.component = :component AND f.filearea = :filearea AND f.userid = 37 AND f.filesize > 0
+            WHERE f.component = :component AND f.filearea = :filearea AND f.userid = :userid AND f.filesize > 0
         ";
         $conditions = array('component'=>$component, 'filearea'=>$filearea, 'userid'=>$userid);
         $filerecords = $DB->get_records_sql($sql, $conditions);
@@ -68,76 +65,53 @@ class assesment_download {
                 $files[] = $file;
             }
         }
-        // prepare temp directories for zip creating
-        $temppath = $CFG->tempdir . "/assesments_download/" . time() . "_" . $userid;
-        $source_path = $temppath."/source/";
-        $zip_path = $temppath."/zip/";
-        $zipfile = $zip_path . "/user_" . $userid . ".zip";
-        mkdir($zip_path, 0777, true);
-        mkdir($source_path, 0777, true);
+        if (empty($files)) {
+            // there are no files to download
+            echo $this->thereareno;
+        } else {
+            // prepare temp directories for zip creating
+            $temppath = $CFG->tempdir . "/assesments_download/" . time() . "_" . $userid;
+            $source_path = $temppath . "/source/";
+            $zip_path = $temppath . "/zip/";
+            $zipfile = $zip_path . "/user_" . $userid . ".zip";
+            make_writable_directory($zip_path); //new dir
+            make_writable_directory($source_path); //new dir
 
-        // get moodle files
-        foreach ($files as $key => $file) {
-            $path = $source_path . $file->folder;
-            if (!file_exists($path))
-                mkdir($path,0777,true);
+            // get moodle files
+            foreach ($files as $key => $file) {
+                $path = $source_path . $file->folder;
+                make_writable_directory($path, false); //new dir
                 // Get and copy file
                 $fileInstance = $fs->get_file($file->contextid, $component, $filearea, $file->itemid, $file->filepath, $file->filename);
                 $path = $path . '/' . $file->subfolder;
-                if (!file_exists($path))
-                    mkdir($path,0777,true);
-                $f = $fileInstance->get_filename();
-                $cp = $fileInstance->copy_content_to($path . "/" . $file->itemid . "-" . $this->encodeFilenames($f));
+                make_writable_directory($path, false); //new dir
+                $filename = $fileInstance->get_filename();
+                $cp = $fileInstance->copy_content_to($path . "/" . $file->itemid . "-" . $this->encodeFilenames($filename));
                 $countfiles++;
-        }
-        // Move files to Zip archive and echo it to download
-        if ($countfiles > 0) {
-            ob_end_clean();
-            ob_start();
-
-            // make zip archiv of fetched files
-            $zip = new ZipArchive();
-            if ($zip->open($zipfile, ZIPARCHIVE::CREATE) !== TRUE) {
-                die ("Could not open archive");
             }
-
-            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($source_path));
-            foreach ($iterator as $key=>$value) {
-                if ($value->getFilename() != '.' & $value->getFilename() != '..') {
-                    $zip->addFile(realpath($key), (substr($key,strlen($source_path)))) or die ("ERROR: Could not add file: $key");
+            // Move files to Zip archive 
+            if ($countfiles > 0) {
+                // make zip archiv of fetched files
+                $zip = new ZipArchive();
+                if ($zip->open($zipfile, ZIPARCHIVE::CREATE) !== TRUE) {
+                    die ("Could not open archive");
                 }
-            }
-            $zip->close();
-
-            if (file_exists($zipfile)) {
-                // push octet steam
-                $basename = basename($zipfile);
-                header ("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-                header ("Content-Type: application/zip");
-                header ("Content-Length: " . filesize($zipfile));
-                header ("Content-Disposition: attachment; filename=$basename");
-                ob_clean();
-                flush();
-
-                $fp=fopen($zipfile,"rb");
-
-                while(!feof($fp)) {
-                    print(fread($fp,1024*8));
-                    flush();
-                    ob_flush();
-                    if( connection_aborted() ) {
-                        //do code for handling aborts
+                $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($source_path));
+                foreach ($iterator as $key=>$value) {
+                    if ($value->getFilename() != '.' & $value->getFilename() != '..') {
+                        $zip->addFile(realpath($key), (substr($key,strlen($source_path)))) or die ("ERROR: Could not add file: $key");
                     }
                 }
-                ob_end_clean();
-                ob_start();
-                $this->deleteDirectory($temppath);
-                ob_end_clean();
-                //exit;
+                $zip->close();
+                
+                // send file to download
+                if (is_file($zipfile)) {
+                    send_temp_file($zipfile, basename($zipfile));
+                }
+            }  else {
+                // there are no files to download
+                echo $this->thereareno;
             }
-        }  else {
-            // there are no files to download
-            echo "<script>alert('".get_string('thereareno', 'local_eduweb_databasefiledownload')."');</script>";
         }
     }
 
