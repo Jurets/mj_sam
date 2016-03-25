@@ -74,7 +74,7 @@ class assesment_download {
             $temppath = $CFG->tempdir . "/assesments_download/" . time() . "_" . $userid;
             $source_path = $temppath . "/source/";
             $zip_path = $temppath . "/zip/";
-            $zipfile = $zip_path . "/user_" . $userid . ".zip";
+            $zipfile = $zip_path . "/user_".$userid."_".$this->folder.".zip";
             make_writable_directory($zip_path); //new dir
             make_writable_directory($source_path); //new dir
 
