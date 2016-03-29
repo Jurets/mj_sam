@@ -169,69 +169,78 @@ class quiz_report {
     
     public function __construct($userid) {
          $this->userid = $userid;
-   }
+    }
 
     public function start()
     {
         global $CFG, $DB, $OUTPUT;
-        $courseid = 10;    ///// ЗАГЛУШКА!!!!!!!!
-        $mode = 'outline';
-        $user = $DB->get_record('user', array('id'=>$this->userid, 'deleted'=>0), '*', MUST_EXIST);
-        $course = $DB->get_record('course', array('id'=>$courseid), '*', MUST_EXIST);
-        
-        echo $OUTPUT->header();
-        ///////////        
         require_once($CFG->dirroot.'/report/outline/locallib.php');
-        //DebugBreak();        
-        $modinfo = get_fast_modinfo($course);
-        $sections = $modinfo->get_section_info_all();
-        $itemsprinted = false;
-        $outputAll = '';
-        foreach ($sections as $i => $section) {
-            $existQuiz = false; $output = '';
-            // Check the section has modules/resources, if not there is nothing to display.
-            if (!empty($modinfo->sections[$i])) {
-                $itemsprinted = true;
-                $output .= '<div class="section">';  // section
-                $output .= '<h3>'.get_section_name($course, $section).'</h3>';
-                $output .= '<div class="content">';  // content
-                $output .= "<table cellpadding=\"4\" cellspacing=\"0\">";
-                
-                foreach ($modinfo->sections[$i] as $cmid) {
-                    $mod = $modinfo->cms[$cmid];
-                    if ($mod->modname != 'quiz') {
-                        continue;
-                    } else {
-                        $existQuiz = true;
-                    }
-                    $instance = $DB->get_record("$mod->modname", array("id"=>$mod->instance));
-                    $libfile = "$CFG->dirroot/mod/$mod->modname/lib.php";
 
-                    if (file_exists($libfile)) {
-                        require_once($libfile);
-                        $user_outline = $mod->modname."_user_outline";
-                        if (function_exists($user_outline)) {
-                            $result = $user_outline($course, $user, $mod, $instance);
+        echo $OUTPUT->header();
+
+        $user = $DB->get_record('user', array('id'=>$this->userid, 'deleted'=>0), '*', MUST_EXIST);
+        echo '<h1>'.$user->lastname." ".$user->firstname.'</h1>';
+        
+        $courses = $DB->get_records('course', null, 'sortorder', '*');
+        //DebugBreak();
+        $outputAll = '';
+        foreach ($courses as $course) {
+            $outputCourse = '';
+            $modinfo = get_fast_modinfo($course);
+            $sections = $modinfo->get_section_info_all();
+            $itemsprinted = false;
+            
+            foreach ($sections as $i => $section) {
+                $existQuiz = false; $outputSection = '';
+                // Check the section has modules/resources, if not there is nothing to display.
+                if (!empty($modinfo->sections[$i])) {
+                    $itemsprinted = true; 
+                    
+                    foreach ($modinfo->sections[$i] as $cmid) {
+                        $outputMod = '';
+                        $mod = $modinfo->cms[$cmid];
+                        if ($mod->modname != 'quiz') {
+                            continue;
                         } else {
-                            $result = report_outline_user_outline($user->id, $cmid, $mod->modname, $instance->id);
+                            $existQuiz = true;
                         }
-                        ob_start();
-                        report_outline_print_row($mod, $instance, $result);
-                        $output .= ob_get_contents();
-                        ob_end_clean();
-                        break;
+                        $instance = $DB->get_record("$mod->modname", array("id"=>$mod->instance));
+                        $libfile = "$CFG->dirroot/mod/$mod->modname/lib.php";
+
+                        if (file_exists($libfile)) {
+                            require_once($libfile);
+                            $user_outline = $mod->modname."_user_outline";
+                            if (function_exists($user_outline)) {
+                                $result = $user_outline($course, $user, $mod, $instance);
+                            } else {
+                                $result = report_outline_user_outline($user->id, $cmid, $mod->modname, $instance->id);
+                            }
+                            ob_start();
+                            report_outline_print_row($mod, $instance, $result);
+                            $outputMod = ob_get_contents();
+                            ob_end_clean();
+                            break;
+                        }
+                    }
+                    if ($existQuiz) {
+                        $outputSection .= '<div class="section">'.
+                                   '<h3>'.get_section_name($course, $section).'</h3>'.
+                                   '<div class="content">'.
+                                   "<table cellpadding=\"4\" cellspacing=\"0\">".$outputMod.'</table></div></div>';
                     }
                 }
-                $output .= '</table>';
-                $output .= '</div>';  // content
-                $output .= '</div>';  // section
+                $outputCourse .= $outputSection;
             }
-            if ($existQuiz) {
-                echo $output;
+            if (!empty($outputCourse)) {
+                $outputAll .= '<div class="course">'.'<h2>'.$course->fullname.'</h2>'.
+                    '<div class="content contentafterlink" style="padding-left: 40px;">'.$outputCourse.'</div>'
+                    .'</div>';
             }
         }
         if (!$itemsprinted) {
             echo $OUTPUT->notification(get_string('nothingtodisplay'));
+        } else {
+            echo $outputAll;
         }
         echo $OUTPUT->footer();
     }
