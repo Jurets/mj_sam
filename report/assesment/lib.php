@@ -186,17 +186,16 @@ class quiz_report {
         $modinfo = get_fast_modinfo($course);
         $sections = $modinfo->get_section_info_all();
         $itemsprinted = false;
-        
+        $outputAll = '';
         foreach ($sections as $i => $section) {
-            $existQuiz = false;
+            $existQuiz = false; $output = '';
             // Check the section has modules/resources, if not there is nothing to display.
             if (!empty($modinfo->sections[$i])) {
                 $itemsprinted = true;
-                echo '<div class="section">';
-                echo '<h3>'.get_section_name($course, $section).'</h3>';
-
-                echo '<div class="content">';
-                echo "<table cellpadding=\"4\" cellspacing=\"0\">";
+                $output .= '<div class="section">';  // section
+                $output .= '<h3>'.get_section_name($course, $section).'</h3>';
+                $output .= '<div class="content">';  // content
+                $output .= "<table cellpadding=\"4\" cellspacing=\"0\">";
                 
                 foreach ($modinfo->sections[$i] as $cmid) {
                     $mod = $modinfo->cms[$cmid];
@@ -212,17 +211,23 @@ class quiz_report {
                         require_once($libfile);
                         $user_outline = $mod->modname."_user_outline";
                         if (function_exists($user_outline)) {
-                            $output = $user_outline($course, $user, $mod, $instance);
+                            $result = $user_outline($course, $user, $mod, $instance);
                         } else {
-                            $output = report_outline_user_outline($user->id, $cmid, $mod->modname, $instance->id);
+                            $result = report_outline_user_outline($user->id, $cmid, $mod->modname, $instance->id);
                         }
-                        report_outline_print_row($mod, $instance, $output);
+                        ob_start();
+                        report_outline_print_row($mod, $instance, $result);
+                        $output .= ob_get_contents();
+                        ob_end_clean();
                         break;
                     }
                 }
-                echo "</table>";
-                echo '</div>';  // content
-                echo '</div>';  // section
+                $output .= '</table>';
+                $output .= '</div>';  // content
+                $output .= '</div>';  // section
+            }
+            if ($existQuiz) {
+                echo $output;
             }
         }
         if (!$itemsprinted) {
