@@ -13,12 +13,14 @@
     require_once($CFG->libdir.'/adminlib.php');
     require_once($CFG->dirroot.'/user/filters/lib.php');
 
+    // get optional params for paging and filtering
     $sort = optional_param('sort', 'name', PARAM_ALPHANUM);
     $dir  = optional_param('dir', 'ASC', PARAM_ALPHA);
     $page = optional_param('page', 0, PARAM_INT);
     $perpage = optional_param('perpage', 30, PARAM_INT);        // how many per page
-    
+    // get optional params for downloading
     $assignments_userid = optional_param('assignments', 0, PARAM_INT);        // how many per page
+    $quizes_userid = optional_param('quizes', 0, PARAM_INT);        // how many per page
     
     admin_externalpage_setup('reportassesment');
 
@@ -30,6 +32,7 @@
     }
 
     $strassignments = get_string('assignments', 'report_assesment');
+    $strquizes = get_string('quizes', 'report_assesment');
     $strconfirm = get_string('confirm');
 
     $returnurl = new moodle_url('/report/assesment/index.php', array('sort' => $sort, 'dir' => $dir, 'perpage' => $perpage, 'page'=>$page));
@@ -41,6 +44,12 @@
         require_once($CFG->dirroot.'/report/assesment/lib.php');
         $export = new assesment_download($assignments_userid);
         $result = $export->start();
+    } else if ($quizes_userid) {
+        // create clas instance and run zip process
+        require_once($CFG->dirroot.'/report/assesment/lib.php');
+        $export = new quiz_report($quizes_userid);
+        $result = $export->start();
+        return;
     }
     // -- end of process
 
@@ -146,7 +155,7 @@
             $table->head[] = $city;
             $table->head[] = $country;
             $table->head[] = $lastaccess;
-            $table->head[] = get_string('download');
+            $table->head[] = get_string('download')." Zip";
             $table->colclasses[] = 'centeralign';
             $table->head[] = "";
             $table->colclasses[] = 'centeralign';
@@ -161,8 +170,13 @@
                 } else {
                     $buttons[] = html_writer::link(
                         new moodle_url($returnurl, array('assignments'=>$user->id)), 
-                        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/download'), 'alt'=>$strassignments, 'class'=>'iconsmall')), 
+                        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('icon', 'assign'), 'alt'=>$strassignments)), 
                         array('title'=>$strassignments)
+                    );
+                    $buttons[] = html_writer::link(
+                        new moodle_url($returnurl, array('quizes'=>$user->id)), 
+                        html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('icon', 'quiz'), 'alt'=>$strquizes)), 
+                        array('title'=>$strquizes)
                     );
                 }
 
