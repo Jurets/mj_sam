@@ -68,7 +68,6 @@ class assesment_download {
         if (empty($files)) {
             // there are no files to download
             $this->result['message'] = $this->thereareno;
-            //echo $this->thereareno;
         } else {
             // prepare temp directories for zip creating
             $temppath = $CFG->tempdir . "/assesments_download/" . time() . "_" . $userid;
@@ -88,9 +87,7 @@ class assesment_download {
                 $path = $path . '/' . $file->subfolder;
                 make_writable_directory($path, false); //new dir
                 $filename = $fileInstance->get_filename();
-                $fullpath = $path . "/" . $file->itemid . "-" . $filename; //$this->encodeFilenames($filename);
-                //$fullpath = mb_convert_encoding($fullpath, "UTF-8");
-                //if ($cp = $fileInstance->copy_content_to($fullpath))
+                $fullpath = $path . "/" . $file->itemid . "-" . $filename;
                 $content = $fileInstance->get_content();
                 if (file_put_contents($fullpath, $content))
                     $countfiles++;
@@ -112,19 +109,51 @@ class assesment_download {
                 
                 // send file to download
                 if (is_file($zipfile)) {
-                    send_temp_file($zipfile, basename($zipfile));
+                    $this->send_zip($zipfile, basename($zipfile));
                 }
                 
                 $this->result['success'] = true;
             }  else {
                 // there are no files to download
                 $this->result['message'] = get_string('thereareno', 'report_assesment');
-                //echo $this->thereareno;
             }
         }
         return $this->result;
     }
 
+    /**
+     * Handles the sending zip file to user, download is forced.
+     * This method have to solve troble "PHP Download Script Creates Unreadable ZIP File on Mac"
+     *  (see: http://stackoverflow.com/questions/12411481/php-download-script-creates-unreadable-zip-file-on-mac)
+     *
+     * @param string $path path to file, preferably from moodledata/temp/something; or content of file itself
+     */
+    function send_zip($path, $filename) {
+        global $CFG;
+        // close session - not needed anymore
+        \core\session\manager::write_close();
+        // if user is using IE, urlencode the filename so that multibyte file name will show up correctly on popup
+        if (core_useragent::is_ie()) {
+            $filename = urlencode($filename);
+        }
+        // Build HTTP header
+        header("Expires: 0");
+        header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+        header("Cache-Control: public");
+        header("Content-Description: File Transfer");
+        //We can likely use the 'application/zip' type, but the octet-stream 'catch all' works just fine.  
+        header("Content-type: application/octet-stream");
+        header("Content-Disposition: attachment; filename=\"$filename\"");
+        header("Content-Transfer-Encoding: binary");
+        header("Content-Length: ".filesize($path));
+        // clear buffer
+        while (ob_get_level()) { ob_end_clean(); }
+        // read file content
+        @readfile($path); 
+        //no more chars to output
+        die; 
+    }
+    
     /*
     *  some general function for this class
     */
