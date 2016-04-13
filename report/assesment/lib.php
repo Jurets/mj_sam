@@ -236,7 +236,8 @@ class quiz_report {
         
         //$user = $DB->get_record('user', array('id'=>$this->userid, 'deleted'=>0), '*', MUST_EXIST);
         //echo '<h1>'.$user->lastname." ".$user->firstname.'</h1>';
-        $outputAll = '';
+        //$outputAll = '';
+        $outputAll = '<h1>'.$this->user->lastname." ".$this->user->firstname.'</h1>';
 
         //$courses = enrol_get_users_courses($this->user->id, false, '*');
         foreach ($this->courses as $course) {
