@@ -194,27 +194,52 @@ class assesment_download {
 */
 class quiz_report {
 
-    private $userid;
+    private $user;
+    private $courses;
     
+    // <img> is forbidden... sorry! :)
+    private $_tags = [/*'a', */'b', 'blockquote', 'br', 'dd', 'del', 'div', 'dl', 'dt', 'em', 'font', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'li', 'ol', 'p', 'pre', 'small', 'span', 'strong', 'sub', 'sup', 'tcpdf', /*'table', 'tbody', 'td', 'th', 'thead', 'tr', 'tt',*/ 'u', 'ul'];
+    
+    /**
+    * Constructor
+    * 
+    * @param mixed $userid
+    * @return quiz_report
+    */
     public function __construct($userid) {
+         global $CFG, $DB;
+         require_once($CFG->dirroot.'/report/outline/locallib.php');
+         require_once($CFG->libdir . '/pdflib.php');
+         
          $this->userid = $userid;
+         $this->user = $DB->get_record('user', array('id'=>$userid, 'deleted'=>0), '*', MUST_EXIST);
+         $this->courses = enrol_get_users_courses($this->user->id, false, '*');
     }
 
-    public function start()
-    {
-        global $CFG, $DB, $OUTPUT;
-        require_once($CFG->dirroot.'/report/outline/locallib.php');
-
-        echo $OUTPUT->header();
-
-        $user = $DB->get_record('user', array('id'=>$this->userid, 'deleted'=>0), '*', MUST_EXIST);
-        echo '<h1>'.$user->lastname." ".$user->firstname.'</h1>';
-        //DebugBreak();
-        $courses1 = $DB->get_records('course', null, 'sortorder', '*');
-        $courses = enrol_get_users_courses($this->userid, false, '*');
+    // magic function for getting valid tags list
+    public function __get($name) {
+        if ($name == 'allowable_tags') {
+            $result = '';
+            foreach ($this->_tags as $tag) {
+                $result .= '<'.$tag.'>';
+            }
+            return $result;
+        }
+    }
+    
+    
+    /**
+    * get main content (for)
+    */
+    private function mainContent() {
+        global $CFG, $DB;
         
+        //$user = $DB->get_record('user', array('id'=>$this->userid, 'deleted'=>0), '*', MUST_EXIST);
+        //echo '<h1>'.$user->lastname." ".$user->firstname.'</h1>';
         $outputAll = '';
-        foreach ($courses as $course) {
+
+        //$courses = enrol_get_users_courses($this->user->id, false, '*');
+        foreach ($this->courses as $course) {
             $outputCourse = '';
             $modinfo = get_fast_modinfo($course);
             $sections = $modinfo->get_section_info_all();
@@ -241,9 +266,9 @@ class quiz_report {
                             require_once($libfile);
                             $user_outline = $mod->modname."_user_outline";
                             if (function_exists($user_outline)) {
-                                $result = $user_outline($course, $user, $mod, $instance);
+                                $result = $user_outline($course, $this->user, $mod, $instance);
                             } else {
-                                $result = report_outline_user_outline($user->id, $cmid, $mod->modname, $instance->id);
+                                $result = report_outline_user_outline($this->user->id, $cmid, $mod->modname, $instance->id);
                             }
                             ob_start();
                             report_outline_print_row($mod, $instance, $result);
@@ -267,12 +292,40 @@ class quiz_report {
                     .'</div>';
             }
         }
-        if (!$itemsprinted) {
+        return $outputAll;
+    }
+    
+    /**
+    * Echo output to web page
+    */
+    public function toOutput() {
+        global $OUTPUT;
+
+        echo $OUTPUT->header();
+
+        $outputAll = $this->mainContent();
+        
+        /*if (!$itemsprinted) {
             echo $OUTPUT->notification(get_string('nothingtodisplay'));
-        } else {
+        } else*/ {
             echo $outputAll;
         }
         echo $OUTPUT->footer();
     }
 
+    /**
+    *  Make and output (download ?) PDF report for Quizzes
+    */
+    public function toPdf() {//DebugBreak();
+        $doc = new pdf;
+        $doc->setPrintHeader(false);
+        $doc->setPrintFooter(false);
+        $doc->AddPage();
+        //$doc->Write(5, 'Hello World!');
+        $html = $this->mainContent();
+        $html = strip_tags($html, $this->allowable_tags);
+        $doc->writeHTML($html, false, false, true, $cell=false, '');
+        //$doc->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=false, $align='');
+        $doc->Output();        
+    }
 }

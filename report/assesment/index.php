@@ -48,7 +48,8 @@
         // create clas instance and run zip process
         require_once($CFG->dirroot.'/report/assesment/lib.php');
         $export = new quiz_report($quizes_userid);
-        $result = $export->start();
+        //$result = $export->toOutput();
+        $result = $export->toPdf();
         return;
     }
     // -- end of process
@@ -176,7 +177,7 @@
                     $buttons[] = html_writer::link(
                         new moodle_url($returnurl, array('quizes'=>$user->id)), 
                         html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('icon', 'quiz'), 'alt'=>$strquizes)), 
-                        array('title'=>$strquizes)
+                        array('title'=>$strquizes, 'target'=>'_blank')
                     );
                 }
 
