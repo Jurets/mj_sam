@@ -317,16 +317,15 @@ class quiz_report {
     /**
     *  Make and output (download ?) PDF report for Quizzes
     */
-    public function toPdf() {//DebugBreak();
+    public function toPdf() {
         $doc = new pdf;
         $doc->setPrintHeader(false);
         $doc->setPrintFooter(false);
         $doc->AddPage();
-        //$doc->Write(5, 'Hello World!');
         $html = $this->mainContent();
         $html = strip_tags($html, $this->allowable_tags);
-        $doc->writeHTML($html, false, false, true, $cell=false, '');
-        //$doc->writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=false, $align='');
+        $doc->writeHTML($html, false, false, true, false, '');
+        ob_clean();
         $doc->Output();        
     }
 }
