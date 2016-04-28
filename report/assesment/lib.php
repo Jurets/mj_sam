@@ -1,16 +1,40 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
-*  This lib is intended for work with 
-*  Some hints for working with File API
-*  - Use file_storage ($fs) for file operations
-*  - Use $fs->get_file_instance($filerecord) to get file instance from DB
-*/
+ * Admin Report plugin for Downloading of User Assignments
+ *
+ * The report plugin able to download all assignments for selected student into one zip, 
+ * including resubmissions, download all quiz results for selected student into one pdf
+ * 
+ * @package    report
+ * @subpackage assesment
+ * @copyright  2016 Jurets
+ * @author     Jurets <jurets75@gmail.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 defined('MOODLE_INTERNAL') || die;
 
 /**
 *  This class allow to collect all Files from Submissions made by User 
 *  for all mod_assign instances and put they to Zip archive for downloading
+* 
+*  @package    report_assesment
+*  @copyright  2016 Jurets <jurets75@gmail.com>
 */
 class assesment_download {
 
@@ -20,6 +44,11 @@ class assesment_download {
     private $thereareno;
     private $result = array('success'=>false, 'message'=>'');
     
+    /**
+    * Constructor
+    * 
+    * @param mixed $userid Valid ID of user
+    */
     public function __construct($userid) {
         global $DB;
         // get user info, define folder structure
@@ -190,7 +219,10 @@ class assesment_download {
 
 /**
 *  This class allow to collect all Quizes made by User 
-*  for all mod_quiz instances of all corses
+*  for all mod_quiz instances of all courses
+* 
+*  @package    report_assesment
+*  @copyright  2016 Jurets <jurets75@gmail.com>
 */
 class quiz_report {
 
@@ -203,8 +235,7 @@ class quiz_report {
     /**
     * Constructor
     * 
-    * @param mixed $userid
-    * @return quiz_report
+    * @param mixed $userid Valid ID of user
     */
     public function __construct($userid) {
          global $CFG, $DB;

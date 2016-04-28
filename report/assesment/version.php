@@ -17,6 +17,9 @@
 /**
  * Admin Report plugin for Downloading of User Assignments
  *
+ * The report plugin able to download all assignments for selected student into one zip, 
+ * including resubmissions, download all quiz results for selected student into one pdf
+ * 
  * @package    report
  * @subpackage assesment
  * @copyright  2016 Jurets
