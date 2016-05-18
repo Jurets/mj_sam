@@ -24,3 +24,9 @@ To run report:
 * Click menu item "Site administration->Reports->Student assessments"
 * Select student and click on one from two buttons in the row.
 Enjoy!
+
+
+# Log
+
+v2.7-r2
+- Fixed 500 error during zip downloading (may be on some servers)
