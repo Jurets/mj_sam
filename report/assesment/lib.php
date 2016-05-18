@@ -101,7 +101,7 @@ class assesment_download {
             // prepare temp directories for zip creating
             $temppath = $CFG->tempdir . "/assesments_download/" . time() . "_" . $userid;
             $source_path = $temppath . "/source/";
-            $zip_path = $temppath . "/zip/";
+            $zip_path = $temppath . "/zip";
             $zipfile = $zip_path . "/user_".$userid."_".$this->folder.".zip";
             make_writable_directory($zip_path); //new dir
             make_writable_directory($source_path); //new dir
@@ -159,12 +159,15 @@ class assesment_download {
      */
     function send_zip($path, $filename) {
         global $CFG;
+        
+        // !!! comment because 500 error on http://epc-elearning.mywisenet.com.au
         // close session - not needed anymore
-        \core\session\manager::write_close();
+        //// \core\session\manager::write_close(); 
         // if user is using IE, urlencode the filename so that multibyte file name will show up correctly on popup
-        if (core_useragent::is_ie()) {
-            $filename = urlencode($filename);
-        }
+        //if (core_useragent::is_ie()) {
+        //    $filename = urlencode($filename);
+        //}
+        
         // Build HTTP header
         header("Expires: 0");
         header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
