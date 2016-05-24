@@ -37,7 +37,8 @@ defined('MOODLE_INTERNAL') || die;
 *  @copyright  2016 Jurets <jurets75@gmail.com>
 */
 class assesment_download {
-
+    use commonOperations;
+    
     private $userid;
     private $folder;
     private $fs;
@@ -57,7 +58,7 @@ class assesment_download {
         $uname = $this->encodeFilenames($userinfo->lastname." ".$userinfo->firstname);
         $this->thereareno = get_string('thereareno', 'report_assesment') . ": " . $uname;
         //$this->thereareno = "<script>alert('".get_string('thereareno', 'report_assesment')."');</script>";
-        $this->folder = $this->encodeFilenames($uname);
+        $this->folder = $uname;
         $this->fs = get_file_storage();
     }
 
@@ -185,7 +186,9 @@ class assesment_download {
         //no more chars to output
         die; 
     }
-    
+}    
+
+trait commonOperations {
     /*
     *  some general function for this class
     */
@@ -228,9 +231,12 @@ class assesment_download {
 *  @copyright  2016 Jurets <jurets75@gmail.com>
 */
 class quiz_report {
-
+    use commonOperations;
+    
     private $user;
     private $courses;
+    
+    private $filename;
     
     // <img> is forbidden... sorry! :)
     private $_tags = [/*'a', */'b', 'blockquote', 'br', 'dd', 'del', 'div', 'dl', 'dt', 'em', 'font', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'li', 'ol', 'p', 'pre', 'small', 'span', 'strong', 'sub', 'sup', 'tcpdf', /*'table', 'tbody', 'td', 'th', 'thead', 'tr', 'tt',*/ 'u', 'ul'];
@@ -337,14 +343,8 @@ class quiz_report {
         global $OUTPUT;
 
         echo $OUTPUT->header();
-
         $outputAll = $this->mainContent();
-        
-        /*if (!$itemsprinted) {
-            echo $OUTPUT->notification(get_string('nothingtodisplay'));
-        } else*/ {
-            echo $outputAll;
-        }
+        echo $outputAll;
         echo $OUTPUT->footer();
     }
 
@@ -360,6 +360,8 @@ class quiz_report {
         $html = strip_tags($html, $this->allowable_tags);
         $doc->writeHTML($html, false, false, true, false, '');
         ob_clean();
-        $doc->Output();        
+        
+        $filename = "user_" . $this->userid . "_" . $this->encodeFilenames($this->user->lastname." ".$this->user->firstname) . ".pdf";
+        $doc->Output($filename);
     }
 }
