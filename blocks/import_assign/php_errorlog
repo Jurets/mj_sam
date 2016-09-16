@@ -1,1 +1,17 @@
 [11-Sep-2016 02:08:15 America/Los_Angeles] Database transaction aborted automatically in /home/hcwmlear/public_html/blocks/import_assign/index.php
+[14-Sep-2016 07:12:06 America/Los_Angeles] Default exception handler: A required parameter (id) was missing Debug: 
+Error code: missingparam
+* line 488 of /lib/setuplib.php: moodle_exception thrown
+* line 548 of /lib/moodlelib.php: call to print_error()
+* line 12 of /blocks/import_assign/index.php: call to required_param()
+
+[14-Sep-2016 07:12:26 America/Los_Angeles] Default exception handler: Can not find data record in database table course. Debug: SELECT * FROM {course} WHERE id = ?
+[array (
+  0 => 641,
+)]
+Error code: invalidrecord
+* line 1455 of /lib/dml/moodle_database.php: dml_missing_record_exception thrown
+* line 1431 of /lib/dml/moodle_database.php: call to moodle_database->get_record_select()
+* line 13 of /blocks/import_assign/index.php: call to moodle_database->get_record()
+
+[14-Sep-2016 20:19:44 America/Los_Angeles] PHP Notice:  Undefined property: stdClass::$assignsubmission_file_maxsizebytes in /home/hcwmlear/public_html/mod/assign/submission/file/locallib.php on line 118
