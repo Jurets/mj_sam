@@ -352,6 +352,12 @@ if (!empty($result)) {
             $fromform1->name = '';   
             $fromform1->introeditor = array();       
             $fromform1->grade = trim($line[3]); 
+            $fromform1->grade = -2;
+            /*if ($fromform1->grade > 0) {
+                $fromform1->grade = -$fromform1->grade;
+                //$fromform1->modgrade_type = GRADE_TYPE_SCALE; // default
+                //$fromform1->modgrade_scale = trim($line[15]);
+            }*/
             $fromform1->visible = '1';   
             $fromform1->cmidnumber = '';   
             $fromform1->groupmode = $course->groupmode;
@@ -370,21 +376,22 @@ if (!empty($result)) {
             $fromform1->attemptreopenmethod = trim($line[9]);
             $fromform1->requiresubmissionstatement = 0;
             $fromform1->sendnotifications = 0;
+            $fromform1->sendstudentnotifications = 0;  //
             $fromform1->sendlatenotifications = 0;
             if(trim($line[5])!=0){
                 $fromform1->duedate = strtotime(trim($line[5]));
             }else{
-                $fromform1->duedate = time()+ (60 * 60 * 24 * 365);
+                $fromform1->duedate = 0; // disabled & 'today'
             }
             if(trim($line[6])!=0){
                 $fromform1->cutoffdate = strtotime(trim($line[6]));
             }else{
-                $fromform1->cutoffdate = time()+ (60 * 60 * 24 * 365);
+                $fromform1->cutoffdate = 0; // disabled & 'today'
             }
             if(trim($line[4])!=0){
                 $fromform1->allowsubmissionsfromdate = strtotime(trim($line[4]));
             }else{
-                $fromform1->allowsubmissionsfromdate = time()+ (60 * 60 * 24 * 365);
+                $fromform1->allowsubmissionsfromdate = 0; // disabled & 'today'
             }
             $fromform1->teamsubmission = 0;
             $fromform1->requireallteammemberssubmit = 0;
@@ -392,11 +399,17 @@ if (!empty($result)) {
             $fromform1->markingworkflow  = 0;
             $fromform1->markingallocation  = 0;
             $fromform1->assignsubmission_onlinetext_enabled = trim($line[10]);
+            $fromform1->assignfeedback_comments_enabled = 1;
             $fromform1->assignsubmission_file_enabled = trim($line[11]);
             $fromform1->assignsubmission_comments_enabled = trim($line[12]);
-            if(trim($line[13])>0)$fromform1->assignsubmission_onlinetext_wordlimit = trim($line[13]);
+            if (trim($line[13])>0) {
+                $fromform1->assignsubmission_onlinetext_wordlimit = trim($line[13]);
+            }
             $fromform1->assignsubmission_file_maxfiles = trim($line[14]);
-            $fromform1->modgrade_scale = trim($line[15]);
+            $fromform1->assignsubmission_file_maxsizebytes = 10485760; // 10Mb
+            
+            $fromform1->attemptreopenmethod = 'untilpass';
+            
             $fromform1->visible = trim($line[16]);
             $fromform1->submitbutton = get_string('savechangesanddisplay'); 
 
@@ -486,7 +499,7 @@ exit;
  *
  * @return string The full path to the temp directory.
  */
-function my_mktempdir($dir, $prefix='') {
+/*function my_mktempdir($dir, $prefix='') {
     global $CFG;
 
     if (substr($dir, -1) != '/')  $dir .= '/'; 
@@ -495,7 +508,7 @@ function my_mktempdir($dir, $prefix='') {
     } while (file_exists($path));
     check_dir_exists($path);
     return $path;
-}
+}*/
 
 /**
  * Recursively process a directory, picking regular files and feeding
@@ -510,7 +523,7 @@ function my_mktempdir($dir, $prefix='') {
  *
  * @return nothing
  */
-function process_directory ($dir, &$results) {
+/*function process_directory ($dir, &$results) {
     global $OUTPUT;
     if(!($handle = opendir($dir))) {
         echo $OUTPUT->notification(get_string('cannotprocessdir', 'assign'));
@@ -536,7 +549,7 @@ function process_directory ($dir, &$results) {
         }
     }
     closedir($handle);
-}
+}*/
 
 /**
  * Given the full path of a file, try to find the user the file
@@ -552,7 +565,7 @@ function process_directory ($dir, &$results) {
  * @return integer either PIX_FILE_UPDATED, PIX_FILE_ERROR or
  *                  PIX_FILE_SKIPPED
  */
-function process_file ($file) {
+/*function process_file ($file) {
     global $DB, $OUTPUT, $USER, $fromform, $cm, $context; 
          
     // Add additional checks on the filenames, as they are user
@@ -614,7 +627,7 @@ function process_file ($file) {
         }
     }
     
-}
+}*/
 
 /**
  * Try to save the given file (specified by its full path) as the
@@ -626,7 +639,7 @@ function process_file ($file) {
  *
  * @return mixed new unique revision number or false if not saved
  */
-function import_save_image($id, $originalfile) {
+/*function import_save_image($id, $originalfile) {
     $context = context_user::instance($id);
     return process_new_icon($context, 'user', 'icon', 0, $originalfile);
 }
@@ -635,3 +648,4 @@ function import_save_audio($id, $originalfile) {
     $context = context_user::instance($id);
     return process_new_icon($context, 'user', 'icon', 0, $originalfile);
 }
+*/
