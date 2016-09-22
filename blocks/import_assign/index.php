@@ -88,7 +88,6 @@ if (!empty($result)) {
     $cm = null;
     $data = new stdClass();
     while ($line = $cir->next()) {
-        //echo '----';print_r($line);
         $table .='<tr>';
         foreach($line as $r){
             $table .='<td>'.$r.'</td>';            
@@ -175,7 +174,6 @@ if (!empty($result)) {
             ////-------
             $fromform1->name = trim($line[0]);
             $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>$draftid_editor); // TODO: add better default 
-            //echo '<pre> DATA ';print_r($data);echo'<pre> from form '; print_r($fromform1);//die;
             $mform->set_data($data); //edit $fromform1;            
             $fromform1 = add_moduleinfo($fromform1, $course, $mform); 
             $DB->insert_record("label", $data);            
@@ -311,30 +309,6 @@ if (!empty($result)) {
             $fromform1->visible = trim($line[16]);
             $fromform1->submitbutton = get_string('savechangesanddisplay'); 
 
-            //echo "<pre>course ";/*print_r($COURSE);echo "get ";print_r($_GET);echo ' post ';print_r($_POST);echo ' params ';*/print_r($fromform1);echo "</pre>";die();
-            //$returnid = $DB->insert_record("assign", $fromform1); 
-             /** IMPORTANT copied from course/modedit.php >>>>>*/
-            /*if (plugin_supports('mod', $data->modulename, FEATURE_ADVANCED_GRADING, false)
-                    and has_capability('moodle/grade:managegradingforms', $context)) {
-                require_once($CFG->dirroot.'/grade/grading/lib.php');
-
-                $data->_advancedgradingdata['methods'] = grading_manager::available_methods();
-                $areas = grading_manager::available_areas('mod_'.$module->name);
-
-                foreach ($areas as $areaname => $areatitle) {
-                    $data->_advancedgradingdata['areas'][$areaname] = array(
-                        'title'  => $areatitle,
-                        'method' => '',
-                    );
-                    $formfield = 'advancedgradingmethod_'.$areaname;
-                    $data->{$formfield} = '';
-                }
-            }
-
-            if (!empty($type)) { //TODO: hopefully will be removed in 2.0
-                $data->type = $type;
-            }*/
-
             $modmoodleform = "$CFG->dirroot/mod/$module->name/mod_form.php";
 
             if (file_exists($modmoodleform)) {
@@ -353,15 +327,12 @@ if (!empty($result)) {
             if( !$dupassign ){
                 $fromform1->name = trim($line[0]);
                 $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>$draftid_editor); // TODO: add better default 
-                 //echo '<pre> DATA ';print_r($data);echo'<pre> from form '; print_r($fromform1);//die;
                 $mform->set_data($data); //edit $fromform1;            
                 $fromform1 = add_moduleinfo($fromform1, $course, $mform); 
                 $table .='<td >';
                 $table .= trim($line[0]).' '.  get_string('created','block_import_assign');
                 $table .='</td>';
-                //echo "<pre>all data ";print_r($mform);echo "</pre>";die();
-            }else{
-            //
+            } else {
                 //insert categories        
                 $table .='<td>'.get_string('duplicate', 'block_import_assign') ;
                 $table .='</td>';  
