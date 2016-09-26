@@ -76,7 +76,8 @@ if (!empty($result)) {
     
     $filecolumns = assign_validate_upload_columns($cir, $std_fields, $prf_fields, $url);
     /*insert new assigns for course */
-    require_once($CFG->dirroot . '/course/modlib.php');
+    ///require_once($CFG->dirroot . '/course/modlib.php');
+    require_once('locallib.php');
     
     $module_assign = $DB->get_record('modules', array('name'=>'assign'), '*', MUST_EXIST);
     $module_label = $DB->get_record('modules', array('name'=>'label'), '*', MUST_EXIST);
@@ -90,13 +91,14 @@ if (!empty($result)) {
         print_error('noformdesc');
     }
 
+    ////////////////////////////////////
+    $transaction = $DB->start_delegated_transaction();
+    
     // Process
     $cir->init();
     while ($line = $cir->next()) {
         $table .='<tr>';
-        foreach($line as $r){
-            $table .='<td>'.$r.'</td>';            
-        }
+        foreach($line as $r) { $table .='<td>'.$r.'</td>'; }
         // common properties
         $section=trim($line[2]);
         if (strtolower(trim($line[0])) == 'label' ) {
@@ -106,8 +108,6 @@ if (!empty($result)) {
             $add ='assign';
             $module = $module_assign;
         }
-        
-        /** <<<< IMPORTANT copied from course/modedit.php*/
         $data = new stdClass();
         $data->course = $course->id;
              
@@ -139,7 +139,7 @@ if (!empty($result)) {
             $data->name = $name;
 
             $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>0); // TODO: add better default 
-            $fromform1 = add_moduleinfo($fromform1, $course); 
+            $fromform1 = import_module($fromform1, $course); 
             
             $table .='<td>'.trim($line[0]).' '.  get_string('created','block_import_assign').'</td>'.'</tr>';
         } else { 
@@ -179,7 +179,7 @@ if (!empty($result)) {
                 $fromform1->assignsubmission_onlinetext_wordlimit = trim($line[13]);
             }
             $fromform1->assignsubmission_file_maxfiles = trim($line[14]);
-            $fromform1->assignsubmission_file_maxsizebytes = 10485760; // 10Mb
+            //$fromform1->assignsubmission_file_maxsizebytes = 10485760; // 10Mb
             
             $fromform1->attemptreopenmethod = 'untilpass';
 
@@ -190,12 +190,10 @@ if (!empty($result)) {
             $fromform1->grade = trim($line[3]); 
             $fromform1->grade = -2;
 
-             /** <<<<  IMPORTANT copied from course/modedit.php*/
-            //ADD new assign
             $dupassign = $DB->get_record("assign", array('name'=>trim($line[0]),'grade'=>trim($line[3]),'course'=>$course->id));
             if( !$dupassign ){
                 $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>0); // TODO: add better default 
-                $fromform1 = add_moduleinfo($fromform1, $course);  //////////
+                $fromform1 = import_module($fromform1, $course);  //////////
                 $table .='<td >';
                 $table .= trim($line[0]).' '.  get_string('created','block_import_assign');
                 $table .='</td>';
@@ -206,6 +204,10 @@ if (!empty($result)) {
         }
         continue;
     }
+    
+    //////////////
+    $transaction->allow_commit();
+    
     $table .='</tr></table>';
     echo $table;
     
