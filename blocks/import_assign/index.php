@@ -60,88 +60,59 @@ if ( !$data = $form->get_data() ) {
 // to free up memory.
 @set_time_limit(0);
 raise_memory_limit(MEMORY_EXTRA);
+
 //Get data from file
 $result = $form->get_file_content('file');
 if (!empty($result)) {
     echo $OUTPUT->box_start(' generalbox');
-    //else echo '<pre>'.$id;print_r($result);echo '</pre>';
     // load csv
     $file = csv_import_reader::get_new_iid('file');
     $cir = new csv_import_reader($file, 'file'); 
     $readcount = $cir->load_csv_content($result, 'ISO-8859-2', 'semicolon'); 
-    if ($readcount === false) print_error('csvloaderror', '', $url);
-    else if ($readcount == 0) print_error('csvemptyfile', 'error', $url);
-    //$columns = $cir->get_columns();
+    if ($readcount === false)
+        print_error('csvloaderror', '', $url);
+    else if ($readcount == 0)
+        print_error('csvemptyfile', 'error', $url);
+    
     $filecolumns = assign_validate_upload_columns($cir, $std_fields, $prf_fields, $url);
-    // Process
-    $cir->init();
-    $entry = new stdClass();
-    //array to create assigns in the course    
-    $assign = array();
-    $i=0;
     /*insert new assigns for course */
-    require_once($CFG->libdir.'/filelib.php');
-    require_once($CFG->libdir.'/gradelib.php');
-    require_once($CFG->libdir.'/completionlib.php');
-    require_once($CFG->libdir.'/plagiarismlib.php');
     require_once($CFG->dirroot . '/course/modlib.php');
     
-    require_once($CFG->dirroot.'/grade/grading/lib.php');
+    $module_assign = $DB->get_record('modules', array('name'=>'assign'), '*', MUST_EXIST);
+    $module_label = $DB->get_record('modules', array('name'=>'label'), '*', MUST_EXIST);
     
-    $grading_methods = grading_manager::available_methods(); /////////
-    $assign_grading_areas = grading_manager::available_areas('mod_assign');
-    
-    $cm = null;
-    
-    $modules = $cws = [];
-//DebugBreak();    
+    if (file_exists("$CFG->dirroot/mod/assign/mod_form.php") && file_exists("$CFG->dirroot/mod/label/mod_form.php")) {
+        require_once("$CFG->dirroot/mod/assign/mod_form.php");
+        require_once("$CFG->dirroot/mod/label/mod_form.php");
+        include_modulelib('assign');
+        include_modulelib('label');
+    } else {
+        print_error('noformdesc');
+    }
+
+    // Process
+    $cir->init();
     while ($line = $cir->next()) {
         $table .='<tr>';
         foreach($line as $r){
             $table .='<td>'.$r.'</td>';            
         }
         // common properties
-        $sectionreturn=0;
         $section=trim($line[2]);
-        $return=0;
-        $update=0;
         if (strtolower(trim($line[0])) == 'label' ) {
             $add ='label';
+            $module = $module_label;
         } else {
             $add ='assign';
+            $module = $module_assign;
         }
-        // get module info
-        if (isset($modules[$add][$section])) {
-            $module = $modules[$add][$section];
-            $cw = $cws[$add][$section];
-        } else {
-            list($module, $context, $cw) = can_add_moduleinfo($course, $add, $section);   ////////
-            $modules[$add][$section] = $module;
-            $cws[$add][$section] = $cw;
-        }
-        $cm = null;
-
+        
         /** <<<< IMPORTANT copied from course/modedit.php*/
-        /* NEW FORM FROM*/
         $data = new stdClass();
-        //$data->section      = $section;  // The section number itself - relative!!! (section column in course_sections)
-        //$data->visible      = $cw->visible;
-        $data->course       = $course->id;
-        //$data->module       = $module->id;
-        //$data->modulename   = $module->name;
-        //$data->groupmode    = $course->groupmode;
-        //$data->groupingid   = $course->defaultgroupingid;
-        //$data->id           = '';
-        //$data->instance     = '';
-        //$data->coursemodule = '';
-        //$data->add          = $add;
-        //$data->return       = 0; //must be false if this is an add, go back to course view on cancel
-        //$data->sr           = $sectionreturn;
+        $data->course = $course->id;
              
         $fromform1 = new stdClass();
-        //$fromform1->name = '';   
         $fromform1->name = trim($line[0]);
-        $fromform1->introeditor = array();       
         $fromform1->cmidnumber = '';   
         $fromform1->course = $course->id;  
         $fromform1->coursemodule = '0';   
@@ -151,27 +122,13 @@ if (!empty($result)) {
         $fromform1->add = $add;
         $fromform1->sr = '0';
         $fromform1->visible = trim($line[16]);
-        $fromform1->submitbutton = get_string('savechangesanddisplay'); 
+        $fromform1->submitbutton = 'savechangesanddisplay'; 
         
-        $modmoodleform = "$CFG->dirroot/mod/$module->name/mod_form.php";
-
-        if (file_exists($modmoodleform)) {
-            require_once($modmoodleform);
-        } else {
-            print_error('noformdesc');
-        }
-
-        include_modulelib($module->name);
-        $mformclassname = 'mod_'.$module->name.'_mod_form';
-           
-        $sectionname = get_section_name($course, $cw);   ////////////
-        $fullmodulename = get_string('modulename', $module->name);
-
         if (strtolower(trim($line[0])) == 'label' ) {
             // -------------------------------------- Label ---------------------------------------------------
-            $data->intro            = trim($line[1]);
-            $data->introformat      = 1;
-            $data->timemodified     = time();
+            $data->intro = trim($line[1]);
+            $data->introformat = 1;
+            $data->timemodified = time();
             $name = strip_tags(format_string($data->intro,true));
             if (core_text::strlen($name) > 50) {
                 $name = core_text::substr($name, 0, 50)."...";
@@ -180,51 +137,13 @@ if (!empty($result)) {
                 $name = get_string('modulename','label');
             }
             $data->name = $name;
-            
-            ////---------------------------------------------------------------------------
-            /*if (plugin_supports('mod', $data->modulename, FEATURE_MOD_INTRO, true)) {
-                $draftid_editor = file_get_submitted_draft_itemid('introeditor');
-                //file_prepare_draft_area($draftid_editor, null, null, null, null, array('subdirs'=>true));
-                $data->introeditor = array('text'=>'', 'format'=>FORMAT_HTML, 'itemid'=>$draftid_editor); // TODO: add better default
-            }*/
-            //$fromform1->visible = '1';   
 
-            //$mform = new $mformclassname($data, $cw->section, $cm, $course);
+            $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>0); // TODO: add better default 
+            $fromform1 = add_moduleinfo($fromform1, $course); 
             
-            ////-------
-            $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>0 /*$draftid_editor*/); // TODO: add better default 
-            //$mform->set_data($data); //edit $fromform1;            
-            $fromform1 = add_moduleinfo($fromform1, $course/*, $mform*/); 
-            $DB->insert_record("label", $data);            
-            $table .='<td >';
-            $table .= trim($line[0]).' '.  get_string('created','block_import_assign');
-            $table .='</td>';
-
-            $table .='</tr>';
+            $table .='<td>'.trim($line[0]).' '.  get_string('created','block_import_assign').'</td>'.'</tr>';
         } else { 
         // -------------------------------------- Assignment ---------------------------------------------------
-            /*if (plugin_supports('mod', $data->modulename, FEATURE_MOD_INTRO, true)) {
-                $draftid_editor = file_get_submitted_draft_itemid('introeditor');
-                //file_prepare_draft_area($draftid_editor, null, null, null, null, array('subdirs'=>true));  ///////////
-                $data->introeditor = array('text'=>'', 'format'=>FORMAT_HTML, 'itemid'=>$draftid_editor); // TODO: add better default
-            }
-            if (plugin_supports('mod', $data->modulename, FEATURE_ADVANCED_GRADING, false) and has_capability('moodle/grade:managegradingforms', $context)) {  /////////
-                //require_once($CFG->dirroot.'/grade/grading/lib.php');   /////////
-
-                $data->_advancedgradingdata['methods'] = $grading_methods; /////////
-                $areas = $assign_grading_areas; //$grading_areas grading_manager::available_areas('mod_'.$module->name); ///////
-
-                foreach ($areas as $areaname => $areatitle) {
-                    $data->_advancedgradingdata['areas'][$areaname] = array(
-                        'title'  => $areatitle,
-                        'method' => '',
-                    );
-                    $formfield = 'advancedgradingmethod_'.$areaname;
-                    $data->{$formfield} = '';
-                }
-            }
-            $data->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>$draftid_editor);*/ // TODO: add better default
-
             $fromform1->submissiondrafts = trim($line[7]);
             $fromform1->nosubmissions = trim($line[8]);        
             $fromform1->attemptreopenmethod = trim($line[9]);
@@ -234,17 +153,17 @@ if (!empty($result)) {
             $fromform1->sendlatenotifications = 0;
             if(trim($line[5])!=0){
                 $fromform1->duedate = strtotime(trim($line[5]));
-            }else{
+            } else {
                 $fromform1->duedate = 0; // disabled & 'today'
             }
             if(trim($line[6])!=0){
                 $fromform1->cutoffdate = strtotime(trim($line[6]));
-            }else{
+            } else {
                 $fromform1->cutoffdate = 0; // disabled & 'today'
             }
             if(trim($line[4])!=0){
                 $fromform1->allowsubmissionsfromdate = strtotime(trim($line[4]));
-            }else{
+            } else {
                 $fromform1->allowsubmissionsfromdate = 0; // disabled & 'today'
             }
             $fromform1->teamsubmission = 0;
@@ -270,28 +189,18 @@ if (!empty($result)) {
             $fromform1->groupmode = $course->groupmode;
             $fromform1->grade = trim($line[3]); 
             $fromform1->grade = -2;
-            /*if ($fromform1->grade > 0) {
-                $fromform1->grade = -$fromform1->grade;
-                //$fromform1->modgrade_type = GRADE_TYPE_SCALE; // default
-                //$fromform1->modgrade_scale = trim($line[15]);
-            }*/
-            //$fromform1->visible = '1';   
-            
-            //$mform = new $mformclassname($data, $cw->section, $cm, $course);  //////////
+
              /** <<<<  IMPORTANT copied from course/modedit.php*/
             //ADD new assign
             $dupassign = $DB->get_record("assign", array('name'=>trim($line[0]),'grade'=>trim($line[3]),'course'=>$course->id));
             if( !$dupassign ){
-                $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>0 /*$draftid_editor*/); // TODO: add better default 
-                //$mform->set_data($data); //edit $fromform1;             ///////////
-                $fromform1 = add_moduleinfo($fromform1, $course/*, $mform*/);  //////////
+                $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>0); // TODO: add better default 
+                $fromform1 = add_moduleinfo($fromform1, $course);  //////////
                 $table .='<td >';
                 $table .= trim($line[0]).' '.  get_string('created','block_import_assign');
                 $table .='</td>';
             } else {
-                //insert categories        
-                $table .='<td>'.get_string('duplicate', 'block_import_assign') ;
-                $table .='</td>';  
+                $table .='<td>'.get_string('duplicate', 'block_import_assign').'</td>';  
             }      
             $table .='</tr>';
         }
