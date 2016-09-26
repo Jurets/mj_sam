@@ -85,39 +85,90 @@ if (!empty($result)) {
     require_once($CFG->libdir.'/completionlib.php');
     require_once($CFG->libdir.'/plagiarismlib.php');
     require_once($CFG->dirroot . '/course/modlib.php');
+    
+    require_once($CFG->dirroot.'/grade/grading/lib.php');
+    
+    $grading_methods = grading_manager::available_methods(); /////////
+    $assign_grading_areas = grading_manager::available_areas('mod_assign');
+    
     $cm = null;
-    $data = new stdClass();
+    
+    $modules = $cws = [];
+//DebugBreak();    
     while ($line = $cir->next()) {
         $table .='<tr>';
         foreach($line as $r){
             $table .='<td>'.$r.'</td>';            
         }
+        // common properties
+        $sectionreturn=0;
+        $section=trim($line[2]);
+        $return=0;
+        $update=0;
+        if (strtolower(trim($line[0])) == 'label' ) {
+            $add ='label';
+        } else {
+            $add ='assign';
+        }
+        // get module info
+        if (isset($modules[$add][$section])) {
+            $module = $modules[$add][$section];
+            $cw = $cws[$add][$section];
+        } else {
+            list($module, $context, $cw) = can_add_moduleinfo($course, $add, $section);   ////////
+            $modules[$add][$section] = $module;
+            $cws[$add][$section] = $cw;
+        }
+        $cm = null;
+
+        /** <<<< IMPORTANT copied from course/modedit.php*/
+        /* NEW FORM FROM*/
+        $data = new stdClass();
+        //$data->section      = $section;  // The section number itself - relative!!! (section column in course_sections)
+        //$data->visible      = $cw->visible;
+        $data->course       = $course->id;
+        //$data->module       = $module->id;
+        //$data->modulename   = $module->name;
+        //$data->groupmode    = $course->groupmode;
+        //$data->groupingid   = $course->defaultgroupingid;
+        //$data->id           = '';
+        //$data->instance     = '';
+        //$data->coursemodule = '';
+        //$data->add          = $add;
+        //$data->return       = 0; //must be false if this is an add, go back to course view on cancel
+        //$data->sr           = $sectionreturn;
+             
+        $fromform1 = new stdClass();
+        //$fromform1->name = '';   
+        $fromform1->name = trim($line[0]);
+        $fromform1->introeditor = array();       
+        $fromform1->cmidnumber = '';   
+        $fromform1->course = $course->id;  
+        $fromform1->coursemodule = '0';   
+        $fromform1->section = $section;   
+        $fromform1->module = $module->id;   
+        $fromform1->modulename = $module->name;
+        $fromform1->add = $add;
+        $fromform1->sr = '0';
+        $fromform1->visible = trim($line[16]);
+        $fromform1->submitbutton = get_string('savechangesanddisplay'); 
+        
+        $modmoodleform = "$CFG->dirroot/mod/$module->name/mod_form.php";
+
+        if (file_exists($modmoodleform)) {
+            require_once($modmoodleform);
+        } else {
+            print_error('noformdesc');
+        }
+
+        include_modulelib($module->name);
+        $mformclassname = 'mod_'.$module->name.'_mod_form';
+           
+        $sectionname = get_section_name($course, $cw);   ////////////
+        $fullmodulename = get_string('modulename', $module->name);
+
         if (strtolower(trim($line[0])) == 'label' ) {
             // -------------------------------------- Label ---------------------------------------------------
-            $add ='label'; 
-            $sectionreturn=0;
-            $section=trim($line[2]);
-            $return=0;
-            $update=0;
-            /** IMPORTANT copied from course/modedit.php >>>*/
-            list($module, $context, $cw) = can_add_moduleinfo($course, $add, $section);
-
-            $cm = null;
-
-            $data = new stdClass();
-            $data->section          = $section;  // The section number itself - relative!!! (section column in course_sections)
-            $data->visible          = $cw->visible;
-            $data->course           = $course->id;
-            $data->module           = $module->id;
-            $data->modulename       = $module->name;
-            $data->groupmode        = $course->groupmode;
-            $data->groupingid       = $course->defaultgroupingid;
-            $data->id               = '';
-            $data->instance         = '';
-            $data->coursemodule     = '';
-            $data->add              = $add;
-            $data->return           = 0; //must be false if this is an add, go back to course view on cancel
-            $data->sr               = $sectionreturn;
             $data->intro            = trim($line[1]);
             $data->introformat      = 1;
             $data->timemodified     = time();
@@ -125,57 +176,25 @@ if (!empty($result)) {
             if (core_text::strlen($name) > 50) {
                 $name = core_text::substr($name, 0, 50)."...";
             }
-            if (empty($name)) {
-                // arbitrary name
+            if (empty($name)) { // arbitrary name
                 $name = get_string('modulename','label');
             }
-            $data->name             = $name;
+            $data->name = $name;
             
             ////---------------------------------------------------------------------------
-            if (plugin_supports('mod', $data->modulename, FEATURE_MOD_INTRO, true)) {
+            /*if (plugin_supports('mod', $data->modulename, FEATURE_MOD_INTRO, true)) {
                 $draftid_editor = file_get_submitted_draft_itemid('introeditor');
-                file_prepare_draft_area($draftid_editor, null, null, null, null, array('subdirs'=>true));
+                //file_prepare_draft_area($draftid_editor, null, null, null, null, array('subdirs'=>true));
                 $data->introeditor = array('text'=>'', 'format'=>FORMAT_HTML, 'itemid'=>$draftid_editor); // TODO: add better default
-            }
+            }*/
+            //$fromform1->visible = '1';   
 
-            $sectionname = get_section_name($course, $cw);
-            $fullmodulename = get_string('modulename', $module->name);
-            /** <<<< IMPORTANT copied from course/modedit.php*/
-
-            /* NEW FORM FROM*/
-            $fromform1 = new stdClass();
-            $fromform1->name = '';   
-            $fromform1->introeditor = array();       
-            $fromform1->visible = '1';   
-            $fromform1->cmidnumber = '';   
-            $fromform1->course = $course->id;  
-            $fromform1->coursemodule = '0';   
-            $fromform1->section = $section;   
-            $fromform1->module = $module->id;   
-            $fromform1->modulename = $module->name;
-            $fromform1->add = $add;
-            $fromform1->sr = '0';
-            $fromform1->visible = trim($line[16]);
-            $fromform1->submitbutton = get_string('savechangesanddisplay'); 
-
-            $modmoodleform = "$CFG->dirroot/mod/$module->name/mod_form.php";
-
-            if (file_exists($modmoodleform)) {
-                require_once($modmoodleform);
-            } else {
-                print_error('noformdesc');
-            }
-
-            include_modulelib($module->name);
-
-            $mformclassname = 'mod_'.$module->name.'_mod_form';
-            $mform = new $mformclassname($data, $cw->section, $cm, $course);
+            //$mform = new $mformclassname($data, $cw->section, $cm, $course);
             
             ////-------
-            $fromform1->name = trim($line[0]);
-            $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>$draftid_editor); // TODO: add better default 
-            $mform->set_data($data); //edit $fromform1;            
-            $fromform1 = add_moduleinfo($fromform1, $course, $mform); 
+            $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>0 /*$draftid_editor*/); // TODO: add better default 
+            //$mform->set_data($data); //edit $fromform1;            
+            $fromform1 = add_moduleinfo($fromform1, $course/*, $mform*/); 
             $DB->insert_record("label", $data);            
             $table .='<td >';
             $table .= trim($line[0]).' '.  get_string('created','block_import_assign');
@@ -184,43 +203,16 @@ if (!empty($result)) {
             $table .='</tr>';
         } else { 
         // -------------------------------------- Assignment ---------------------------------------------------
-            $add ='assign'; 
-            $sectionreturn=0;
-            $section=trim($line[2]);
-            $return=0;
-            $update=0;
-            /** IMPORTANT copied from course/modedit.php >>>*/
-            list($module, $context, $cw) = can_add_moduleinfo($course, $add, $section);
-
-            $cm = null;
-
-            $data = new stdClass();
-            $data->section          = $section;  // The section number itself - relative!!! (section column in course_sections)
-            $data->visible          = $cw->visible;
-            $data->course           = $course->id;
-            $data->module           = $module->id;
-            $data->modulename       = $module->name;
-            $data->groupmode        = $course->groupmode;
-            $data->groupingid       = $course->defaultgroupingid;
-            $data->id               = '';
-            $data->instance         = '';
-            $data->coursemodule     = '';
-            $data->add              = $add;
-            $data->return           = 0; //must be false if this is an add, go back to course view on cancel
-            $data->sr               = $sectionreturn;
-
-            if (plugin_supports('mod', $data->modulename, FEATURE_MOD_INTRO, true)) {
+            /*if (plugin_supports('mod', $data->modulename, FEATURE_MOD_INTRO, true)) {
                 $draftid_editor = file_get_submitted_draft_itemid('introeditor');
-                file_prepare_draft_area($draftid_editor, null, null, null, null, array('subdirs'=>true));
+                //file_prepare_draft_area($draftid_editor, null, null, null, null, array('subdirs'=>true));  ///////////
                 $data->introeditor = array('text'=>'', 'format'=>FORMAT_HTML, 'itemid'=>$draftid_editor); // TODO: add better default
             }
+            if (plugin_supports('mod', $data->modulename, FEATURE_ADVANCED_GRADING, false) and has_capability('moodle/grade:managegradingforms', $context)) {  /////////
+                //require_once($CFG->dirroot.'/grade/grading/lib.php');   /////////
 
-            if (plugin_supports('mod', $data->modulename, FEATURE_ADVANCED_GRADING, false)
-                    and has_capability('moodle/grade:managegradingforms', $context)) {
-                require_once($CFG->dirroot.'/grade/grading/lib.php');
-
-                $data->_advancedgradingdata['methods'] = grading_manager::available_methods();
-                $areas = grading_manager::available_areas('mod_'.$module->name);
+                $data->_advancedgradingdata['methods'] = $grading_methods; /////////
+                $areas = $assign_grading_areas; //$grading_areas grading_manager::available_areas('mod_'.$module->name); ///////
 
                 foreach ($areas as $areaname => $areatitle) {
                     $data->_advancedgradingdata['areas'][$areaname] = array(
@@ -231,42 +223,8 @@ if (!empty($result)) {
                     $data->{$formfield} = '';
                 }
             }
+            $data->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>$draftid_editor);*/ // TODO: add better default
 
-            if (!empty($type)) { //TODO: hopefully will be removed in 2.0
-                $data->type = $type;
-            }
-
-            $sectionname = get_section_name($course, $cw);
-            $fullmodulename = get_string('modulename', $module->name);
-            /** <<<< IMPORTANT copied from course/modedit.php*/
-
-            $data->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>$draftid_editor); // TODO: add better default
-
-            //echo '<pre>';print_r($data); print_r($fromform1);print_r($context);print_r($assign);print_r($newassign);die;
-            /* NEW FORM FROM*/
-            $fromform1 = new stdClass();
-            $fromform1->name = '';   
-            $fromform1->introeditor = array();       
-            $fromform1->grade = trim($line[3]); 
-            $fromform1->grade = -2;
-            /*if ($fromform1->grade > 0) {
-                $fromform1->grade = -$fromform1->grade;
-                //$fromform1->modgrade_type = GRADE_TYPE_SCALE; // default
-                //$fromform1->modgrade_scale = trim($line[15]);
-            }*/
-            $fromform1->visible = '1';   
-            $fromform1->cmidnumber = '';   
-            $fromform1->groupmode = $course->groupmode;
-            $fromform1->course = $course->id;  
-            $fromform1->coursemodule = '0';   
-            $fromform1->section = $section;   
-            $fromform1->module = $module->id;   
-            $fromform1->modulename = $module->name;
-            $fromform1->instance = '0';
-            $fromform1->add = $add;
-            $fromform1->update = '0';
-            $fromform1->return = '0';
-            $fromform1->sr = '0';
             $fromform1->submissiondrafts = trim($line[7]);
             $fromform1->nosubmissions = trim($line[8]);        
             $fromform1->attemptreopenmethod = trim($line[9]);
@@ -305,30 +263,28 @@ if (!empty($result)) {
             $fromform1->assignsubmission_file_maxsizebytes = 10485760; // 10Mb
             
             $fromform1->attemptreopenmethod = 'untilpass';
+
+            $fromform1->update = '0';
+            $fromform1->return = '0';
+            $fromform1->instance = '0';
+            $fromform1->groupmode = $course->groupmode;
+            $fromform1->grade = trim($line[3]); 
+            $fromform1->grade = -2;
+            /*if ($fromform1->grade > 0) {
+                $fromform1->grade = -$fromform1->grade;
+                //$fromform1->modgrade_type = GRADE_TYPE_SCALE; // default
+                //$fromform1->modgrade_scale = trim($line[15]);
+            }*/
+            //$fromform1->visible = '1';   
             
-            $fromform1->visible = trim($line[16]);
-            $fromform1->submitbutton = get_string('savechangesanddisplay'); 
-
-            $modmoodleform = "$CFG->dirroot/mod/$module->name/mod_form.php";
-
-            if (file_exists($modmoodleform)) {
-                require_once($modmoodleform);
-            } else {
-                print_error('noformdesc');
-            }
-
-            include_modulelib($module->name);
-
-            $mformclassname = 'mod_'.$module->name.'_mod_form';
-            $mform = new $mformclassname($data, $cw->section, $cm, $course);
+            //$mform = new $mformclassname($data, $cw->section, $cm, $course);  //////////
              /** <<<<  IMPORTANT copied from course/modedit.php*/
             //ADD new assign
-            $dupassign = $DB->get_record( "assign", array('name'=>trim($line[0]),'grade'=>trim($line[3]),'course'=>$course->id) );
+            $dupassign = $DB->get_record("assign", array('name'=>trim($line[0]),'grade'=>trim($line[3]),'course'=>$course->id));
             if( !$dupassign ){
-                $fromform1->name = trim($line[0]);
-                $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>$draftid_editor); // TODO: add better default 
-                $mform->set_data($data); //edit $fromform1;            
-                $fromform1 = add_moduleinfo($fromform1, $course, $mform); 
+                $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>0 /*$draftid_editor*/); // TODO: add better default 
+                //$mform->set_data($data); //edit $fromform1;             ///////////
+                $fromform1 = add_moduleinfo($fromform1, $course/*, $mform*/);  //////////
                 $table .='<td >';
                 $table .= trim($line[0]).' '.  get_string('created','block_import_assign');
                 $table .='</td>';
@@ -345,15 +301,8 @@ if (!empty($result)) {
     echo $table;
     
 }
-//echo '<pre>';print_r($filecolumns);echo '</pre>';
 
-//images process
-// Create a unique temporary directory, to process the zip file
-// contents.
-//print_r($results);
 echo $OUTPUT->continue_button('index.php?id='.$id);
 echo $OUTPUT->box_end();
 echo $OUTPUT->footer();
 exit;
-
-// -----------
