@@ -90,7 +90,7 @@ if (!empty($result)) {
     } else {
         print_error('noformdesc');
     }
-
+//DebugBreak();
     ////////////////////////////////////
     $transaction = $DB->start_delegated_transaction();
     
@@ -204,6 +204,7 @@ if (!empty($result)) {
         }
         continue;
     }
+    rebuild_course_cache($course->id, true);
     
     //////////////
     $transaction->allow_commit();
