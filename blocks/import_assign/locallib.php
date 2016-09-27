@@ -86,8 +86,13 @@ function import_module($moduleinfo, $course, $mform = null) {
         $moduleinfo->introformat = $introeditor['format'];
     }
     try {
-        $assignment = new assign(context_module::instance($moduleinfo->coursemodule), null, null);
-        $returnfromfunc = $assignment->add_instance($moduleinfo, false);
+        if ($moduleinfo->modulename == 'assign') {
+            $assignment = new assign(context_module::instance($moduleinfo->coursemodule), null, null);
+            $returnfromfunc = $assignment->add_instance($moduleinfo, false);
+        } else {
+            $addinstancefunction = $moduleinfo->modulename."_add_instance";
+            $returnfromfunc = $addinstancefunction($moduleinfo, $mform);
+        }
     } catch (moodle_exception $e) {
         $returnfromfunc = $e;
     }
