@@ -88,7 +88,22 @@ function import_module($moduleinfo, $course, $mform = null) {
     try {
         if ($moduleinfo->modulename == 'assign') {
             $assignment = new assign(context_module::instance($moduleinfo->coursemodule), null, null);
-            $returnfromfunc = $assignment->add_instance($moduleinfo, false);
+            // false means don't call plugin settings by assign module
+            // if true to call plugin settings
+            $returnfromfunc = $assignment->add_instance($moduleinfo, false); 
+            // so we need do it manually ... 1) onlinetext
+            $config = new stdClass();
+            $config->assignment = $returnfromfunc;
+            $config->plugin = 'onlinetext';
+            $config->subtype = 'assignsubmission';
+            $config->name = 'enabled';
+            $config->value = 1;
+            $return = $DB->insert_record('assign_plugin_config', $config);
+            // 2) file
+            $config->plugin = 'file';
+            $config->name = 'maxfilesubmissions';
+            $config->value = 10;
+            $return = $DB->insert_record('assign_plugin_config', $config);
         } else {
             $addinstancefunction = $moduleinfo->modulename."_add_instance";
             $returnfromfunc = $addinstancefunction($moduleinfo, $mform);
