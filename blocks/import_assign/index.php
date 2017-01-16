@@ -31,7 +31,7 @@ $std_fields = array('Name', 'Description', 'Section','grade','Allow submitions f
 $prf_fields = array();
 $aux = count($std_fields);
 $i=1;
-$msg =' '; 
+$msg =' ';
 $timenow =  time();
 $table ='<table border="1" ><tr>';
 foreach($std_fields as $r){
@@ -43,7 +43,7 @@ foreach($std_fields as $r){
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string(get_string('title','block_import_assign'))); 
+echo $OUTPUT->heading(format_string(get_string('title','block_import_assign')));
 //include form
 $form = new import_assign_import_form(null, array('id'=>$id,'options'=>$options));
 if ( !$data = $form->get_data() ) {
@@ -52,7 +52,7 @@ if ( !$data = $form->get_data() ) {
     $data = new stdClass();
     $data->id = $id;
     $form->set_data($data);
-    $form->display();    
+    $form->display();
     echo $OUTPUT->box_end();
     echo $OUTPUT->footer();
     exit;
@@ -67,21 +67,21 @@ if (!empty($result)) {
     echo $OUTPUT->box_start(' generalbox');
     // load csv
     $file = csv_import_reader::get_new_iid('file');
-    $cir = new csv_import_reader($file, 'file'); 
-    $readcount = $cir->load_csv_content($result, 'ISO-8859-2', 'semicolon'); 
+    $cir = new csv_import_reader($file, 'file');
+    $readcount = $cir->load_csv_content($result, 'ISO-8859-2', 'semicolon');
     if ($readcount === false)
         print_error('csvloaderror', '', $url);
     else if ($readcount == 0)
         print_error('csvemptyfile', 'error', $url);
-    
+
     $filecolumns = assign_validate_upload_columns($cir, $std_fields, $prf_fields, $url);
     /*insert new assigns for course */
     ///require_once($CFG->dirroot . '/course/modlib.php');
     require_once('locallib.php');
-    
+
     $module_assign = $DB->get_record('modules', array('name'=>'assign'), '*', MUST_EXIST);
     $module_label = $DB->get_record('modules', array('name'=>'label'), '*', MUST_EXIST);
-    
+
     if (file_exists("$CFG->dirroot/mod/assign/mod_form.php") && file_exists("$CFG->dirroot/mod/label/mod_form.php")) {
         require_once("$CFG->dirroot/mod/assign/mod_form.php");
         require_once("$CFG->dirroot/mod/label/mod_form.php");
@@ -93,7 +93,7 @@ if (!empty($result)) {
 
     ////////////////////////////////////
     $transaction = $DB->start_delegated_transaction();
-    
+
     // Process
     $cir->init();
     while ($line = $cir->next()) {
@@ -110,20 +110,20 @@ if (!empty($result)) {
         }
         $data = new stdClass();
         $data->course = $course->id;
-             
+
         $fromform1 = new stdClass();
         $fromform1->name = trim($line[0]);
-        $fromform1->cmidnumber = '';   
-        $fromform1->course = $course->id;  
-        $fromform1->coursemodule = '0';   
-        $fromform1->section = $section;   
-        $fromform1->module = $module->id;   
+        $fromform1->cmidnumber = '';
+        $fromform1->course = $course->id;
+        $fromform1->coursemodule = '0';
+        $fromform1->section = $section;
+        $fromform1->module = $module->id;
         $fromform1->modulename = $module->name;
         $fromform1->add = $add;
         $fromform1->sr = '0';
         $fromform1->visible = trim($line[16]);
-        $fromform1->submitbutton = 'savechangesanddisplay'; 
-        
+        $fromform1->submitbutton = 'savechangesanddisplay';
+
         if (strtolower(trim($line[0])) == 'label' ) {
             // -------------------------------------- Label ---------------------------------------------------
             $data->intro = trim($line[1]);
@@ -138,14 +138,14 @@ if (!empty($result)) {
             }
             $data->name = $name;
 
-            $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>0); // TODO: add better default 
-            $fromform1 = import_module($fromform1, $course); 
-            
+            $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>0); // TODO: add better default
+            $fromform1 = import_module($fromform1, $course);
+
             $table .='<td>'.trim($line[0]).' '.  get_string('created','block_import_assign').'</td>'.'</tr>';
-        } else { 
+        } else {
         // -------------------------------------- Assignment ---------------------------------------------------
-            $fromform1->submissiondrafts = trim($line[7]);
-            $fromform1->nosubmissions = trim($line[8]);        
+            $fromform1->submissiondrafts = 1; // Require students click submit
+            $fromform1->nosubmissions = trim($line[8]);
             $fromform1->attemptreopenmethod = trim($line[9]);
             $fromform1->requiresubmissionstatement = 0;
             $fromform1->sendnotifications = 0;
@@ -180,38 +180,38 @@ if (!empty($result)) {
             }
             $fromform1->assignsubmission_file_maxfiles = trim($line[14]);
             //$fromform1->assignsubmission_file_maxsizebytes = 10485760; // 10Mb
-            
+
             $fromform1->attemptreopenmethod = 'untilpass';
 
             $fromform1->update = '0';
             $fromform1->return = '0';
             $fromform1->instance = '0';
             $fromform1->groupmode = $course->groupmode;
-            $fromform1->grade = trim($line[3]); 
+            $fromform1->grade = trim($line[3]);
             $fromform1->grade = -2;
 
             $dupassign = $DB->get_record("assign", array('name'=>trim($line[0]),'grade'=>trim($line[3]),'course'=>$course->id));
             if( !$dupassign ){
-                $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>0); // TODO: add better default 
+                $fromform1->introeditor = array('text'=>trim($line[1]), 'format'=>FORMAT_HTML, 'itemid'=>0); // TODO: add better default
                 $fromform1 = import_module($fromform1, $course);  //////////
                 $table .='<td >';
                 $table .= trim($line[0]).' '.  get_string('created','block_import_assign');
                 $table .='</td>';
             } else {
-                $table .='<td>'.get_string('duplicate', 'block_import_assign').'</td>';  
-            }      
+                $table .='<td>'.get_string('duplicate', 'block_import_assign').'</td>';
+            }
             $table .='</tr>';
         }
         continue;
     }
     rebuild_course_cache($course->id, true);
-    
+
     //////////////
     $transaction->allow_commit();
-    
+
     $table .='</tr></table>';
     echo $table;
-    
+
 }
 
 echo $OUTPUT->continue_button('index.php?id='.$id);
