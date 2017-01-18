@@ -95,7 +95,7 @@ if (!empty($result)) {
     $transaction = $DB->start_delegated_transaction();
 
     // Process
-    $cir->init();
+    $cir->init();DebugBreak();
     while ($line = $cir->next()) {
         $table .='<tr>';
         foreach($line as $r) { $table .='<td>'.$r.'</td>'; }
@@ -187,8 +187,10 @@ if (!empty($result)) {
             $fromform1->return = '0';
             $fromform1->instance = '0';
             $fromform1->groupmode = $course->groupmode;
-            $fromform1->grade = trim($line[3]);
-            $fromform1->grade = -2;
+
+            $scaleid = isset($line[15]) ? trim($line[15]) : 2;
+            $fromform1->grade = !empty($scaleid) ? -$scaleid: -2; //scale id
+            $fromform1->gradepass = isset($line[3]) ? trim($line[3]) : null; //scale id
 
             $dupassign = $DB->get_record("assign", array('name'=>trim($line[0]),'grade'=>trim($line[3]),'course'=>$course->id));
             if( !$dupassign ){

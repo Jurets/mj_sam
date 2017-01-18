@@ -21,7 +21,8 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->dirroot.'/course/modlib.php');
-require_once($CFG->dirroot . '/mod/assign/locallib.php');
+require_once($CFG->dirroot.'/mod/assign/locallib.php');
+require_once($CFG->dirroot.'/lib/gradelib.php');
 
 /**
  * Add course module.
@@ -91,7 +92,8 @@ function import_module($moduleinfo, $course, $mform = null) {
             // false means don't call plugin settings by assign module
             // if true to call plugin settings
             $returnfromfunc = $assignment->add_instance($moduleinfo, false);
-            // so we need do it manually ... 1) onlinetext
+            // --- so we need do it manually ...
+            // 1) onlinetext
             $config = new stdClass();
             $config->assignment = $returnfromfunc;
             $config->subtype = 'assignsubmission';
@@ -107,6 +109,34 @@ function import_module($moduleinfo, $course, $mform = null) {
             $config->name = 'maxfilesubmissions';
             $config->value = 10;
             $return = $DB->insert_record('assign_plugin_config', $config);
+            // 4) Grade Book settings
+            //$assignment->update_gradebook(false, $moduleinfo->coursemodule);
+            $assign = $assignment->get_instance();
+            $params = array(
+                'itemname' => $assign->name,
+                'idnumber' => $assign->id, //$assign->cmidnumber,
+                'gradetype'=> GRADE_TYPE_SCALE,
+                'scaleid'  => -$assign->grade,
+            );
+            grade_update('mod/assign', $moduleinfo->course, 'mod', 'assign', $assign->id, 0, $grades, $params);
+
+            $params = array(
+                'itemtype'=>'mod',
+                'itemmodule'=>'assign',
+                'iteminstance'=>$assign->id,
+                'courseid'=>$moduleinfo->course,
+            );
+            //if ($grade_items = grade_item::fetch_all(array('iteminstance' => $assign->id, /*'idnumber' => $assign->id*/))) {
+            if ($grade_items = grade_item::fetch_all($params)) {
+                if (count($grade_items) == 1){
+                    $grade_item = reset($grade_items);
+                    unset($grade_items); //release memory
+                    // if gradepass is not setted in CSV - get grademax (2 for Acceptance)
+                    $grade_item->gradepass = isset($moduleinfo->gradepass) ? $moduleinfo->gradepass : $grade_item->grademax;
+                    $grade_item->update();
+                }
+            }
+
         } else {
             $addinstancefunction = $moduleinfo->modulename."_add_instance";
             $returnfromfunc = $addinstancefunction($moduleinfo, $mform);
